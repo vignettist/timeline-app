@@ -1,0 +1,110 @@
+$grass: #FEF8CF;
+$sage: #D4DFC7;
+$mint: #96C0B7;
+$stone: #878E88;
+$redwood: #725752;
+
+@import 'imports/datepicker';
+
+body {
+	margin: 0px;
+	background-color: $sage;
+	font-family: 'Titillium Web', sans-serif;
+	color: $redwood;
+}
+
+.timelines {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-around;
+	align-items: flex-start;
+}
+
+div.timeline {
+	background-color: $grass;
+	border-radius: 25px;
+	padding: 15px;
+	box-shadow: 0px 0px 10px $stone;
+}
+
+.timeline {
+	img {
+		max-width: 400px;
+		display: block;
+		border: 4px solid $redwood;
+		border-radius: 5px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	h2 {
+		text-align: center;
+		font-weight: 200;
+		font-size: 36px;
+	}
+}
+
+.spacer {
+	background: url(/dots.png);
+	background-repeat: repeat-y;
+	background-position: center;
+	display: flex;
+}
+
+header {
+	background-color: $mint;
+	margin: 0px;
+	margin-bottom: 25px;
+	padding-left: 40px;
+	padding-right: 0px;
+	display: flex;
+
+	.pagination {
+		margin-top: auto;
+		margin-bottom: auto;
+		margin-left: auto;
+		margin-right: 40px;
+		display: flex;
+	}
+
+	.datePicker {
+		margin: auto;
+		background-color: $sage;
+		border-radius: 5px;
+		font-size: 24px;
+
+		input {
+			font-size: 24px;
+			padding: 0;
+			border: 0;
+			background-color: transparent;
+			text-align: center;
+		}
+	}
+}
+
+.left, .right {
+	border:0;
+    background:transparent;
+}
+
+.spacerText {
+	font-size: 16px;
+	text-align: center;
+	background-color: $stone;
+	border-radius: 5px;
+	margin: auto;
+	max-width: 100px;
+	padding: 4px;
+	box-shadow: 0px 0px 5px $stone;
+	color: $sage;
+}
+
+*:focus {
+	outline: 0;
+}
+
+.hiddenLeft, .hiddenRight {
+	display: none;
+}
+
