@@ -1,3 +1,5 @@
+@import "{francocatena:compass}/compass/css3/transition";
+
 $grass: #FEF8CF;
 $sage: #D4DFC7;
 $mint: #96C0B7;
@@ -28,13 +30,73 @@ div.timeline {
 }
 
 .timeline {
-	img {
-		max-width: 400px;
+	.revealDuplicates {
 		display: block;
-		border: 4px solid $redwood;
-		border-radius: 5px;
-		margin-left: auto;
-		margin-right: auto;
+		right: 2px;
+		bottom: 6px;
+
+		z-index: 100;
+		position: absolute;
+		height: 48px;
+		width: 48px;
+	}
+
+	.duplicateBlock {
+		position: relative;
+
+		.revealDuplicates {
+			background-image: url("/icons/Copy-48.png");
+			transition: 0.7s;
+		}
+
+		.revealDuplicates:hover {
+			background-image: url("/icons/Copy-48-sage.png");
+			transition: 0.7s;
+		}
+
+		.timelinePhoto {
+			overflow: scroll;
+			position: relative;
+			border: 4px solid $redwood;
+			border-radius: 5px;
+			margin-left: auto;
+			margin-right: auto;
+
+			img {
+				max-width: 400px;
+				margin: 0;
+				padding: 0;
+				display: block;
+				margin-top: -300px;
+				transition: margin-top 0.7s ease-in;
+				position: static;
+				z-index: 1;
+
+				&:last-child {
+					z-index: 0;
+					position: static;
+					margin-top: 0px;
+				}
+			}
+
+		}
+
+		&.expanded {
+			.revealDuplicates {
+			background-image: url("/icons/Copy-48-sage.png");
+			transition: 0.7s;
+			}
+
+			.revealDuplicates:hover {
+				background-image: url("/icons/Copy-48.png");
+				transition: 0.7s;
+			}
+
+			.timelinePhoto img {
+				margin-top: 0px;
+				transition: margin-top 0.7s ease-in;
+			}
+		}
 	}
 
 	h2 {
@@ -108,3 +170,8 @@ header {
 	display: none;
 }
 
+button {
+	background: transparent;
+	outline: none;
+	border: none;
+}

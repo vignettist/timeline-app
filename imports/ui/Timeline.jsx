@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
- 
+
 import Spacer from './Spacer.jsx';
 import Photo from './Photo.jsx';
 
@@ -15,19 +15,50 @@ export default class Timeline extends Component {
       return ((photo.time >= startDate) && (photo.time < endDate))
     });
 
-    for (let i = 0; i < ourPhotos.length; i++) {
-      if (i < (ourPhotos.length-1)) {
-        let height = Math.max(5, 8*Math.log2((ourPhotos[i+1].time - ourPhotos[i].time)/1000));
-
-        imageList.push(
-          <div key={ourPhotos[i]._id + "_wrapper"} className="photoBlock">
-            <Photo key={ourPhotos[i]._id + "_img"} photo={ourPhotos[i]} />
-            <Spacer key={ourPhotos[i]._id + "_spacer"} height={height} date={ourPhotos[i].time} />
-          </div>
-        );
-      } else {
-        imageList.push(<Photo key={ourPhotos[i]._id} photo={ourPhotos[i]} />)
+    function probability_of_duplicate(similarity, time_delay) {
+      // magic numbers are a logistic regression to the training set
+      p = math.exp(-3.5423 + 13.7986 * similarity + 0.1512 * time_delay) / (1 + math.exp(-3.5423 + 13.7986 * similarity + 0.1512 * time_delay))
+      p = (1 - p);
+      if (isNaN(p)) {
+        p = 0;
       }
+      return p;
+    }
+
+    function fingerprint_similarity(fingerprint1, fingerprint2) {
+      return math.sqrt(math.sum(math.square(math.subtract(fingerprint1,fingerprint2))));
+    }    
+
+    let i = 0;
+
+    while (i < (ourPhotos.length-1)) {
+      let imgList = [];
+      let dupe_prob = 1;
+
+      while ((dupe_prob > 0.2) && (i < ourPhotos.length-1)) {
+        imgList.push(ourPhotos[i]);
+
+        fingerprint_sim = fingerprint_similarity(ourPhotos[i+1].syntactic_fingerprint, ourPhotos[i].syntactic_fingerprint);
+        time_delta = (Date.parse(ourPhotos[i+1].time) - Date.parse(ourPhotos[i].time))/1000;
+        dupe_prob = probability_of_duplicate(fingerprint_sim, time_delta);
+
+        i++;
+      }
+
+      let height = 0;
+
+      if (i == ourPhotos.length-1) {
+        imgList.push(ourPhotos[i]);
+      } else {
+        height = Math.max(5, 8*Math.log2((ourPhotos[i].time - ourPhotos[i-1].time)/1000));
+      }
+
+      imageList.push(
+          <div key={imgList[0]._id + "_wrapper"} className="photoBlock">
+            <Photo key={imgList[0].id + "_photoBlock"} photos={imgList} />
+            {(height > 0) ? <Spacer key={ourPhotos[i]._id + "_spacer"} height={height} date={ourPhotos[i].time} /> : ''}
+          </div>
+      );
     }
 
     return (
