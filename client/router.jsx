@@ -1,5 +1,7 @@
 import {mount} from 'react-mounter';
-import App from '../imports/ui/App.jsx';
+import Timeline3Up from '../imports/ui/Timeline3Up.jsx';
+import SingleTimeline from '../imports/ui/SingleTimeline.jsx';
+
 
 FlowRouter.route('/', {
   action() {
@@ -18,13 +20,18 @@ FlowRouter.route('/timeline/:date', {
     	this.register('photos', Meteor.subscribe('photos', startDate, endDate));
     },
 	action: function(params) {
-		mount(App, {date: moment(params.date)})
+		mount(Timeline3Up, {date: moment(params.date)})
 	}
 });
 
-FlowRouter.route('/blog/:postId', {
-    name: 'blogPost',
+FlowRouter.route('/image/:imageId', {
+	name: 'imageView',
+
+	subscriptions: function(params) {
+    	this.register('photos', Meteor.subscribe('photos_near', new Meteor.Collection.ObjectID(params.imageId)));
+    },
+
     action: function(params) {
-        console.log("This is my blog post:", params.postId);
+		mount(SingleTimeline, {imageId: new Meteor.Collection.ObjectID(params.imageId)})
     }
 });

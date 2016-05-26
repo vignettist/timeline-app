@@ -15,7 +15,20 @@ body {
 	color: $redwood;
 }
 
-.timelines {
+header {
+	position: fixed;
+	z-index: 255;
+	width: 100%;
+	height: 80px;
+	top: 0px;
+	box-shadow: 0px 0px 20px $stone;
+}
+
+main {
+	margin-top: 100px;
+}
+
+.timelines span {
 	display: flex;
 	flex-flow: row wrap;
 	justify-content: space-around;
@@ -24,12 +37,34 @@ body {
 
 div.timeline {
 	background-color: $grass;
-	border-radius: 25px;
-	padding: 15px;
 	box-shadow: 0px 0px 10px $stone;
 }
 
+div.timeline, .bigImage {
+	border-radius: 25px;
+	padding: 15px;
+}
+
+.bigImage img {
+	display: block;
+}
+
+.highlightedImage {
+	flex-basis: 60%;
+}
+
+.highlightedImage img {
+	max-width: 100%;
+	border: 4px solid $redwood;
+	border-radius: 25px;
+	// margin-right: 5px;
+	// margin-left: 0;
+}
+
 .timeline {
+	flex-basis: 30%;
+	max-width: 400px;
+
 	.revealDuplicates {
 		display: block;
 		right: 2px;
@@ -62,20 +97,21 @@ div.timeline {
 			margin-left: auto;
 			margin-right: auto;
 
-			img {
-				max-width: 400px;
-				margin: 0;
-				padding: 0;
-				display: block;
-				margin-top: -300px;
-				transition: margin-top 0.7s ease-in;
-				position: static;
-				z-index: 1;
+			button {
 
-				&:last-child {
-					z-index: 0;
+				img {
+					width: 100%;
+					margin: 0;
+					padding: 0;
+					display: block;
 					position: static;
-					margin-top: 0px;
+	  				bottom: 100%;
+					max-height: 0px;
+					transition: max-height 0.7s ease-in;
+				}
+
+				&:last-child img {
+					max-height: 800px;
 				}
 			}
 
@@ -92,9 +128,9 @@ div.timeline {
 				transition: 0.7s;
 			}
 
-			.timelinePhoto img {
-				margin-top: 0px;
-				transition: margin-top 0.7s ease-in;
+			.timelinePhoto button img {
+				transition: max-height 0.7s ease-in;
+				max-height: 800px;
 			}
 		}
 	}
@@ -103,6 +139,8 @@ div.timeline {
 		text-align: center;
 		font-weight: 200;
 		font-size: 36px;
+		margin: 0;
+		margin-bottom: 10px;
 	}
 }
 
@@ -148,6 +186,8 @@ header {
 .left, .right {
 	border:0;
     background:transparent;
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .spacerText {
@@ -174,4 +214,95 @@ button {
 	background: transparent;
 	outline: none;
 	border: none;
+	padding: 0;
+	margin: 0;
+	display: block;
+}
+
+.timelineStart {
+	margin-bottom: 10px;
+}
+
+.fade-enter {
+  opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+  opacity: 1;
+  transition: opacity 2000ms ease-in;
+}
+
+.fade-leave {
+  opacity: 1;
+}
+
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
+  transition: opacity 2000ms ease-in;
+}
+
+.fade-appear {
+  opacity: 0.01;
+}
+
+.fade-appear.fade-appear-active {
+  opacity: 1;
+  transition: opacity .5s ease-in;
+}
+
+
+// comm
+.slide-left-enter {
+  margin-left: -500px;
+}
+
+.slide-left-enter.slide-left-enter-active {
+  margin-left: 0px;
+  transition: margin-left 500ms ease-in;
+}
+
+.slide-left-leave {
+  margin-right: 0px;
+}
+
+.slide-left-leave.slide-left-leave-active {
+  margin-right: -500px;
+  transition: margin-right 500ms ease-in;
+}
+
+.slide-left-appear {
+  margin-left: -500px;
+}
+
+.slide-left-appear.slide-left-appear-active {
+  margin-left: 0px;
+  transition:  margin-left 500ms ease-in;
+}
+
+// comm
+.slide-right-enter {
+  margin-right: -500px;
+}
+
+.slide-right-enter.slide-right-enter-active {
+  margin-right: 0px;
+  transition: margin-right 500ms ease-in;
+}
+
+.slide-right-leave {
+  margin-left: 0px;
+}
+
+.slide-right-leave.slide-right-leave-active {
+  margin-left: -500px;
+  transition: margin-left 500ms ease-in;
+}
+
+.slide-right-appear {
+  margin-right: -500px;
+}
+
+.slide-right-appear.slide-right-appear-active {
+  margin-right: 0px;
+  transition:  margin-right 500ms ease-in;
 }
