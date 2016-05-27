@@ -47,18 +47,13 @@ div.timeline, .bigImage {
 
 .bigImage img {
 	display: block;
+	max-width: 100%;
+	border: 4px solid $redwood;
+	border-radius: 25px;
 }
 
 .highlightedImage {
 	flex-basis: 60%;
-}
-
-.highlightedImage img {
-	max-width: 100%;
-	border: 4px solid $redwood;
-	border-radius: 25px;
-	// margin-right: 5px;
-	// margin-left: 0;
 }
 
 .timeline {
@@ -222,6 +217,18 @@ button {
 .timelineStart {
 	margin-bottom: 10px;
 }
+
+.timelineMap {
+	width: 100%;
+	height: 800px;
+	background-color: $grass;
+}
+
+.leaflet-container {
+	height: 100%;
+}
+
+// TRANSITIONS
 
 .fade-enter {
   opacity: 0.01;
