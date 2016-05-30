@@ -28,7 +28,9 @@ FlowRouter.route('/image/:imageId', {
 	name: 'imageView',
 
 	subscriptions: function(params) {
+		this.register('single_photo', Meteor.subscribe('single_photo', new Meteor.Collection.ObjectID(params.imageId)))
     	this.register('photos', Meteor.subscribe('photos_near', new Meteor.Collection.ObjectID(params.imageId)));
+    	this.register('photosNearby', Meteor.subscribe('photos_nearby', new Meteor.Collection.ObjectID(params.imageId)));
     },
 
     action: function(params) {

@@ -31,7 +31,7 @@ export default class Photo extends Component {
     			  <div className="timelinePhoto">
                   {this.props.photos.map(function(img) {
                     return(
-                      <button onClick={() => this.selectImage(img)}>
+                      <button key={img._id + "_button"} onClick={() => this.selectImage(img)}>
                         <img id={img._id + "_img_id"} key={img._id + "_img"} src={"http://localhost:3022/" + img.resized_uris["640"]} />
                       </button>);
                   }, this)}
