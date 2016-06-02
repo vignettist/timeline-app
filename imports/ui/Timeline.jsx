@@ -64,7 +64,7 @@ export default class Timeline extends Component {
 
       imageList.push(
           <div key={imgList[0]._id + "_wrapper"} className="photoBlock">
-            <Photo key={imgList[0].id + "_photoBlock"} photos={imgList} />
+            <Photo key={imgList[0].id + "_photoBlock"} photos={imgList} size={"640"}/>
             {(height > 0) ? <Spacer key={ourPhotos[i]._id + "_spacer"} height={height} date={timestamp} /> : ''}
           </div>
       );

@@ -31,8 +31,20 @@ if (Meteor.isServer) {
 		let photoLat = photo[0].latitude;
 		let photoLon = photo[0].longitude;
 
-		let nearbyPhotos = Photos.find({'latitude': {$gte: photoLat-0.05, $lt: photoLat+0.05}, 'longitude': {$gte: photoLon-0.05, $lt: photoLon+0.05}});
+		let nearbyPhotos = Photos.find({'latitude': {$gte: photoLat-0.025, $lt: photoLat+0.025}, 'longitude': {$gte: photoLon-0.025, $lt: photoLon+0.025}});
 
-		return nearbyPhotos;
+		let uniqueDates = _.uniq(Photos.find({'latitude': {$gte: photoLat-0.025, $lt: photoLat+0.025}, 'longitude': {$gte: photoLon-0.25, $lt: photoLon+0.025}}, {
+			    sort: {'datetime.utc_timestamp': 1}, fields: {'datetime.utc_timestamp': true}
+			}).fetch().map(function(x) {
+			    return x.datetime.utc_timestamp.toDateString();
+			}), true);
+
+		var dateQuery = [];
+
+		for(var i = 0; i < uniqueDates.length; i++) {
+			dateQuery.push({'datetime.utc_timestamp': {$gte: new Date(new Date(uniqueDates[i]).getTime() - 1000*60*60*24), $lt: new Date(new Date(uniqueDates[i]).getTime() + 1000*60*60*24)}});			
+		}
+	
+		return Photos.find({$or: dateQuery});
 	})
 }
