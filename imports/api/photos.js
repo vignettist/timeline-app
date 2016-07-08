@@ -16,6 +16,10 @@ if (Meteor.isServer) {
 		return Photos.find({'datetime.utc_timestamp': { $gte: startDate, $lt: endDate}});
 	});
 
+	Meteor.publish('photos_location', function photoPublication(startDate, endDate) {
+		return Photos.find({'datetime.utc_timestamp': { $gte: startDate, $lt: endDate}}, {fields: {'datetime': 1, 'geolocation': 1}});
+	});
+
 	Meteor.publish('photos_near', function photosNearPublication(imageId) {
 		let photo = Photos.find({'_id': imageId}).fetch();
 		let photoDate = photo[0].datetime.utc_timestamp;
@@ -42,7 +46,7 @@ if (Meteor.isServer) {
 		var dateQuery = [];
 
 		for(var i = 0; i < uniqueDates.length; i++) {
-			dateQuery.push({'datetime.utc_timestamp': {$gte: new Date(new Date(uniqueDates[i]).getTime() - 1000*60*60*24), $lt: new Date(new Date(uniqueDates[i]).getTime() + 1000*60*60*24)}});			
+			dateQuery.push({'datetime.utc_timestamp': {$gte: new Date(new Date(uniqueDates[i]).getTime() - new Date(uniqueDates[i]).getTimezoneOffset()*60*1000 - 0*1000*60*60*24), $lt: new Date(new Date(uniqueDates[i]).getTime() - new Date(uniqueDates[i]).getTimezoneOffset()*60*1000 + 1000*60*60*24)}});			
 		}
 	
 		return Photos.find({$or: dateQuery});

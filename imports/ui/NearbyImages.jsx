@@ -12,8 +12,8 @@ export default class NearbyImages extends Component {
   }
 
   render() {
-    var lat = this.props.photo.latitude;
-    var lon = this.props.photo.longitude;
+    var lat = this.props.lat;
+    var lon = this.props.lon;
 
     if ((this.props != 'undefined')) {
       let sortedPhotos = this.props.photos.slice(0);
@@ -39,7 +39,8 @@ export default class NearbyImages extends Component {
 
         if (photoIndex > -1) {
           if(renderedDates.indexOf(timeSortedPhotos[photoIndex].datetime.utc_timestamp.toDateString()) < 0) {
-            timelineList.push(<TinyTimeline key={timeSortedPhotos[photoIndex]._id._str + "_tinytimeline"} photos={timeSortedPhotos.slice(photoIndex-2, photoIndex+3)} photo={timeSortedPhotos[photoIndex]} />);
+
+            timelineList.push(<TinyTimeline key={timeSortedPhotos[photoIndex]._id._str + "_tinytimeline"} photos={timeSortedPhotos.slice(photoIndex-2, photoIndex+3)} highlightedPhoto={timeSortedPhotos[photoIndex]} />);
             renderedDates.push(timeSortedPhotos[photoIndex].datetime.utc_timestamp.toDateString());
             n = n + 1;
           }
@@ -64,6 +65,7 @@ export default class NearbyImages extends Component {
 NearbyImages.propTypes = {
   // This component gets the task to display through a React prop.
   // We can use propTypes to indicate it is required
-  photo: PropTypes.object.isRequired,
+  lat: PropTypes.number.isRequired,
+  lon: PropTypes.number.isRequired,
   photos: PropTypes.array.isRequired,
 };

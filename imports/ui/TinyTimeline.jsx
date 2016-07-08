@@ -14,9 +14,15 @@ export default class TinyTimeline extends Component {
 			<div className="tinyTimeline">
         <span>
           <span className="ellipsis">&hellip;</span>
-          <span className="tinyTimelineLabel">{moment(this.props.photo.datetime.utc_timestamp).format("M/D/YYYY")}</span>
+          <span className="tinyTimelineLabel">{moment(this.props.highlightedPhoto.datetime.utc_timestamp).format("M/D/YYYY")}</span>
         </span>
-        <Photo size={"160"} photos={this.props.photos} photo={this.props.photo}/>
+        {this.props.photos.map(function(img) {
+          if (img._id === this.props.highlightedPhoto._id) {
+            return(<div className="nearbyPhoto"><Photo photos={[img]} size="160" displayDuplicates={false} /></div>);
+          } else {
+            return(<div className="otherPhoto"><Photo photos={[img]} size="160" displayDuplicates={false} /></div>)
+          }
+        }, this)}
         <span>
           <span className="ellipsis">&hellip;</span>
         </span>
@@ -28,6 +34,6 @@ export default class TinyTimeline extends Component {
 TinyTimeline.propTypes = {
   // This component gets the task to display through a React prop.
   // We can use propTypes to indicate it is required
-  photo: PropTypes.object.isRequired,
+  highlightedPhoto: PropTypes.object.isRequired,
   photos: PropTypes.array.isRequired,
 };

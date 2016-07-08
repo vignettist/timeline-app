@@ -5,6 +5,10 @@ $sage: #D4DFC7;
 $mint: #96C0B7;
 $stone: #878E88;
 $redwood: #725752;
+$blaze: #EDBF26;
+
+$short-transition: 100ms;
+$medium-transition: 500ms;
 
 @import 'imports/datepicker';
 
@@ -225,6 +229,7 @@ button {
 	width: 100%;
 	display: flex;
 	justify-content: space-between;
+	height: 130px;
 
 	span {
 		display: block;
@@ -254,25 +259,57 @@ button {
 		margin-top: 10px;
 	}
 
-	.duplicateBlock {
-		display: block;
-		justify-content: center;
+	div {
+		margin: auto;
 
-		.timelinePhoto {
-			display: inline;
+		.duplicateBlock {
+			display: block;
+			justify-content: center;
+			margin: auto;
+			margin-left: 5px;
+			margin-right: 5px;
 
-			button {
-				display: inline;
+			.timelinePhoto {
+				display: block;
+				margin: auto;
 
-				img {
-					display: inline;
-					margin: 5px;
-					border-radius: 10px;
-					max-height: 100px;
-					border: 2px solid $redwood;
+				button {
+					display: block;
+					margin: auto;
+
+					img {
+						display: block;
+						margin: 5px;
+						border-radius: 10px;
+						max-height: 100px;
+						border: 2px solid $redwood;
+						transition: all $short-transition ease-in;
+					}
 				}
 			}
 		}
+	}
+
+	.nearbyPhoto {
+		.duplicateBlock .timelinePhoto button {
+			img {
+				border: 2px solid $blaze;
+				box-shadow: 0px 0px 15px 5px $blaze;
+				transition: all $short-transition ease-in;
+			} 
+
+			img:hover {
+				border: 2px solid $redwood;
+				box-shadow: 0px 0px 15px 5px $redwood;
+				transition: all $short-transition ease-in;
+			}
+		}
+	}
+
+	.timelinePhoto img:hover {
+		border: 2px solid $redwood;
+		box-shadow: 0px 0px 15px 5px $redwood;
+		transition: all $short-transition ease-in;
 	}
 }
 
@@ -376,4 +413,87 @@ button {
 .slide-right-appear.slide-right-appear-active {
   margin-right: 0px;
   transition:  margin-right 500ms ease-in;
+}
+
+.bigCalendarWrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.bigCalendar {
+	margin: auto;
+	display: flex-item;
+
+	.header {
+		font-weight: 600;
+		display: flex;
+
+		button {
+			display: inline-block;
+		}
+
+		width: 100%;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.week {
+		.day {
+			display: inline-block;
+			width: 100px;
+			height: 120px;
+			margin: 3px;
+			text-align: left;
+			background-color: $grass;
+			border-radius: 5px;
+			overflow: hidden;
+
+			ul {
+				list-style-type: none;
+				padding: 0;
+				margin: 0;
+				font-style: italic;
+				font-size: 75%;
+			}
+		}
+
+		.today {
+			font-weight: 50px;
+			font-size: 120%;
+		}
+
+		.different-month {
+			opacity: 0.5;
+		}
+
+		.empty {
+			background-color: $grass;
+		}
+
+		.light {
+			background-color: #FAEAA5;
+		}
+
+		.moderate {
+			background-color: #F6DC7B;
+		}
+
+		.high {
+			background-color: #F1CD50;
+		}
+
+		.extreme {
+			background-color: $blaze;
+		}
+	}
+
+	.names {
+		.day {
+			height: 25px;
+			background-color: $redwood;
+			color: $grass;
+			text-align: center;
+		}
+	}
 }

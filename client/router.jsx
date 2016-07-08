@@ -1,12 +1,19 @@
 import {mount} from 'react-mounter';
 import Timeline3Up from '../imports/ui/Timeline3Up.jsx';
 import SingleTimeline from '../imports/ui/SingleTimeline.jsx';
+import Calendar from '../imports/ui/Calendar.jsx';
 
 
 FlowRouter.route('/', {
   action() {
     FlowRouter.go('/timeline/2015-01-01');
   }
+});
+
+FlowRouter.route('/calendar/', {
+	action() {
+		FlowRouter.go('/calendar/2015-01-01');
+	}
 });
 
 FlowRouter.route('/timeline/:date', {
@@ -36,4 +43,22 @@ FlowRouter.route('/image/:imageId', {
     action: function(params) {
 		mount(SingleTimeline, {imageId: new Meteor.Collection.ObjectID(params.imageId)})
     }
+});
+
+FlowRouter.route('/calendar/:date', {
+	name: 'calendarView',
+
+	subscriptions: function(params) {
+		let date = moment(params.date);
+
+		let monthDate = date.clone().startOf("month");
+		let startDate = date.clone().startOf("month").add(0, "w").day("Sunday");
+		let endDate = date.clone().endOf("month").add(1, "w").day("Saturday");
+
+		this.register('months_photos', Meteor.subscribe('photos', new Date(startDate), new Date(endDate)));
+	},
+
+	action: function(params) {
+		mount(Calendar, {date: moment(params.date)})
+	}
 });

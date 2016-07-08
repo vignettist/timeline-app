@@ -35,6 +35,8 @@ class SingleTimeline extends Component {
     });
 
     if (highlightedImage.length > 0) {
+      console.log("#" + targetId._str + "_img_id");
+      console.log($("#" + targetId._str + "_img_id"));
       let positionOffset = $("#" + targetId._str + "_img_id").offset();
       // positionOffset = positionOffset
       console.log(positionOffset);
@@ -77,7 +79,7 @@ class SingleTimeline extends Component {
                   <ReactCSSTransitionGroup transitionName="fade" transitionAppear={true} transitionEnterTimeout={2000} transitionLeaveTimeout={2000}>
                     <SingleImage key={highlightedImage._id + "_bigimg"} photo={highlightedImage} photos={this.props.photos} topOffset={positionOffset}/>
                     <TimelineMap key={highlightedImage._id + "_map"} photos={this.props.photos} photo={highlightedImage} nearbyPhotos={this.props.photosNearby} />
-                    <NearbyImages key={highlightedImage._id + "_nearbyimg"} photo={highlightedImage} photos={this.props.photosNearby} />
+                    <NearbyImages key={highlightedImage._id + "_nearbyimg"} lat={highlightedImage.latitude} lon={highlightedImage.longitude} photos={this.props.photosNearby} />
                   </ReactCSSTransitionGroup>
                 </div>
               </span>
@@ -106,6 +108,22 @@ export default createContainer(({ imageId }) => {
     let photoLat = photo[0].latitude;
     let photoLon = photo[0].longitude;
     var nearbyPhotos = Photos.find({'latitude': {$gte: photoLat-0.025, $lt: photoLat+0.025}, 'longitude': {$gte: photoLon-0.025, $lt: photoLon+0.025}}).fetch();
+
+    let uniqueDates = _.uniq(Photos.find({'latitude': {$gte: photoLat-0.025, $lt: photoLat+0.025}, 'longitude': {$gte: photoLon-0.25, $lt: photoLon+0.025}}, {
+          sort: {'datetime.utc_timestamp': 1}, fields: {'datetime.utc_timestamp': true}
+      }).fetch().map(function(x) {
+          return x.datetime.utc_timestamp.toDateString();
+      }), true);
+
+    var dateQuery = [];
+
+    for(var i = 0; i < uniqueDates.length; i++) {
+      dateQuery.push({'datetime.utc_timestamp': {$gte: new Date(new Date(uniqueDates[i]).getTime() - new Date(uniqueDates[i]).getTimezoneOffset()*60*1000 - 0*1000*60*60*24), $lt: new Date(new Date(uniqueDates[i]).getTime() - new Date(uniqueDates[i]).getTimezoneOffset()*60*1000 + 1000*60*60*24)}});      
+    }
+
+    console.log(dateQuery);
+  
+    nearbyPhotos = Photos.find({$or: dateQuery}).fetch();
 
     let photoDate = photo[0].datetime.utc_timestamp;
     let startDate = new Date(photoDate.getTime() - 2*1000*60*60*24);
