@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo';
  
 export const Photos = new Mongo.Collection('images');
+export const Stories = new Mongo.Collection('stories');
 
 if (Meteor.isServer) {
 	// let start = new Date('2014-12-20T00:01:00Z');
@@ -10,7 +11,6 @@ if (Meteor.isServer) {
 		photo = Photos.find({'_id': imageId});
 		return photo;
 	})
-
 
 	Meteor.publish('photos', function photoPublication(startDate, endDate) {
 		return Photos.find({'datetime.utc_timestamp': { $gte: startDate, $lt: endDate}});
@@ -50,5 +50,17 @@ if (Meteor.isServer) {
 		}
 	
 		return Photos.find({$or: dateQuery});
-	})
+	});
+
+	Meteor.publish('stories', function allStories() {
+		return Stories.find({});
+	});
+
+	Meteor.publish('story_photos', function storyPhotos() {
+		let story = Stories.find({}).fetch()[0];
+		let photos = story.images_used;
+		console.log(Photos.find({'_id': {$in: photos}}).fetch());
+
+		return Photos.find({'_id': {$in: photos}});
+	});
 }

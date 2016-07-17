@@ -58,6 +58,7 @@ div.timeline, .bigImage {
 
 .highlightedImage {
 	flex-basis: 60%;
+	display: fixed;
 }
 
 .timeline {
@@ -495,5 +496,21 @@ button {
 			color: $grass;
 			text-align: center;
 		}
+	}
+}
+
+#story {
+	background-color: $grass;
+	width: 600px;
+	font-size: 16px;
+	border: 1px solid $stone;
+	margin: auto;
+	padding: 10px;
+	border-radius: 20px;
+	margin-top: 25px;
+	margin-bottom: 25px;
+
+	.duplicateBlock .timelinePhoto img {
+		max-width: 100%;
 	}
 }

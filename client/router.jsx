@@ -2,7 +2,7 @@ import {mount} from 'react-mounter';
 import Timeline3Up from '../imports/ui/Timeline3Up.jsx';
 import SingleTimeline from '../imports/ui/SingleTimeline.jsx';
 import Calendar from '../imports/ui/Calendar.jsx';
-
+import Story from '../imports/ui/Story.jsx';
 
 FlowRouter.route('/', {
   action() {
@@ -62,3 +62,16 @@ FlowRouter.route('/calendar/:date', {
 		mount(Calendar, {date: moment(params.date)})
 	}
 });
+
+FlowRouter.route('/story', {
+	name: 'storyView',
+
+	subscriptions: function(params) {
+		this.register('stories', Meteor.subscribe('stories'));
+		this.register('story_photos', Meteor.subscribe('story_photos'));
+	},
+
+	action: function(params) {
+		mount(Story);
+	}
+})
