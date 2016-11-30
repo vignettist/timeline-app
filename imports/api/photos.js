@@ -96,8 +96,6 @@ if (Meteor.isServer) {
 	});
 
 	Meteor.publish('clusters', function clustersByDate(startDate, endDate) {
-		console.log(startDate);
-
 		return Clusters.find({$and: [{'start_time.utc_timestamp': { $lt: endDate}}, {'end_time.utc_timestamp': {$gte: startDate}}]});
 	});
 
@@ -122,7 +120,6 @@ if (Meteor.isServer) {
 	Meteor.publish('story_photos', function storyPhotos() {
 		let story = Stories.find({}).fetch()[0];
 		let photos = story.images_used;
-		console.log(Photos.find({'_id': {$in: photos}}).fetch());
 
 		return Photos.find({'_id': {$in: photos}});
 	});
