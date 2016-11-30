@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
  import { Photos } from '../api/photos.js';
-import Timeline from './Timeline.jsx';
+import TimelineNoDupes from './TimelineNoDupes.jsx';
 
 var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 
@@ -63,9 +63,9 @@ class Timeline3Up extends Component {
         <main>
           <div className="timelines"> 
             <ReactCSSTransitionGroup ref="timelineTransitionGroup" transitionName={this.state.left ? "slide-left" : "slide-right"} transitionAppear={true} transitionEnterTimeout={500} transitionLeaveTimeout={500}>
-              <Timeline key={bound1.valueOf()} photos={this.props.photos} startDate={bound1} endDate={bound2} />
-              <Timeline key={bound2.valueOf()} photos={this.props.photos} startDate={bound2} endDate={bound3} />
-              <Timeline key={bound3.valueOf()} photos={this.props.photos} startDate={bound3} endDate={bound4} />
+              <TimelineNoDupes key={bound1.valueOf()} photos={this.props.photos} startDate={bound1} endDate={bound2} />
+              <TimelineNoDupes key={bound2.valueOf()} photos={this.props.photos} startDate={bound2} endDate={bound3} />
+              <TimelineNoDupes key={bound3.valueOf()} photos={this.props.photos} startDate={bound3} endDate={bound4} />
             </ReactCSSTransitionGroup>
           </div>
         </main>

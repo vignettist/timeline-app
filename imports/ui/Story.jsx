@@ -3,7 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import Photo from './Photo.jsx';
 import { Photos, Stories } from '../api/photos.js';
 
-export default class Story extends Component {
+export class Story extends Component {
 
   render() {
     console.log(this.props.stories);

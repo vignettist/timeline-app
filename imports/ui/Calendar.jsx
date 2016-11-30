@@ -45,7 +45,7 @@ var Week = React.createClass({
     }
 });
 
-export default class Calendar extends Component {
+export class Calendar extends Component {
   previous() {
     FlowRouter.go('/calendar/' + this.props.date.add(-1, "M").format('YYYY-MM-DD'));
   }

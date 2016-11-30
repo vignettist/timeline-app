@@ -9,18 +9,18 @@ export default class SingleImage extends Component {
   }
 
   componentDidMount() {
-    if ("topOffset" in this.props) {
-      offset = this.props.topOffset - 100;
-      $("html, body").animate({scrollTop: offset}, 500, "swing");
-    }
+    // if ("topOffset" in this.props) {
+    //   offset = this.props.topOffset - 100;
+    //   $("html, body").animate({scrollTop: offset}, 500, "swing");
+    // }
   }
 
   render() {
     let offset=0;
 
-    if ("topOffset" in this.props) {
-      offset = this.props.topOffset - 100;
-    }
+    // if ("topOffset" in this.props) {
+    //   offset = this.props.topOffset - 100;
+    // }
 
     let positions = this.props.photos.map(function(img) {
       return ([img.latitude, img.longitude]);

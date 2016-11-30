@@ -50,17 +50,9 @@ export default class Timeline extends Component {
       while ((dupe_prob > 0.2) && (i < ourPhotos.length-1)) {
         imgList.push(ourPhotos[i]);
 
-        console.log(i);
-        console.log(ourPhotos);
-
         fingerprint_sim = fingerprint_similarity(ourPhotos[i+1].syntactic_fingerprint, ourPhotos[i].syntactic_fingerprint);
         time_delta = (Date.parse(ourPhotos[i+1].datetime.utc_timestamp) - Date.parse(ourPhotos[i].datetime.utc_timestamp))/1000;
         dupe_prob = probability_of_duplicate(fingerprint_sim, time_delta);
-
-        console.log(ourPhotos[i]);
-        console.log(fingerprint_sim);
-        console.log(time_delta);
-        console.log(dupe_prob);
 
         i++;
       }

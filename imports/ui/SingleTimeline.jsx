@@ -77,9 +77,8 @@ class SingleTimeline extends Component {
                   <div className="offset" style={{height: positionOffset - 100}}>
                    </div>
                   <ReactCSSTransitionGroup transitionName="fade" transitionAppear={true} transitionEnterTimeout={2000} transitionLeaveTimeout={2000}>
-                    <SingleImage key={highlightedImage._id + "_bigimg"} photo={highlightedImage} photos={this.props.photos} topOffset={positionOffset}/>
+                    <SingleImage key={highlightedImage._id + "_bigimg"} photo={highlightedImage} photos={this.props.photos}/>
                     <TimelineMap key={highlightedImage._id + "_map"} photos={this.props.photos} photo={highlightedImage} nearbyPhotos={this.props.photosNearby} />
-                    <NearbyImages key={highlightedImage._id + "_nearbyimg"} lat={highlightedImage.latitude} lon={highlightedImage.longitude} photos={this.props.photosNearby} />
                   </ReactCSSTransitionGroup>
                 </div>
               </span>
