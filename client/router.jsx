@@ -36,7 +36,7 @@ FlowRouter.route('/timeline/:date', {
     	this.register('photos', Meteor.subscribe('photos', startDate, endDate));
     },
 	action: function(params) {
-		mount(Timeline3Up, {date: moment(params.date)})
+		mount(Timeline3Up, {date: moment.utc(params.date)})
 	}
 });
 
@@ -81,7 +81,7 @@ FlowRouter.route('/calendar/:date', {
 	},
 
 	action: function(params) {
-		mount(Calendar, {date: moment(params.date)})
+		mount(Calendar, {date: moment.utc(params.date)})
 	}
 });
 
@@ -98,7 +98,7 @@ FlowRouter.route('/clusters/:date', {
 	},
 
 	action: function(params) {
-		mount(ClusterCalendar, {date: moment(params.date)})
+		mount(ClusterCalendar, {date: moment.utc(params.date)})
 	}
 });
 

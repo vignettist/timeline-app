@@ -3,6 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import {Clusters, Photos} from '../api/photos.js';
 import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
+import PhotoFaces from './PhotoFaces.jsx';
 
 export class ClusterTimeline extends Component {
 
@@ -16,15 +17,18 @@ export class ClusterTimeline extends Component {
 
    var photo_list = this.props.photos.map(function(img) {
     var t = new moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
+    console.log(img);
 
-    return (<div class="cluster-debug-row">
-      <div class="cluster-debug-image">
-        <img src={'http://localhost:3022/' + img.resized_uris['640']} />
+    return (<div className="cluster-debug-row">
+      <div className="cluster-debug-info">
+        <div className="cluster-debug-time">
+          {t.format("h:mm:ss a dddd, MMM D YYYY")}
+        </div>
+        <div className="cluster-debug-faces">
+          {img.openfaces.length} faces
+        </div>
       </div>
-      <div class="cluster-debug-time">
-        {t.format("h:mm:ss a dddd, MMM D YYYY")}
-        H: {t.hour()}
-      </div>
+      <PhotoFaces photo={img} displayDuplicates={false} size="640" />
     </div>);
    })
 

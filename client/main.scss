@@ -14,7 +14,7 @@ $medium-transition: 500ms;
 
 body {
 	margin: 0px;
-	background-color: $sage;
+	background-color: white;
 	font-family: 'Titillium Web', sans-serif;
 	color: $redwood;
 }
@@ -624,7 +624,7 @@ button {
 	justify-content: center;
 	position: absolute;
 	border-radius: 0.5em;
-	background-color: #62c3fe;
+	background-color: #b5d0d0;
 	bottom: 10px;
 	transition: 1s;
 	min-width: 5%;
@@ -637,6 +637,10 @@ button {
 	justify-content: flex-start;
 	box-shadow: 3px 3px 6px gray;
 	border: 2px solid #4283be;
+
+	.leaflet-control-zoom {
+		display: none;
+	}
 }
 
 .event-singleton {
@@ -692,7 +696,7 @@ a {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: calc(100% - 1em);
+	width: 100%;
 }
 
 .cluster-description {
@@ -712,9 +716,16 @@ a {
 	// // border: 1px solid black;
 	// border-radius: 0.5em;
 	// width: calc(50% - 0.5em);
-    height: calc(100% - 10px);
+    height: 100%;
     position: relative;
-    flex-basis:  calc(50% - 75px - 1em);;
+    flex-basis:  calc(50% - 75px - 1em);
+    margin-right: 0em;
+
+    .leaflet-container {
+    	z-index: 0;
+    	border-top-right-radius: 0.5em;
+    	border-bottom-right-radius: 0.5em;
+    }
 }
 
 .cluster-images {
@@ -726,13 +737,13 @@ a {
 	flex-basis: calc(50% - 75px - 1em);
 	align-self: center;
 	align-items: center;
-}
 
-.cluster-images img {
-	max-height: 100%;
-	max-width: 30%;
-	border-radius: 0.5em;
-	margin-right: 1em;
+	img {
+		max-height: 100%;
+		max-width: 30%;
+		border-radius: 0.5em;
+		margin-right: 1em;
+	}
 }
 
 .leaflet-control-attribution {
@@ -741,4 +752,16 @@ a {
 
 .cluster-debug-row {
 	display: flex;
+	align-items: center;
+	margin-left: 2em;
+	margin-top: 1em;
+	background-color: #b5d0d0;
+}
+
+.cluster-debug-info {
+	margin-right: 1em;
+}
+
+.duplicateBlock {
+	position: relative;
 }

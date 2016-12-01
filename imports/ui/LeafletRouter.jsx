@@ -22,8 +22,8 @@ export default class LeafletRouter extends MapLayer {
 
       lineOptions: {
         addWaypoints: false, 
-        styles: [{color: color, opacity: 1.0, weight: 6}, {color: 'white', opacity: 1.0, weight: 1}],
-        missingRouteStyles: [{color: color, opacity: 1.0, weight: 6}, {color: 'white', opacity: 1.0, weight: 1}]
+        styles: [{color: 'black', opacity:1.0, weight: 7}, {color: color, opacity: 1.0, weight: 5}, {color: 'white', opacity: 1.0, weight: 1}],
+        missingRouteStyles: [{color: 'black', opacity: 1.0, weight: 7}, {color: color, opacity: 1.0, weight: 6}, {color: 'white', opacity: 1.0, weight: 1}]
       },
 
       router: (new L.Routing.Mapbox(Meteor.settings.public.mapbox, 
@@ -31,7 +31,7 @@ export default class LeafletRouter extends MapLayer {
 
       fitSelectedRoutes: false
     }).addTo(map);
-
+    //
   }
 
   render() {

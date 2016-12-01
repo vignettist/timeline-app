@@ -41,10 +41,10 @@ export default class PhotoFaces extends Component {
 
         // hacky hardcoded scale factors
         var style = {
-          width: face.rect[2] * 0.3125,
-          height: face.rect[3] * 0.3125,
-          left: face.rect[0] * 0.3125,
-          top: face.rect[1] * 0.3125
+          width: face.rect[2] * 0.5,
+          height: face.rect[3] * 0.5,
+          left: face.rect[0] * 0.5,
+          top: face.rect[1] * 0.5
         };
 
         return <div className="highlightBox" style={style} onClick={() => FlowRouter.go('/image/' + img._id._str + '/face/' + facen, {})}></div>;
@@ -67,7 +67,7 @@ export default class PhotoFaces extends Component {
 PhotoFaces.propTypes = {
   // This component gets the task to display through a React prop.
   // We can use propTypes to indicate it is required
-  photo: PropTypes.array.isRequired,
+  photo: PropTypes.object.isRequired,
   size: PropTypes.string.isRequired,
   displayDuplicates: PropTypes.bool.isOptional
 };

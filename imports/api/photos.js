@@ -113,7 +113,7 @@ if (Meteor.isServer) {
 			}
 		}
 
-		return Photos.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1}});
+		return Photos.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
 
 	});
 
@@ -133,6 +133,6 @@ if (Meteor.isServer) {
 			id_or_statement.push({'_id': photo_ids[j]});
 		}
 
-		return Photos.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1}});
+		return Photos.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
 	})
 }

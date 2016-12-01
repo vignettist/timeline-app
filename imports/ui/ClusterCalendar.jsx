@@ -61,16 +61,20 @@ export class ClusterCalendar extends Component {
     var cluster_photos = this.props.photos;
 
     var timespans = this.props.clusters.map(function(e) {
-      var local_start = new moment(e.start_time.utc_timestamp).utcOffset(e.start_time.tz_offset/60)
+      var local_start = new moment(e.start_time.utc_timestamp).utcOffset(e.start_time.tz_offset/60);
       var local_end = new moment(e.end_time.utc_timestamp).utcOffset(e.end_time.tz_offset/60);
+
+      var local_display_start = start_date.clone().utcOffset(e.start_time.tz_offset/60);
 
       var cluster_height = local_end.unix() - local_start.unix();
       cluster_height /= (60*60*24*5);
       cluster_height *= 100;
 
-      var top = local_start.unix() - start_date.clone().subtract(2, 'days').unix();
-      top /= (60*60*24*5);
-      top *= 100;
+      // have to manually correct for time zones
+      var top = local_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + e.start_time.tz_offset;
+      top /= (60*60*24);
+
+      top *= 20;
 
       var zindex = (400 - (new moment(e.start_time.utc_timestamp).dayOfYear()))*24 - new moment(e.start_time.utc_timestamp).hour();
       var event_styles = {height: cluster_height.toString() + "%", top: top.toString() + "%", zIndex: zindex};
@@ -80,6 +84,7 @@ export class ClusterCalendar extends Component {
       });
 
       if (e.photos.length > 1) {
+        // 
         return (
           <div key={e._id._str} className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
             <Cluster cluster={e} photos={photos_in_event}/>
