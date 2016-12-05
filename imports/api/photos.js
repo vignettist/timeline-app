@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo';
  
 export const Photos = new Mongo.Collection('images');
+export const LogicalImages = new Mongo.Collection('logical_images');
 export const Stories = new Mongo.Collection('stories');
 export const Clusters = new Mongo.Collection('clusters');
 // export const Similarity = new Mongo.Collection('Similarity');
@@ -99,6 +100,10 @@ if (Meteor.isServer) {
 		return Clusters.find({$and: [{'start_time.utc_timestamp': { $lt: endDate}}, {'end_time.utc_timestamp': {$gte: startDate}}]});
 	});
 
+	Meteor.publish('cluster', function clusterById(id) {
+		return Clusters.find({'_id': id});
+	})
+
 	Meteor.publish('cluster_photos', function clusterPhotosByDate(startDate, endDate) {
 
 		// shitty left join. this should be denormalized, in all likelihood
@@ -113,8 +118,7 @@ if (Meteor.isServer) {
 			}
 		}
 
-		return Photos.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
-
+		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
 	});
 
 	Meteor.publish('story_photos', function storyPhotos() {
@@ -126,13 +130,13 @@ if (Meteor.isServer) {
 
 	Meteor.publish('single_cluster_photos', function clusterPhotos(clusterId) {
 		let cluster = Clusters.find({'_id': clusterId}).fetch();
-		let id_or_statement = []
+		let id_or_statement = [];
 		let photo_ids = cluster[0].photos;
 
 		for (var j = 0; j < photo_ids.length; j++) {
 			id_or_statement.push({'_id': photo_ids[j]});
 		}
 
-		return Photos.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
+		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'all_photos': 1}});
 	})
 }

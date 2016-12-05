@@ -1,54 +1,96 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
-import {Clusters, Photos} from '../api/photos.js';
+import {Clusters, Photos, LogicalImages} from '../api/photos.js';
 import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
 import PhotoFaces from './PhotoFaces.jsx';
+import ClusterMap from './ClusterMap.jsx';
 
 export class ClusterTimeline extends Component {
 
   constructor(props) {
     super(props);
+
+    this.state = {
+      zoomTo: -1
+    }
+  }
+
+  // add state for zoomTo position
+  // zoomTo = new prop on the ClusterMap
+
+  handleScroll() {
+    var scrollTop = $(window).scrollTop();
+    var newZoomTo = Math.round(scrollTop/516);
+
+    if (newZoomTo != this.state.zoomTo) {
+      this.setState({zoomTo: newZoomTo});
+      console.log(this.state);
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll.bind(this));
   }
 
   render() {
-   
-   console.log(this.props.photos);
 
-   var photo_list = this.props.photos.map(function(img) {
-    var t = new moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
-    console.log(img);
+ if (FlowRouter.subsReady()) {
+    var photo_list = this.props.photos.map(function(img) {
+      var t = new moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
+      var alternate_lists = [];
 
-    return (<div className="cluster-debug-row">
-      <div className="cluster-debug-info">
+      if (img.all_photos.length > 0) {
+        var alternate_lists = img.all_photos.map(function(img2) {
+          return <PhotoFaces key={img2._id._str} photo={img2} displayDuplicates={false} size="640" />
+        });
+      }
+
+      return (<div className="cluster-debug-row">
+        <div className="cluster-debug-info">
         <div className="cluster-debug-time">
-          {t.format("h:mm:ss a dddd, MMM D YYYY")}
+        {t.format("h:mm:ss a dddd, MMM D YYYY")}
         </div>
         <div className="cluster-debug-faces">
-          {img.openfaces.length} faces
+        {img.openfaces.length} faces
         </div>
-      </div>
-      <PhotoFaces photo={img} displayDuplicates={false} size="640" />
-    </div>);
-   })
-
-    return (
-        <div className="cluster-debug-timeline">
-          {photo_list}
         </div>
+        <PhotoFaces photo={img} displayDuplicates={false} size="640" />
+        {alternate_lists}
+        </div>);
+      }
     );
-  }
+
+    if (this.props.cluster.length > 0) {
+      var clustermap = (<ClusterMap cluster={this.props.cluster[0]} photos={this.props.photos} zoomTo={this.state.zoomTo} popup={true}/>);
+    } else {
+      var clustermap = [];
+    }
+
+   return (
+    <div className="cluster-debug-timeline">
+      <div className="cluster-debug-map">
+        {clustermap}
+      </div>
+    {photo_list}
+    </div>
+    );
+ } else {
+  return <div className="loading">Loading</div>
+ }
+}
 
 }
- 
+
 ClusterTimeline.propTypes = {
-  // story_photos: PropTypes.array.isRequired,
-  photos: PropTypes.array.isRequired
+  photos: PropTypes.array.isRequired,
+  cluster: PropTypes.object.isRequired
 };
 
 export default createContainer(() => {
   return {
-    photos: Photos.find({}).fetch()
+    photos: LogicalImages.find({}).fetch(),
+    cluster: Clusters.find({}).fetch()
   };
 
 }, ClusterTimeline);

@@ -697,6 +697,28 @@ a {
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
+
+	.cluster-map {
+		// background-color: #62c3fe;
+		// width: 400px;
+		// position: absolute;
+		// height: 170px;
+		// left: 575px;
+		// top: -30px;
+		// // border: 1px solid black;
+		// border-radius: 0.5em;
+		// width: calc(50% - 0.5em);
+	    height: 100%;
+	    position: relative;
+	    flex-basis:  calc(50% - 75px - 1em);
+	    margin-right: 0em;
+
+	    .leaflet-container {
+	    	z-index: 0;
+	    	border-top-right-radius: 0.5em;
+	    	border-bottom-right-radius: 0.5em;
+	    }
+	}
 }
 
 .cluster-description {
@@ -704,28 +726,6 @@ a {
 	margin-right: 1em;
 	margin-left: 1em;
 	flex-basis: auto;
-}
-
-.cluster-map {
-	// background-color: #62c3fe;
-	// width: 400px;
-	// position: absolute;
-	// height: 170px;
-	// left: 575px;
-	// top: -30px;
-	// // border: 1px solid black;
-	// border-radius: 0.5em;
-	// width: calc(50% - 0.5em);
-    height: 100%;
-    position: relative;
-    flex-basis:  calc(50% - 75px - 1em);
-    margin-right: 0em;
-
-    .leaflet-container {
-    	z-index: 0;
-    	border-top-right-radius: 0.5em;
-    	border-bottom-right-radius: 0.5em;
-    }
 }
 
 .cluster-images {
@@ -753,9 +753,10 @@ a {
 .cluster-debug-row {
 	display: flex;
 	align-items: center;
-	margin-left: 2em;
 	margin-top: 1em;
 	background-color: #b5d0d0;
+	margin-left: 600px;
+	height: 500px;
 }
 
 .cluster-debug-info {
@@ -764,4 +765,15 @@ a {
 
 .duplicateBlock {
 	position: relative;
+}
+
+.cluster-debug-timeline {
+	.cluster-debug-map {
+		width: 600px;
+		height: 600px;
+		position: fixed;
+		top: 1em;
+	}
+
+	margin-bottom: 2000px;
 }

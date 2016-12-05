@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
-import {Clusters, Photos} from '../api/photos.js';
+import {Clusters, Photos, LogicalImages} from '../api/photos.js';
 import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
 
@@ -137,7 +137,7 @@ ClusterCalendar.propTypes = {
 export default createContainer(() => {
   return {
     clusters: Clusters.find({}).fetch(),
-    photos: Photos.find({}).fetch()
+    photos: LogicalImages.find({}).fetch()
   };
 
 }, ClusterCalendar);

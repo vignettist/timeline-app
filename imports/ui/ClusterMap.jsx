@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { Map, Marker, Polyline, TileLayer, CircleMarker } from 'react-leaflet';
+import { Map, Marker, Polyline, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import LeafletRouter from './LeafletRouter.jsx';
 import L from 'leaflet';
 
@@ -83,21 +83,52 @@ export default class ClusterMap extends Component {
       iconRetinaUrl: '/icons/image_marker_2x.png',
       iconSize: [12, 12],
       iconAnchor: [6, 6],
-      popupAnchor: [-3, -76]
+      popupAnchor: [0, -6]
     });
 
+    var myIconHighlighted = L.icon({
+      iconUrl: '/icons/image_marker_highlighted.png',
+      iconRetinaUrl: '/icons/image_marker_highlighted_2x.png',
+      iconSize: [12, 12],
+      iconAnchor: [6, 6],
+      popupAnchor: [0, -6]
+    });
+
+
     for (var i = 0; i < reversed_coords.length; i++) {
-      // var corrected_time = new moment(this.props.photos[i].datetime.utc_timestamp).add(this.props.photos[i].datetime.tz_offset/60, "minutes");
 
+      var popup = [];
 
-      image_markers.push(<Marker position={reversed_coords[i]} icon={myIcon}/>)
-      // image_markers.push(<CircleMarker center={reversed_coords[i]} radius={6} weight={2} color={color} opacity={0.7} fillColor='white' fillOpacity={0.7} zIndex={1000}/>);
+      if (this.props.popup) {
+        popup = <Popup>
+              <span style={{width: "320px"}}><img src={"http://localhost:3022/" + this.props.photos[i].resized_uris["320"]} /></span>
+            </Popup>;
+      }
+
+      if (("zoomTo" in this.props) && (this.props.zoomTo == i) ) {
+        image_markers.push(
+          <Marker position={reversed_coords[i]} icon={myIconHighlighted} zIndexOffset={5000}>
+            {popup}
+          </Marker>);
+      } else {
+        image_markers.push(<Marker position={reversed_coords[i]} icon={myIcon} zIndexOffset={-5000}>
+            {popup}
+          </Marker>);
+      }
+
     }
 
-    var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
-    var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
-    var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
-    var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
+    if (("zoomTo" in this.props) && (this.props.zoomTo >= 0)) {
+      var min_latitude = this.props.cluster.locations.coordinates[this.props.zoomTo][1] - 0.004;
+      var max_latitude = this.props.cluster.locations.coordinates[this.props.zoomTo][1] + 0.004;
+      var min_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] - 0.004;
+      var max_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] + 0.004;
+    } else {
+      var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
+      var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
+      var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
+      var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
+    }
 
     return (
           <Map key={this.props.cluster._id + "_map"} bounds={[[min_latitude, min_longitude], [max_latitude, max_longitude]]}>
@@ -110,6 +141,7 @@ export default class ClusterMap extends Component {
             {cluster_path}
           </Map>
         );       
+   
   }
 }
  
@@ -117,6 +149,8 @@ ClusterMap.propTypes = {
   // This component gets the task to display through a React prop.
   // We can use propTypes to indicate it is required
   cluster: PropTypes.object.isRequired,
-  photos: PropTypes.array.isRequired
+  photos: PropTypes.array.isRequired,
+  zoomTo: PropTypes.number.isOptional,
+  popup: PropTypes.bool.isOptional
 };
 

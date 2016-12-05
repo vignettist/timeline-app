@@ -120,6 +120,7 @@ FlowRouter.route('/cluster/:clusterid', {
 
 	subscriptions: function(params) {
 		this.register('single_cluster_photos', Meteor.subscribe('single_cluster_photos', new Meteor.Collection.ObjectID(params.clusterid)));
+		this.register('cluster', Meteor.subscribe('cluster', new Meteor.Collection.ObjectID(params.clusterid)));
 	},
 
 	action: function(params) {

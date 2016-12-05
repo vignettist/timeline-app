@@ -36,8 +36,6 @@ export default class PhotoFaces extends Component {
 
     if (faces.length > 0) {
       faceboxes = faces.map(function(face, facen) {
-        console.log(face);
-        console.log(facen)
 
         // hacky hardcoded scale factors
         var style = {
