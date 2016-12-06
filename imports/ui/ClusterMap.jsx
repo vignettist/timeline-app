@@ -59,6 +59,8 @@ export default class ClusterMap extends Component {
 
       var distance = Math.sqrt(Math.pow(reversed_coords[i][0] - start_coords[0], 2) + Math.pow(reversed_coords[i][1] - start_coords[1], 2));
 
+      var opacity = Math.min(1.0, Math.pow(0.01/distance, 0.5));
+
       if (distance > 0.005) {
         if (distance > 0.02) {
           var profile = 'mapbox/driving';
@@ -66,11 +68,11 @@ export default class ClusterMap extends Component {
           var profile = 'mapbox/walking';
         }
 
-        cluster_path.push(<LeafletRouter from={start_coords} to={reversed_coords[i]} profile={profile} color={color}/>);
+        cluster_path.push(<LeafletRouter from={start_coords} to={reversed_coords[i]} profile={profile} color={color} opacity={opacity}/>);
       } else {
-        cluster_path.push(<Polyline positions={[start_coords, reversed_coords[i]]} color='black' opacity={1.0} weight={7} zIndex={1}/>);
-        cluster_path.push(<Polyline positions={[start_coords, reversed_coords[i]]} color={color} opacity={1.0} weight={6} zIndex={1} />);
-        cluster_path.push(<Polyline positions={[start_coords, reversed_coords[i]]} color='white' opacity={1.0} weight={1} zIndex={1}/>);
+        cluster_path.push(<Polyline positions={[start_coords, reversed_coords[i]]} color='black' opacity={opacity} weight={7} zIndex={1}/>);
+        cluster_path.push(<Polyline positions={[start_coords, reversed_coords[i]]} color={color} opacity={opacity} weight={6} zIndex={1} />);
+        cluster_path.push(<Polyline positions={[start_coords, reversed_coords[i]]} color='white' opacity={opacity} weight={1} zIndex={1}/>);
       }
 
       start_coords = reversed_coords[i];
@@ -125,7 +127,13 @@ export default class ClusterMap extends Component {
       var max_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] + 0.004;
     } else {
       var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
-      var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
+      
+      if (this.props.offset) {
+        var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 4.00;
+      } else {
+        var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
+      }
+
       var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
       var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
     }
@@ -151,6 +159,7 @@ ClusterMap.propTypes = {
   cluster: PropTypes.object.isRequired,
   photos: PropTypes.array.isRequired,
   zoomTo: PropTypes.number.isOptional,
-  popup: PropTypes.bool.isOptional
+  popup: PropTypes.bool.isOptional,
+  offset: PropTypes.bool.isOptional
 };
 

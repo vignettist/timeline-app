@@ -77,22 +77,43 @@ export class ClusterCalendar extends Component {
       top *= 20;
 
       var zindex = (400 - (new moment(e.start_time.utc_timestamp).dayOfYear()))*24 - new moment(e.start_time.utc_timestamp).hour();
-      var event_styles = {height: cluster_height.toString() + "%", top: top.toString() + "%", zIndex: zindex};
+      var event_styles = {height: "calc(" + cluster_height.toString() + "% + 13px)", top: "calc(" + top.toString() + "% - 10px)", zIndex: zindex};
       var event_photos = e.photos.map(function(x) { return x._str; });
       var photos_in_event = cluster_photos.filter(function(p) {
         return (event_photos.indexOf(p._id._str) >= 0);
       });
 
+      var photo_markers = e.times.map(function(t, i) {
+        var marker_start = new moment(t.utc_timestamp).utcOffset(t.tz_offset/60);
+
+        var marker_top = marker_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + t.tz_offset;
+        marker_top /= (60*60*24);
+        marker_top *= 20;
+
+        console.log(marker_top);
+
+        var marker_style = {top: "calc(" + marker_top.toString() + "% - 5px)"};
+
+        return <div key={e._id._str + "_marker_" + i.toString()} className="photo-marker" style={marker_style}></div>
+
+      }, this);
+
       if (e.photos.length > 1) {
         // 
         return (
+          <div>
           <div key={e._id._str} className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
             <Cluster cluster={e} photos={photos_in_event}/>
+          </div>
+          {photo_markers}
           </div>);
       } else {
-        return (<div key={e._id._str} className="event-singleton" style={event_styles}>
+        return (<div>
+          <div key={e._id._str} className="event-singleton" style={event_styles}>
             <Cluster cluster={e} photos={photos_in_event}/>
-          </div> )
+          </div>
+          {photo_markers}
+          </div>)
       }
     }, this);
 
@@ -105,7 +126,7 @@ export class ClusterCalendar extends Component {
         var modified_date = this.props.date.clone().add(i ,'days');
       }
 
-      date_grid.push(<div className="weekday"><div>{modified_date.format("dddd, MMM D")}</div></div>);
+      date_grid.push(<div className="weekday" key={modified_date.format("dddd-MMM-D-YYYY")}><div>{modified_date.format("dddd, MMM D")}</div></div>);
     }
 
     return (

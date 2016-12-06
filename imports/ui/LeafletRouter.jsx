@@ -5,7 +5,7 @@ import 'leaflet-routing-machine';
 export default class LeafletRouter extends MapLayer {
   componentWillMount() {
     super.componentWillMount();
-    const {map, from, to, profile, color} = this.props;
+    const {map, from, to, profile, color, opacity} = this.props;
 
     this.leafletElement = L.Routing.control({
       position: 'topleft',
@@ -22,8 +22,11 @@ export default class LeafletRouter extends MapLayer {
 
       lineOptions: {
         addWaypoints: false, 
-        styles: [{color: 'black', opacity:1.0, weight: 7}, {color: color, opacity: 1.0, weight: 5}, {color: 'white', opacity: 1.0, weight: 1}],
-        missingRouteStyles: [{color: 'black', opacity: 1.0, weight: 7}, {color: color, opacity: 1.0, weight: 6}, {color: 'white', opacity: 1.0, weight: 1}]
+        // styles: [{color: color, opacity: opacity, weight: 5}, {color: 'white', opacity: opacity, weight: 1}],
+        // missingRouteStyles: [{color: color, opacity: opacity, weight: 6}, {color: 'white', opacity: opacity, weight: 1}]
+
+        styles: [{color: 'black', opacity:opacity, weight: 7}, {color: color, opacity: opacity, weight: 5}, {color: 'white', opacity: opacity, weight: 1}],
+        missingRouteStyles: [{color: 'black', opacity: opacity, weight: 7}, {color: color, opacity: opacity, weight: 6}, {color: 'white', opacity: opacity, weight: 1}]
       },
 
       router: (new L.Routing.Mapbox(Meteor.settings.public.mapbox, 

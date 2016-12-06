@@ -54,7 +54,7 @@ export default class Cluster extends Component {
           {render_images}
         </div>
         <div className="cluster-map">
-          <ClusterMap cluster={this.props.cluster} photos={this.props.photos}/>
+          <ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={true}/>
         </div>
         </div>);
     } else {
