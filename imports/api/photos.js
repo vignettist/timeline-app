@@ -118,7 +118,7 @@ if (Meteor.isServer) {
 			}
 		}
 
-		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
+		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'geolocation': 1, 'size': 1}});
 	});
 
 	Meteor.publish('story_photos', function storyPhotos() {
@@ -137,6 +137,6 @@ if (Meteor.isServer) {
 			id_or_statement.push({'_id': photo_ids[j]});
 		}
 
-		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'all_photos': 1}});
+		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'all_photos': 1, 'geolocation': 1, 'size': 1}});
 	})
 }

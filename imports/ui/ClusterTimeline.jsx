@@ -36,29 +36,44 @@ export class ClusterTimeline extends Component {
   render() {
 
  if (FlowRouter.subsReady()) {
-    var photo_list = this.props.photos.map(function(img) {
+    var photo_list = this.props.photos.map(function(img, i) {
       var t = new moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
       var alternate_lists = [];
 
       if (img.all_photos.length > 0) {
         var alternate_lists = img.all_photos.map(function(img2) {
-          return <PhotoFaces key={img2._id._str} photo={img2} displayDuplicates={false} size="640" />
+          return <PhotoFaces key={img2._id._str} photo={img2} displayDuplicates={false} size="320" />
         });
       }
 
-      return (<div className="cluster-debug-row">
-        <div className="cluster-debug-info">
-        <div className="cluster-debug-time">
-        {t.format("h:mm:ss a dddd, MMM D YYYY")}
-        </div>
-        <div className="cluster-debug-faces">
-        {img.openfaces.length} faces
-        </div>
-        </div>
-        <PhotoFaces photo={img} displayDuplicates={false} size="640" />
-        {alternate_lists}
-        </div>);
+      if (i == this.state.zoomTo) {
+        var cluster_class = " highlighted";
+      } else {
+        var cluster_class = "";
       }
+
+      console.log(img.geolocation);
+
+      return (<div className={"cluster-debug-row" + cluster_class}>
+          <div className="cluster-debug-info">
+            <div className="cluster-debug-time">
+              {t.format("h:mm:ss a dddd, MMM D YYYY")}
+            </div>
+            <div className="cluster-debug-faces">
+              {img.openfaces.length} faces
+            </div>
+            <div className="cluster-debug-geo">
+              {img.geolocation.results[1].formatted_address}
+            </div>
+          </div>
+
+          <PhotoFaces photo={img} displayDuplicates={false} size="640" />
+
+          <div className="cluster-debug-alternates">
+            {alternate_lists}
+          </div>
+        </div>);
+      }, this
     );
 
     if (this.props.cluster.length > 0) {

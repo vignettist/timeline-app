@@ -757,10 +757,21 @@ a {
 	background-color: #b5d0d0;
 	margin-left: 600px;
 	height: 500px;
+
+	.face-photo {
+		height: 100%;
+		position: relative;
+		
+		img {
+			max-height: 100%;
+			width: auto;
+		}
+	}
 }
 
 .cluster-debug-info {
 	margin-right: 1em;
+	width: 200px;
 }
 
 .duplicateBlock {
@@ -776,4 +787,9 @@ a {
 	}
 
 	margin-bottom: 2000px;
+}
+
+.highlighted {
+	background-color: #0090ff;
+	color: white;
 }

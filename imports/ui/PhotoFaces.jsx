@@ -5,31 +5,23 @@ export default class PhotoFaces extends Component {
         super(props);
 
         this.state = {
-            expanded: false,
+            scale: 0.5,
         }
     }
 
-	expandThisDuplicate() {
-        this.setState({
-            expanded: !this.state.expanded,
-        })	}
-
-  selectFace(img, facen) {
-    console.log('routing to select image');
+  getHeight(element) {
+    // something bad has happened where the size values in the database no longer reflect the true, rotated height/width
+    if (element) {
+      var rendered_height = element.clientHeight;
+      if (this.state.scale != rendered_height/960) {
+        this.setState({scale: rendered_height/960});
+      }
+    }
   }
 
   render() {
-    let duplicateBlockClass = this.state.expanded ? "duplicateBlock expanded" : "duplicateBlock";
-
-    var selectImage = this.selectImage;
-
-    var displayDuplicates = false;
 
     var img = this.props.photo;
-
-    if ("displayDuplicates" in this.props) {
-      displayDuplicates = this.props.displayDuplicates;
-    }
 
     let faces = this.props.photo.openfaces;
     let faceboxes = [];
@@ -39,23 +31,19 @@ export default class PhotoFaces extends Component {
 
         // hacky hardcoded scale factors
         var style = {
-          width: face.rect[2] * 0.5,
-          height: face.rect[3] * 0.5,
-          left: face.rect[0] * 0.5,
-          top: face.rect[1] * 0.5
+          width: face.rect[2] * this.state.scale,
+          height: face.rect[3] * this.state.scale,
+          left: face.rect[0] * this.state.scale,
+          top: face.rect[1] * this.state.scale
         };
 
         return <div className="highlightBox" style={style} onClick={() => FlowRouter.go('/image/' + img._id._str + '/face/' + facen, {})}></div>;
-      });
+      }, this);
     }
 
     return (
-      <div className={duplicateBlockClass}>
-	      <div className="timelinePhoto">
-          <button key={this.props.photo._id + "_button"}>
-            <img id={this.props.photo._id + "_img_id" + (this.props.size === "160" ? "_tiny" : "")} key={this.props.photo._id + "_img"} src={"http://localhost:3022/" + this.props.photo.resized_uris[this.props.size]} />
-          </button>
-        </div>
+      <div className="face-photo">
+        <img ref={this.getHeight.bind(this)} id={this.props.photo._id + "_img_id" + (this.props.size === "160" ? "_tiny" : "")} key={this.props.photo._id + "_img"} src={"http://localhost:3022/" + this.props.photo.resized_uris[this.props.size]} />
         {faceboxes}
       </div>
     );
@@ -66,6 +54,5 @@ PhotoFaces.propTypes = {
   // This component gets the task to display through a React prop.
   // We can use propTypes to indicate it is required
   photo: PropTypes.object.isRequired,
-  size: PropTypes.string.isRequired,
-  displayDuplicates: PropTypes.bool.isOptional
+  size: PropTypes.string.isRequired
 };
