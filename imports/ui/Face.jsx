@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
-import { Photos } from '../api/photos.js';
+import { LogicalImages } from '../api/photos.js';
 
 
 var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
@@ -40,7 +40,7 @@ Face.propTypes = {
 
 export default createContainer(() => {
   return {
-    photo: Photos.find({}).fetch(),
+    photo: LogicalImages.find({}).fetch(),
   };
 
 }, Face);

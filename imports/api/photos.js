@@ -37,10 +37,10 @@ if (Meteor.isServer) {
 	});
 
 	Meteor.publish('faces_like', function photosWithFacesLike(imageId, facen) {
-		let photo = Photos.find({'_id': imageId}).fetch();
+		let photo = LogicalImages.find({'_id': imageId}).fetch();
 		var face = photo[0].openfaces[facen].rep;
 
-		var aggregate = Photos.aggregate( [ {$project: {'datetime': 1, 'resized_uris': 1, 'openfaces': 1}}, { $unwind : "$openfaces" } ], {"allowDiskUse": true} );
+		var aggregate = LogicalImages.aggregate( [ {$project: {'datetime': 1, 'resized_uris': 1, 'openfaces': 1}}, { $unwind : "$openfaces" } ], {"allowDiskUse": true} );
 		var similarity = [];
 
 		for (var i = 0; i < aggregate.length; i++) {
@@ -64,7 +64,7 @@ if (Meteor.isServer) {
 			idquery.push({'_id': new Meteor.Collection.ObjectID(similarity[i]._id)});
 		}
 
-		return Photos.find({$or: idquery}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1}});
+		return LogicalImages.find({$or: idquery}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1}});
 
 	});
 
