@@ -9,7 +9,7 @@ import ClusterTimeline from '../imports/ui/ClusterTimeline.jsx';
 
 FlowRouter.route('/', {
   action() {
-    FlowRouter.go('/timeline/2015-01-01');
+    FlowRouter.go('/clusters/2015-08-01');
   }
 });
 
