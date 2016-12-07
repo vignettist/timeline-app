@@ -90,11 +90,10 @@ FlowRouter.route('/clusters/:date', {
 
 	subscriptions: function(params) {
 		let date = moment(params.date);
-		let startDate = date.clone().subtract(4, "d");
-		let endDate = date.clone().add(4, "d");
+		let startDate = date.clone().subtract(3, "d");
+		let endDate = date.clone().add(3, "d");
 
-		this.register('clusters', Meteor.subscribe('clusters', new Date(startDate), new Date(endDate)));
-		this.register('cluster_photos', Meteor.subscribe('cluster_photos', new Date(startDate), new Date(endDate)));
+		this.register('clusters_test', Meteor.subscribe('clusters_test', new Date(startDate), new Date(endDate)));
 	},
 
 	action: function(params) {

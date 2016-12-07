@@ -4,6 +4,8 @@ export const Photos = new Mongo.Collection('images');
 export const LogicalImages = new Mongo.Collection('logical_images');
 export const Stories = new Mongo.Collection('stories');
 export const Clusters = new Mongo.Collection('clusters');
+export const ClustersTest = new Mongo.Collection('clusters_test');
+
 // export const Similarity = new Mongo.Collection('Similarity');
 
 if (Meteor.isServer) {
@@ -97,7 +99,11 @@ if (Meteor.isServer) {
 	});
 
 	Meteor.publish('clusters', function clustersByDate(startDate, endDate) {
-		return Clusters.find({$and: [{'start_time.utc_timestamp': { $lt: endDate}}, {'end_time.utc_timestamp': {$gte: startDate}}]});
+		return Clusters.find({$and: [{'start_time.utc_timestamp': { $lt: endDate}}, {'end_time.utc_timestamp': {$gte: startDate}}]}, {fields: {'locations': 0, 'photos': 0, 'start_location': 0, 'end_location': 0}});
+	});
+
+	Meteor.publish('clusters_test', function clustersByDate(startDate, endDate) {
+		return ClustersTest.find({$and: [{'start_time.utc_timestamp': { $lt: endDate}}, {'end_time.utc_timestamp': {$gte: startDate}}]});
 	});
 
 	Meteor.publish('cluster', function clusterById(id) {

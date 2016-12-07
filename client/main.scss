@@ -547,11 +547,24 @@ button {
 		flex-wrap: wrap;
 
 		button {
-			width: 50px;
+			min-width: 50px;
+			max-width: 50px;
 			margin: 5px;
-			z-index: 100;
+			z-index: 1000;
 			background-color: #ddd;
 			border-radius: 25px;
+			align-self: flex-start;
+			min-height: 50px;
+			max-height: 50px;
+
+			img {
+				height: 100%;
+				width: 100%;
+			}
+		}
+
+		button:hover {
+			background-color: #62c3fe;
 		}
 
 		.up {
@@ -647,8 +660,9 @@ button {
 	align-items: top;
 	justify-content: center;
 	position: absolute;
-	height: 120px;
-	min-width: 120px;
+	min-height: 40px;
+	min-width: 40px;
+	left: 250px;
 	border-radius: 60px;
 	// padding-top: 40px;
 	background-color: #b7d1e1;
