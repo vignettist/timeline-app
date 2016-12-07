@@ -731,6 +731,21 @@ a {
 	    	border-radius: 0.5em;
 	    }
 	}
+
+	.cluster-overlay {
+		height: 100%;
+	    position: relative;
+	    // flex-basis:  calc(50% - 75px - 1em);
+	    margin-right: 0em;
+	    width: 100%;
+	    z-index: 0;
+	    position: absolute;
+	    background-image: url("/gradient_horizontal.png");
+	    background-repeat: repeat-y;
+	    background-size: auto;
+	    background-position: left;
+	    border-radius: 0.5em;
+	}
 }
 
 .cluster-description {
@@ -739,6 +754,7 @@ a {
 	margin-left: 1em;
 	flex-basis: auto;
 	text-shadow: 0px 0px 5px white, 0px 0px 5px white, 0px 0px 5px white, 0px 0px 5px white;
+	z-index: 1;
 
 	.cluster-num-photos {
 		font-size: 1.5em;
@@ -758,6 +774,7 @@ a {
 	flex-basis: calc(50% - 75px - 1em);
 	align-self: center;
 	align-items: center;
+	z-index: 1;
 
 	img {
 		max-height: 100%;

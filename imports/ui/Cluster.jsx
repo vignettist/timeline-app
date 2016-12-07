@@ -56,6 +56,8 @@ export default class Cluster extends Component {
         <div className="cluster-map">
           <ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={true}/>
         </div>
+        <div className="cluster-overlay">
+        </div>
         </div>);
     } else {
       return <div style={{backgroundImage: 'url(http://localhost:3022/' + this.props.photos[0].resized_uris["320"] + ')'}}></div>;
