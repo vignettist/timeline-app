@@ -30,7 +30,11 @@ export default class LeafletRouter extends MapLayer {
       },
 
       router: (new L.Routing.Mapbox(Meteor.settings.public.mapbox, 
-        {profile: profile})),
+        {profile: profile,
+         routingOptions: {
+          alternatives: false,
+          steps: true
+        }})),
 
       fitSelectedRoutes: false
     }).addTo(map);
