@@ -21,7 +21,7 @@ export class ClusterTimeline extends Component {
 
   handleScroll() {
     var scrollTop = $(window).scrollTop();
-    var newZoomTo = Math.round(scrollTop/516);
+    var newZoomTo = Math.round(scrollTop/366);
 
     if (newZoomTo != this.state.zoomTo) {
       this.setState({zoomTo: newZoomTo});
@@ -59,26 +59,27 @@ export class ClusterTimeline extends Component {
         });
       }
 
-      var cluster_style={}
+      var cluster_style={};
 
-      if (i == this.state.zoomTo) {
-        var corrected_time = moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
+      var corrected_time = moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
 
-        var time_value = Math.round((corrected_time.hour() * 60 + corrected_time.minute())/1440 * 255);
+      var time_value = Math.round((corrected_time.hour() * 60 + corrected_time.minute())/1440 * 255);
 
       var color = colormap[time_value];
 
       if ((color[0] + color[1] + color[2]) < 384) {
-          var textColor = 'white';
-        } else {
-          var textColor = 'black';
-        }
+        var textColor = 'white';
+      } else {
+        var textColor = 'black';
+      }
 
       color = rgbToHex(color[0], color[1], color[2])
 
+      cluster_style = {backgroundColor: color, color: textColor};
 
-        
-
+      if (i == this.state.zoomTo) {
+        cluster_style = {backgroundColor: color, color: textColor, border: "5px solid black", padding: 0};
+      } else {
         cluster_style = {backgroundColor: color, color: textColor};
       }
 
