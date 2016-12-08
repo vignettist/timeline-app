@@ -21,7 +21,7 @@ export class ClusterTimeline extends Component {
 
   handleScroll() {
     var scrollTop = $(window).scrollTop();
-    var newZoomTo = Math.round(scrollTop/366);
+    var newZoomTo = Math.round(scrollTop/376);
 
     if (newZoomTo != this.state.zoomTo) {
       this.setState({zoomTo: newZoomTo});
@@ -78,7 +78,7 @@ export class ClusterTimeline extends Component {
       cluster_style = {backgroundColor: color, color: textColor};
 
       if (i == this.state.zoomTo) {
-        cluster_style = {backgroundColor: color, color: textColor, border: "5px solid black", padding: 0};
+        cluster_style = {backgroundColor: color, color: textColor, border: "5px solid blue", padding: 0};
       } else {
         cluster_style = {backgroundColor: color, color: textColor};
       }

@@ -127,24 +127,36 @@ export default class ClusterMap extends Component {
       var max_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] + 0.004;
     } else {
       var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
-      
-      if (this.props.offset) {
-        var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 4.00;
-      } else {
-        var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
-      }
-
+      var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
       var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
       var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
     }
 
+    if (this.props.offset) {
+      var square_distance = Math.sqrt(Math.pow(longitudes.max() - longitudes.min(),2) + Math.pow(latitudes.max() - latitudes.min(), 2));
+      // var square_distance = longitudes.max() - longitudes.min();
+
+      var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
+      var min_longitude = longitudes.min() - square_distance * 0.8 * this.props.width / this.props.height;
+      var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
+      var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
+    }
+
+     // <TileLayer
+     //          url='http://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png'
+     //          // url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+     //          subdomains='abcd'
+     //        />
+
     return (
           <Map key={this.props.cluster._id + "_map"} bounds={[[min_latitude, min_longitude], [max_latitude, max_longitude]]}>
             <TileLayer
-              // url='http://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png'
-              url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
-              subdomains='ab'
+              url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+              // url='http://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png'
+              // url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+              subdomains='abcd'
             />
+           
             {image_markers}
             {cluster_path}
           </Map>
@@ -160,6 +172,8 @@ ClusterMap.propTypes = {
   photos: PropTypes.array.isRequired,
   zoomTo: PropTypes.number.isOptional,
   popup: PropTypes.bool.isOptional,
-  offset: PropTypes.bool.isOptional
+  offset: PropTypes.bool.isOptional,
+  width: PropTypes.number.isOptional,
+  height: PropTypes.number.isOptional
 };
 

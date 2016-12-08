@@ -54,7 +54,7 @@ export default class Cluster extends Component {
           {render_images}
         </div>
         <div className="cluster-map">
-          <ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={true}/>
+          <ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={true} height={this.props.height} width={this.props.width}/>
         </div>
         <div className="cluster-overlay">
         </div>
@@ -69,5 +69,7 @@ export default class Cluster extends Component {
  
 Cluster.propTypes = {
   cluster: PropTypes.object.isRequired,
-  photos: PropTypes.array.isRequired
+  photos: PropTypes.array.isRequired,
+  height: PropTypes.number.isOptional,
+  width: PropTypes.number.isOptional
 };

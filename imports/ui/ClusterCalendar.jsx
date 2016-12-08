@@ -77,7 +77,13 @@ export class ClusterCalendar extends Component {
       top *= 20;
 
       var zindex = (400 - (new moment(e.start_time.utc_timestamp).dayOfYear()))*24 - new moment(e.start_time.utc_timestamp).hour();
-      var event_styles = {height: "calc(" + cluster_height.toString() + "% + 13px)", top: "calc(" + top.toString() + "% - 10px)", zIndex: zindex};
+      
+      if (cluster_height > 0) {
+        var event_styles = {height: "calc(" + cluster_height.toString() + "% + 13px)", top: "calc(" + top.toString() + "% - 10px)", zIndex: zindex};
+      } else {
+        var event_styles = {top: "calc(" + top.toString() + "% - 50px)", zIndex: zindex};
+      }
+
       var event_photos = e.photos.map(function(x) { return x._str; });
       var photos_in_event = cluster_photos.filter(function(p) {
         return (event_photos.indexOf(p._id._str) >= 0);
@@ -103,7 +109,7 @@ export class ClusterCalendar extends Component {
         return (
           <div>
           <div key={e._id._str} className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
-            <Cluster cluster={e} photos={photos_in_event}/>
+            <Cluster cluster={e} photos={photos_in_event} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
           </div>
           {photo_markers}
           </div>);
