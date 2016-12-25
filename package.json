@@ -6,14 +6,18 @@
   },
   "dependencies": {
     "babel-runtime": "^6.18.0",
+    "indexof": "0.0.1",
+    "java": "^0.8.0",
     "leaflet": "^0.7.7",
+    "leaflet-routing-machine": "^3.2.4",
     "meteor-node-stubs": "~0.2.0",
+    "rc-slider": "^5.4.0",
     "react": "^15.1.0",
     "react-addons-css-transition-group": "^15.1.0",
     "react-datepicker": "^0.27.0",
     "react-dom": "^15.1.0",
     "react-leaflet": "^0.11.5",
     "react-mounter": "^1.2.0",
-    "leaflet-routing-machine": "^3.2.4" 
+    "stanford-simple-nlp": "git+https://github.com/loganwilliams/node-stanford-simple-nlp.git"
   }
 }

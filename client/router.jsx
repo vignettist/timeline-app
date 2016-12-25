@@ -6,6 +6,7 @@ import Story from '../imports/ui/Story.jsx';
 import Face from '../imports/ui/Face.jsx';
 import ClusterCalendar from '../imports/ui/ClusterCalendar.jsx';
 import ClusterTimeline from '../imports/ui/ClusterTimeline.jsx';
+import ClusterOverview from '../imports/ui/ClusterOverview.jsx';
 
 FlowRouter.route('/', {
   action() {
@@ -127,3 +128,15 @@ FlowRouter.route('/cluster/:clusterid', {
 		mount(ClusterTimeline)
 	}
 });
+
+FlowRouter.route('/overview', {
+	name: 'clusterOverview',
+
+	subscriptions: function(params) {
+		this.register('clusters', Meteor.subscribe('clusters', new Date(2013, 01, 01, 0, 0, 0, 0), new Date(2018, 01, 01, 0, 0, 0, 0)));
+	},
+
+	action: function(params) {
+		mount(ClusterOverview);
+	}
+})

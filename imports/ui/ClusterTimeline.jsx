@@ -5,6 +5,7 @@ import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
 import PhotoFaces from './PhotoFaces.jsx';
 import ClusterMap from './ClusterMap.jsx';
+import PhotoConversation from './PhotoConversation.jsx';
 
 export class ClusterTimeline extends Component {
 
@@ -49,6 +50,7 @@ export class ClusterTimeline extends Component {
     }
 
  if (FlowRouter.subsReady()) {
+
     var photo_list = this.props.photos.map(function(img, i) {
       var t = new moment(img.datetime.utc_timestamp).utcOffset(img.datetime.tz_offset/60);
       var alternate_lists = [];
@@ -83,6 +85,10 @@ export class ClusterTimeline extends Component {
         cluster_style = {backgroundColor: color, color: textColor};
       }
 
+                 // <div className="cluster-debug-alternates">
+            // {alternate_lists}
+          // </div>
+
       return (<div className="cluster-debug-row" style={cluster_style}>
           <div className="cluster-debug-info">
             <div className="cluster-debug-time">
@@ -98,9 +104,8 @@ export class ClusterTimeline extends Component {
 
           <PhotoFaces photo={img} displayDuplicates={false} size="640" />
 
-          <div className="cluster-debug-alternates">
-            {alternate_lists}
-          </div>
+          <PhotoConversation photo={img} />
+
         </div>);
       }, this
     );
