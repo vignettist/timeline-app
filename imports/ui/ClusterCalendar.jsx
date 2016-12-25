@@ -96,8 +96,6 @@ export class ClusterCalendar extends Component {
         marker_top /= (60*60*24);
         marker_top *= 20;
 
-        console.log(marker_top);
-
         var marker_style = {top: "calc(" + marker_top.toString() + "% - 5px)"};
 
         return <div key={e._id._str + "_marker_" + i.toString()} className="photo-marker" style={marker_style}></div>

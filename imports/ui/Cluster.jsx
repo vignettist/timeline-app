@@ -5,8 +5,6 @@ import ClusterMap from './ClusterMap.jsx';
 
 export default class Cluster extends Component {
 
-       
-
   render() {
     if (this.props.cluster.photos.length > 1) {
 
@@ -70,6 +68,6 @@ export default class Cluster extends Component {
 Cluster.propTypes = {
   cluster: PropTypes.object.isRequired,
   photos: PropTypes.array.isRequired,
-  height: PropTypes.number.isOptional,
-  width: PropTypes.number.isOptional
+  height: PropTypes.number,
+  width: PropTypes.number
 };

@@ -36,6 +36,14 @@ export class ClusterOverview extends Component {
     return date.format("MMM Do YYYY");
   }
 
+  goTo(date) {
+    console.log("goto");
+    console.log(date);
+
+    var d = new moment(date);
+    FlowRouter.go('/clusters/' + d.format('YYYY-MM-DD'));
+  }
+
   zoomAll() {
     this.setState({mapBounds: [[-70, -180], [70, 180]]});
   }
@@ -85,6 +93,14 @@ export class ClusterOverview extends Component {
       this.setState({mapBounds: [boundsLower, boundsUpper]});
   }
 
+  argSort(test) {
+    var len = test.length;
+    var indices = new Array(len);
+    for (var i = 0; i < len; ++i) indices[i] = i;
+    indices.sort(function (a, b) { return test[a] < test[b] ? -1 : test[a] > test[b] ? 1 : 0; });
+    return indices;
+  }
+
   render() {
     var cluster_map_elements = [];
 
@@ -94,6 +110,7 @@ export class ClusterOverview extends Component {
       var slider_length = Math.round(moment.duration(end_date.diff(start_date)).asDays());
 
       var bounds = [];
+      var opacities = [];
 
       for (var i = 0; i < this.props.clusters.length; i++) {
         var c = this.props.clusters[i];
@@ -101,15 +118,34 @@ export class ClusterOverview extends Component {
         var start_time = new moment(c.start_time.utc_timestamp);
         var time_difference = moment.duration(start_time.diff(this.state.date));
         var opacity = Math.min(0.5, 24.0 / Math.abs(time_difference.asHours()));
+        opacities.push(opacity);
+      }
+
+      var sorted_order = this.argSort(opacities);
+
+      for (var j = 0; j < this.props.clusters.length; j++) {
+        var i = sorted_order[j];
+
+        var c = this.props.clusters[i];
+
+        var start_time = new moment(c.start_time.utc_timestamp);
+        var time_difference = moment.duration(start_time.diff(this.state.date));
+        var opacity = Math.min(0.5, 24.0 / Math.abs(time_difference.asHours()));
+        opacities.push(opacity);
 
         var reversed_coords = c.boundary.coordinates.map(function(co) {
           return [co[1], co[0]];
         });
 
-        cluster_map_elements.push(<Polygon positions={reversed_coords} color="#000000" weight={1} fillColor="#0000FF" fillOpacity={opacity} opacity={opacity+0.2}/>);
+        if (opacity > 0.1) {
+          cluster_map_elements.push(<Polygon key={c._id._str + "_polygon"} positions={reversed_coords} color="#000000" weight={1} fillColor="#0000FF" fillOpacity={opacity} opacity={opacity+0.2} onClick={this.goTo.bind(this, c.start_time.utc_timestamp)} />);
+        } else {
+          cluster_map_elements.push(<Polygon key={c._id._str + "_polygon"} positions={reversed_coords} color="#000000" weight={1} fillColor="#0000FF" fillOpacity={opacity} opacity={opacity+0.2} />);
+        }
 
         if (i < this.props.clusters.length-1) {
-          cluster_map_elements.push(<Polyline 
+          cluster_map_elements.push(<Polyline
+            key={c._id._str + "_polyline"}
             positions={[[this.props.clusters[i].centroid.coordinates[1], this.props.clusters[i].centroid.coordinates[0]], [this.props.clusters[i+1].centroid.coordinates[1], this.props.clusters[i+1].centroid.coordinates[0]]]} 
             opacity={opacity} />);
         }
@@ -117,7 +153,7 @@ export class ClusterOverview extends Component {
 
       return <div className="overview">
             <div className="overview-map">
-              <Map bounds={this.state.mapBounds}>
+              <Map key="cluster-overview-map" bounds={this.state.mapBounds}>
                 <TileLayer
                   url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
                   subdomains='abcd'
@@ -130,7 +166,7 @@ export class ClusterOverview extends Component {
                 <div className="start-date">
                   {start_date.format("MMM Do YYYY")}
                 </div>
-                <Slider onChange={this.setDate.bind(this)} max={slider_length} tipFormatter={this.formatDate.bind(this)}/>
+                <Slider key="cluster-overview-slider" onChange={this.setDate.bind(this)} max={slider_length} tipFormatter={this.formatDate.bind(this)}/>
                 <div className="end-date">
                   {end_date.format("MMM Do YYYY")}
                 </div>
