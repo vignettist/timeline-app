@@ -147,7 +147,7 @@ export class ClusterOverview extends Component {
             </div>
 
     } else {
-      return <div>Loading</div>
+      return <div className="loading">Loading</div>
     }
   }
 }
