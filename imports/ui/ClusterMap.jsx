@@ -47,7 +47,7 @@ export default class ClusterMap extends Component {
     var cluster_path = [];
     var start_coords = reversed_coords[0];
 
-    for (var i = 1; i < reversed_coords.length; i++) {
+    for (var i = 1; i < this.props.photos.length; i++) {
       var corrected_start_time = moment(this.props.photos[i].datetime.utc_timestamp).utcOffset(this.props.photos[i].datetime.tz_offset/60);
       var corrected_end_time = moment(this.props.photos[i-1].datetime.utc_timestamp).utcOffset(this.props.photos[i-1].datetime.tz_offset/60);
       var time_value = Math.round(0.5 * ((corrected_start_time.hour() * 60 + corrected_start_time.minute())/1440 * 255) + 0.5 * ((corrected_end_time.hour() * 60 + corrected_end_time.minute())/1440 * 255));

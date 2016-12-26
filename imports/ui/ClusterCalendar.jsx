@@ -105,15 +105,15 @@ export class ClusterCalendar extends Component {
       if (e.photos.length > 1) {
         // 
         return (
-          <div>
-          <div key={e._id._str} className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
+          <div key={e._id._str}>
+          <div className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
             <Cluster cluster={e} photos={photos_in_event} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
           </div>
           {photo_markers}
           </div>);
       } else {
-        return (<div>
-          <div key={e._id._str} className="event-singleton" style={event_styles}>
+        return (<div key={e._id._str} >
+          <div className="event-singleton" style={event_styles}>
             <Cluster cluster={e} photos={photos_in_event}/>
           </div>
           {photo_markers}

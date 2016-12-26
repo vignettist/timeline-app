@@ -12,10 +12,10 @@ export default class Cluster extends Component {
         return (a.interest_score < b.interest_score);
       }).slice(0,3);
 
-      var render_images = best_images.map(function(img) {
-        return(<img src={'http://localhost:3022/' + img.resized_uris["320"]} />
+      var render_images = best_images.map(function(img,i) {
+        return(<img key={this.props.cluster._id._str + "_photo_" + i} src={'http://localhost:3022/' + img.resized_uris["320"]} />
           );
-      });
+      }, this);
 
       var location_text = [];
 
@@ -23,20 +23,20 @@ export default class Cluster extends Component {
         if (this.props.cluster.location[0].length > 1) {
           this.props.cluster.location.slice(0,-1).map(function(l, i) {
             if (i == 0) {
-              location_text.push(<span className="location"><a href="#">{l}</a></span>)
+              location_text.push(<span key={"location" + this.props.cluster._id._str + i} className="location"><a href="#">{l}</a></span>)
             } else {
-              location_text.push(<span className="location">, <a href="#">{l}</a></span>)
+              location_text.push(<span key={"location" + this.props.cluster._id._str + i} className="location">, <a href="#">{l}</a></span>)
             }
           });
 
-          location_text.push(<span className="location"> and <a href="#">{this.props.cluster.location.slice(-1,this.props.cluster.location.length)}</a></span>)
+          location_text.push(<span key={"location" + this.props.cluster._id._str + "last"} className="location"> and <a href="#">{this.props.cluster.location.slice(-1,this.props.cluster.location.length)}</a></span>)
         } else {
-          location_text.push(<span className="location"><a href="#">{this.props.cluster.location}</a></span>);
+          location_text.push(<span key={"location" + this.props.cluster._id._str} className="location"><a href="#">{this.props.cluster.location}</a></span>);
         }
       }
 
       if (location_text.length > 0) {
-        var location_block = (<div className="cluster-location">in {location_text}</div>);
+        var location_block = (<div key="location-end-block" className="cluster-location">in {location_text}</div>);
       } else {
         var location_block = [];
       }
