@@ -25,6 +25,14 @@ export class ClusterCalendar extends Component {
     FlowRouter.go('/clusters/' + this.props.date.add(+1, "d").format('YYYY-MM-DD'));
   }
 
+  previousMonth() {
+    FlowRouter.go('/clusters/' + this.props.date.add(-1, "month").format('YYYY-MM-DD'));
+  }
+
+  nextMonth() {
+    FlowRouter.go('/clusters/' + this.props.date.add(+1, "month").format('YYYY-MM-DD'));
+  }
+
   newDate(date) {
     FlowRouter.go('/clusters/' + date.format('YYYY-MM-DD'));
   }
@@ -143,18 +151,30 @@ export class ClusterCalendar extends Component {
 
     return (
         <div className="cluster-root">
-          <div className="overview-controls ontop">
-            <div className="overview-datepicker">
-              <DatePicker selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="top center" popoverTargetAttachment="bottom center" popoverTargetOffset="10px 0"/>
-            </div>
-          </div>
           <div className="nav">
-            <button className="up" onClick={this.previous.bind(this)}>
-              <img src="/icons/up.png" />
-            </button>
-            <button className="down" onClick={this.next.bind(this)}>
-              <img src="/icons/down.png" />
-            </button>
+            <div className="top">
+              <button className="up" onClick={this.previousMonth.bind(this)}>
+                <img src="/icons/doubleup.png" />
+                <span className="hide">Previous month</span>
+              </button>
+              <button className="up" onClick={this.previous.bind(this)}>
+                <img src="/icons/up.png" />
+                <span className="hide">Previous day</span>
+              </button>
+            </div>
+            <div className="middle">
+              <DatePicker selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="center right" popoverTargetAttachment="center left" popoverTargetOffset="0px 0px"/>
+            </div>
+            <div className="bottom">
+              <button className="down" onClick={this.next.bind(this)}>
+                <img src="/icons/down.png" />
+                <span className="hide">Next day</span>
+              </button>
+              <button className="down" onClick={this.nextMonth.bind(this)}>
+                <img src="/icons/doubledown.png" />
+                <span className="hide">Next month</span>
+              </button>
+            </div>
           </div>
           <div className="weekdays">
             <div className="grid">{date_grid}</div>

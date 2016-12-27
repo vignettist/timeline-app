@@ -544,31 +544,76 @@ button {
 
 	.nav {
 		display: flex;
-		width: 0px;
+		width: 50px;
 		flex-wrap: wrap;
+		top: 10px;
+		z-index: 10000;
+		position: fixed;
+		height: calc(100% - 20px);
 
-		button {
-			width: 50px;
-			margin: 5px;
-			z-index: 100;
-			background-color: #ddd;
-			border-radius: 25px;
-		}
-
-		.up {
-			align-self: flex-start;
-		}
-
-		.up:hover {
-			background-color: #62c3fe;
-		}
-
-		.down {
+		.bottom {
 			align-self: flex-end;
 		}
 
-		.down:hover {
-			background-color: #62c3fe;
+		.middle {
+			align-self: center;
+		}
+
+		.top, .bottom {
+			height: 120px;
+		
+
+			button {
+				width: 50px;
+				margin: 5px;
+				z-index: 100;
+				background-color: #ddd;
+				border-radius: 25px;
+				height: 50px;
+				transition: 0.1s;
+				text-align: left;
+				overflow: hidden;
+				display: flex;
+				align-items: center;
+				justify-content: left;
+				font-family: inherit;
+
+				img {
+					height: 100%;
+					width: 50px;
+					display: inline;
+				}
+
+				.hide {
+					font-size: 1.5em;
+					top: 10px;
+					display: block;
+					overflow: hidden;
+				}
+			}
+
+			button:hover {
+				width: 170px;
+				text-align: left;
+				position: relative;
+				transition: 0.25s;
+			}
+
+			.up {
+				align-self: flex-start;
+			}
+
+			.up:hover {
+				background-color: #62c3fe;
+			}
+
+			.down {
+				align-self: flex-end;
+			}
+
+			.down:hover {
+				background-color: #62c3fe;
+			}
 		}
 	}
 }
@@ -601,6 +646,7 @@ button {
 	align-items: center;
 
 	.label {
+		margin-left: 50px;
 		margin-top: auto;
 		margin-bottom: auto;
 		display: flex;
