@@ -3,6 +3,9 @@ import { createContainer } from 'meteor/react-meteor-data';
 import {Clusters, Photos, LogicalImages} from '../api/photos.js';
 import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
+import DateBlock from './DateBlock.jsx';
+
+var DatePicker = require('react-datepicker');
 
 export class ClusterCalendar extends Component {
 
@@ -20,6 +23,10 @@ export class ClusterCalendar extends Component {
 
   next() {
     FlowRouter.go('/clusters/' + this.props.date.add(+1, "d").format('YYYY-MM-DD'));
+  }
+
+  newDate(date) {
+    FlowRouter.go('/clusters/' + date.format('YYYY-MM-DD'));
   }
 
   renderMonthLabel() {
@@ -103,7 +110,7 @@ export class ClusterCalendar extends Component {
       }, this);
 
       if (e.photos.length > 1) {
-        // 
+        // This should be its own react component
         return (
           <div key={e._id._str}>
           <div className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
@@ -130,11 +137,17 @@ export class ClusterCalendar extends Component {
         var modified_date = this.props.date.clone().add(i ,'days');
       }
 
-      date_grid.push(<div className="weekday" key={modified_date.format("dddd-MMM-D-YYYY")}><div>{modified_date.format("dddd, MMM D")}</div></div>);
+      // this should be its own react component
+      date_grid.push(<DateBlock date={modified_date} />);
     }
 
     return (
         <div className="cluster-root">
+          <div className="overview-controls ontop">
+            <div className="overview-datepicker">
+              <DatePicker selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="top center" popoverTargetAttachment="bottom center" popoverTargetOffset="10px 0"/>
+            </div>
+          </div>
           <div className="nav">
             <button className="up" onClick={this.previous.bind(this)}>
               <img src="/icons/up.png" />

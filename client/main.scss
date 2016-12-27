@@ -589,23 +589,40 @@ button {
 
 .weekday {
 	width: 100%;
-	/*background-color: #ddd;*/
-	// background-image: url(grad.png);
-	// background-repeat: repeat-x;
-	// margin-left: 0.5em;
-	// margin-right: 0.5em;
 	margin-bottom: 0em;
 	background-color: none;
 	text-align: left;
 	padding-left: 1em;
-	// border-radius: .5em;
 	padding-top: 0.5em;
 	font-weight: 600;
 	height: calc(20% - 0.5em - 4px);
-	// border-left: 1px dashed gray;
 	border-top: 2px dashed gray;
 	display: flex;
 	align-items: center;
+
+	.label {
+		margin-top: auto;
+		margin-bottom: auto;
+		display: flex;
+		align-items: middle;
+		width: 200px;
+		flex-wrap: wrap;
+
+		.day-of-week {
+			font-size: 1em;
+			width: 100%;
+		}
+
+		.day-of-month {
+			font-size: 1.5em;
+			width: 100%;
+		}
+
+		.year {
+			font-size: 1em;
+			width: 100%;
+		}
+	}
 }
 
 .location {
@@ -900,6 +917,18 @@ a {
 	display: flex;
 	justify-content: center;
 
+	.overview-datepicker {
+		width: 400px;
+		font-size: 1.5em;
+		background-color: rgba(128, 128, 128, 0.5);
+		border-bottom-left-radius: 1em;
+	    border-bottom-right-radius: 1em;
+	    position: fixed;
+	    top: 0;
+	   	justify-content: center;
+	   	display: flex;
+	}
+
 	.overview-slider {
 	    width: 900px;
 	    position: fixed;
@@ -945,4 +974,8 @@ a {
 			height: 25px;
 		}
 	}
+}
+
+.ontop {
+	z-index: 100000!important;
 }
