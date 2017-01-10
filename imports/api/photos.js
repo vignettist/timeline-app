@@ -60,11 +60,11 @@ if (Meteor.isServer) {
 
 		var idquery = [];
 
-		for (var i = 1; i <= 5; i++ ) {
+		for (var i = 0; i <= 5; i++ ) {
 			idquery.push({'_id': new Meteor.Collection.ObjectID(similarity[i]._id)});
 		}
 
-		return LogicalImages.find({$or: idquery}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1}});
+		return LogicalImages.find({$or: idquery}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1}});
 
 	});
 

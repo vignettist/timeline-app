@@ -59,7 +59,6 @@ FlowRouter.route('/image/:imageId/face/:facen', {
 	name: 'faceView',
 
 	subscriptions: function(params) {
-		this.register('single_photo', Meteor.subscribe('single_photo', new Meteor.Collection.ObjectID(params.imageId)));
     	this.register('faces_like', Meteor.subscribe('faces_like', new Meteor.Collection.ObjectID(params.imageId), params.facen))
     },
 

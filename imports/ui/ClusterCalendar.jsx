@@ -4,8 +4,28 @@ import {Clusters, Photos, LogicalImages} from '../api/photos.js';
 import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
 import DateBlock from './DateBlock.jsx';
+import DateButton from './DateButton.jsx';
 
 var DatePicker = require('react-datepicker');
+
+var ExampleCustomInput = React.createClass({
+displayName: "ExampleCustomInput" ,
+
+  propTypes: {
+onClick: React.PropTypes.func,
+value: React.PropTypes.string
+},
+
+  render () {
+return (
+<button
+className="example-custom-input"
+onClick={this.props.onClick}>
+{this.props.value}
+</button>
+)
+}
+});
 
 export class ClusterCalendar extends Component {
 
@@ -163,7 +183,7 @@ export class ClusterCalendar extends Component {
               </button>
             </div>
             <div className="middle">
-              <DatePicker selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="center right" popoverTargetAttachment="center left" popoverTargetOffset="0px 0px"/>
+              <DatePicker customInput={<ExampleCustomInput />} selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="middle right" popoverTargetAttachment="middle left" popoverTargetOffset="0px 0px"/>
             </div>
             <div className="bottom">
               <button className="down" onClick={this.next.bind(this)}>
