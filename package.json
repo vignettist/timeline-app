@@ -9,7 +9,7 @@
     "indexof": "0.0.1",
     "java": "^0.8.0",
     "leaflet": "^0.7.7",
-    "leaflet-routing-machine": "^3.2.4",
+    "leaflet-routing-machine": "^3.2.5",
     "meteor-node-stubs": "~0.2.0",
     "rc-slider": "^5.4.0",
     "react": "^15.1.0",

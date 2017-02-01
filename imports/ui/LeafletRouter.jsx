@@ -29,7 +29,7 @@ export default class LeafletRouter extends MapLayer {
         missingRouteStyles: [{color: 'black', opacity: opacity, weight: 7}, {color: color, opacity: opacity, weight: 6}, {color: 'white', opacity: opacity, weight: 1}]
       },
 
-      router: (new L.Routing.Mapbox(Meteor.settings.public.mapbox, 
+      router: (L.Routing.mapbox(Meteor.settings.public.mapbox, 
         {profile: profile,
          routingOptions: {
           alternatives: false,
