@@ -559,7 +559,7 @@ button {
 			align-self: center;
 		}
 
-		.top, .bottom {
+		.top, .bottom, .middle {
 			height: 120px;
 		
 
@@ -593,6 +593,12 @@ button {
 			}
 
 			button:hover {
+				background-color: #62c3fe;
+			}
+		}
+
+		.top, .bottom {
+			button:hover {
 				width: 170px;
 				text-align: left;
 				position: relative;
@@ -603,16 +609,8 @@ button {
 				align-self: flex-start;
 			}
 
-			.up:hover {
-				background-color: #62c3fe;
-			}
-
 			.down {
 				align-self: flex-end;
-			}
-
-			.down:hover {
-				background-color: #62c3fe;
 			}
 		}
 	}

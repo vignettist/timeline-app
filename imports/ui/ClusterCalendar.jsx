@@ -8,24 +8,6 @@ import DateButton from './DateButton.jsx';
 
 var DatePicker = require('react-datepicker');
 
-var ExampleCustomInput = React.createClass({
-displayName: "ExampleCustomInput" ,
-
-  propTypes: {
-onClick: React.PropTypes.func,
-value: React.PropTypes.string
-},
-
-  render () {
-return (
-<button
-className="example-custom-input"
-onClick={this.props.onClick}>
-{this.props.value}
-</button>
-)
-}
-});
 
 export class ClusterCalendar extends Component {
 
@@ -169,6 +151,25 @@ export class ClusterCalendar extends Component {
       date_grid.push(<DateBlock date={modified_date} />);
     }
 
+    var CalendarButton = React.createClass({
+    displayName: "ExampleCustomInput" ,
+
+      propTypes: {
+    onClick: React.PropTypes.func,
+    value: React.PropTypes.string
+    },
+
+      render () {
+    return (
+    <button
+    className="calendar-button-input"
+    onClick={this.props.onClick}>
+    <img src="/icons/Calendar-64.png" />
+    </button>
+    )
+    }
+    });
+
     return (
         <div className="cluster-root">
           <div className="nav">
@@ -183,7 +184,7 @@ export class ClusterCalendar extends Component {
               </button>
             </div>
             <div className="middle">
-              <DatePicker customInput={<ExampleCustomInput />} selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="middle right" popoverTargetAttachment="middle left" popoverTargetOffset="0px 0px"/>
+              <DatePicker customInput={<CalendarButton />} selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="middle right" popoverTargetAttachment="middle left" popoverTargetOffset="0px 0px"/>
             </div>
             <div className="bottom">
               <button className="down" onClick={this.next.bind(this)}>
