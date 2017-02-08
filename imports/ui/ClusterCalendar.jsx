@@ -4,7 +4,6 @@ import {Clusters, Photos, LogicalImages} from '../api/photos.js';
 import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
 import DateBlock from './DateBlock.jsx';
-import DateButton from './DateButton.jsx';
 
 var DatePicker = require('react-datepicker');
 

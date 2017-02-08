@@ -1,6 +1,4 @@
 import {mount} from 'react-mounter';
-import Timeline3Up from '../imports/ui/Timeline3Up.jsx';
-import SingleTimeline from '../imports/ui/SingleTimeline.jsx';
 import Calendar from '../imports/ui/Calendar.jsx';
 import Story from '../imports/ui/Story.jsx';
 import Face from '../imports/ui/Face.jsx';
@@ -25,35 +23,6 @@ FlowRouter.route('/clusters/', {
 		FlowRouter.go('/clusters/2015-01-01');
 	}
 })
-
-FlowRouter.route('/timeline/:date', {
-	name: 'timeline',
-	subscriptions: function(params) {
-		let startDate = new Date(params.date);
-		let endDate = new Date(params.date);
-		startDate = new Date(startDate.getTime() - 2*1000*60*60*24);
-		endDate = new Date(endDate.getTime() + 3*1000*60*60*24);
-
-    	this.register('photos', Meteor.subscribe('photos', startDate, endDate));
-    },
-	action: function(params) {
-		mount(Timeline3Up, {date: moment.utc(params.date)})
-	}
-});
-
-FlowRouter.route('/image/:imageId', {
-	name: 'imageView',
-
-	subscriptions: function(params) {
-		this.register('single_photo', Meteor.subscribe('single_photo', new Meteor.Collection.ObjectID(params.imageId)));
-    	this.register('photos', Meteor.subscribe('photos_near', new Meteor.Collection.ObjectID(params.imageId)));
-    	this.register('photosNearby', Meteor.subscribe('photos_nearby', new Meteor.Collection.ObjectID(params.imageId)));
-    },
-
-    action: function(params) {
-		mount(SingleTimeline, {imageId: new Meteor.Collection.ObjectID(params.imageId)})
-    }
-});
 
 FlowRouter.route('/image/:imageId/face/:facen', {
 	name: 'faceView',
