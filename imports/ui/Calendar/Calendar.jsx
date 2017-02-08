@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import Day from './Day.jsx';
-import { Photos } from '../api/photos.js';
+import { Photos } from '../../api/photos.js';
 
 var DayNames = React.createClass({
     render: function() {
