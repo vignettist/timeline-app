@@ -7,6 +7,20 @@ export const Clusters = new Mongo.Collection('clusters');
 export const People = new Mongo.Collection('people');
 // export const Similarity = new Mongo.Collection('Similarity');
 
+function euclideanDistance(vec1, vec2) {
+	if (vec1.length != vec2.length) {
+		throw new Error("Cannot calculate distance between vectors of unequal length");
+	}
+
+	var sum = 0;
+
+	for (var i = 0; i < vec1.length; i++) {
+		sum += Math.pow(vec1[i] - vec2[i]);
+	}
+
+	return sum;
+}
+
 if (Meteor.isServer) {
 	// let start = new Date('2014-12-20T00:01:00Z');
 	// let end = new Date('2015-01-06T00:01:00Z');
@@ -41,17 +55,36 @@ if (Meteor.isServer) {
 		return People.find({});
 	});
 
-	// Meteor.publish('people_like', function peopleWithFacesLike(face_rep)) {
-	// 	let people = People.find({}).fetch();
+	// find documents in the People database with a median rep close to the input face rep
+	Meteor.publish('people_like', function peopleWithFacesLike(imageId) {
+		let photo = LogicalImages.find({'_id': imageId}).fetch();
+		let people = People.find({}).fetch();
+		let best_people = [];
 
-	// 	for (var i = 0; i < people.length; i++) {
-	// 		var sim = 0;
+		for (let facen = 0; facen < photo[0].openfaces.length; facen++) {
 
-	// 		for (var j = 0; j < people[i].median_rep.length; j++) {
-	// 			sim += Math.pow(people[i].median_rep[j] - face_rep[j]);
-	// 		}
-	// 	}
-	// }
+			let face_rep = photo[0].openfaces[facen].rep;
+
+			let min_sim = 10000;
+			let best_person = '';
+
+			for (var i = 0; i < people.length; i++) {
+				var sim = euclideanDistance(people[i].median_rep, face_rep);
+
+				if (sim < min_sim) {
+					min_sim = sim;
+					best_person = people[i]._id.toString();
+				}
+			}
+
+			console.log(min_sim);
+			console.log(best_person);
+
+			best_people.append({'_id': best_person});
+		}
+
+		return People.find({$or: best_people});
+	});
 
 	Meteor.publish('faces_like', function photosWithFacesLike(imageId, facen) {
 		let photo = LogicalImages.find({'_id': imageId}).fetch();

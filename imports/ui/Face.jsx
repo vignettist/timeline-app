@@ -2,9 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import { LogicalImages } from '../api/photos.js';
 
-
 var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
-
 
 export class Face extends Component {
   constructor(props) {

@@ -1,5 +1,5 @@
 import {mount} from 'react-mounter';
-import Calendar from '../imports/ui/Calendar.jsx';
+import Calendar from '../imports/ui/Calendar/Calendar.jsx';
 import Story from '../imports/ui/Story.jsx';
 import Face from '../imports/ui/Face.jsx';
 import ClusterCalendar from '../imports/ui/ClusterCalendar.jsx';
@@ -22,10 +22,10 @@ FlowRouter.route('/clusters/', {
 	action() {
 		FlowRouter.go('/clusters/2015-01-01');
 	}
-})
+});
 
-FlowRouter.route('/image/:imageId/face/:facen', {
-	name: 'faceView',
+FlowRouter.route('/image/:imageId', {
+	name: 'imageConversationView',
 
 	subscriptions: function(params) {
     	this.register('faces_like', Meteor.subscribe('faces_like', new Meteor.Collection.ObjectID(params.imageId), params.facen))
@@ -33,6 +33,19 @@ FlowRouter.route('/image/:imageId/face/:facen', {
 
     action: function(params) {
 		mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: params.facen})
+    }
+});
+
+
+FlowRouter.route('/image/:imageId/face/:facen', {
+	name: 'faceDebugView',
+
+	subscriptions: function(params) {
+    },
+
+    action: function(params) {
+    	console.log("mounting image");
+		// mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: params.facen})
     }
 });
 
