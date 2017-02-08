@@ -42,8 +42,9 @@ export class Face extends Component {
           }
           sims.push(sim);
         }
-
-        var sim = Math.min(sims);
+        console.log(sims);
+        var sim = Math.min.apply(null, sims);
+        console.log(sim);
 
         similarity.push({'similarity': sim, 'photo': other_photos[i]});
       }
@@ -53,6 +54,7 @@ export class Face extends Component {
       let photos = sorted_photos.map(function(img) {        
             return (<div className="bigImage">
                 <img key={img.photo._id + "_img"} src={"http://localhost:3022/" + img.photo.resized_uris["640"]} />
+                {img.similarity}
             </div> );
           });
 

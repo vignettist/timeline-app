@@ -152,22 +152,20 @@ export class ClusterCalendar extends Component {
     }
 
     var CalendarButton = React.createClass({
-    displayName: "ExampleCustomInput" ,
-
+      displayName: "ExampleCustomInput" ,
       propTypes: {
-    onClick: React.PropTypes.func,
-    value: React.PropTypes.string
-    },
-
+        onClick: React.PropTypes.func,
+        value: React.PropTypes.string
+      },
       render () {
-    return (
-    <button
-    className="calendar-button-input"
-    onClick={this.props.onClick}>
-    <img src="/icons/Calendar-64.png" />
-    </button>
-    )
-    }
+        return (
+          <button
+          className="calendar-button-input"
+          onClick={this.props.onClick}>
+          <img src="/icons/Calendar-64.png" />
+          </button>
+        )
+      }
     });
 
     return (

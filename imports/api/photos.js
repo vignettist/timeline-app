@@ -4,6 +4,7 @@ export const Photos = new Mongo.Collection('images');
 export const LogicalImages = new Mongo.Collection('logical_images');
 export const Stories = new Mongo.Collection('stories');
 export const Clusters = new Mongo.Collection('clusters');
+export const People = new Mongo.Collection('people');
 // export const Similarity = new Mongo.Collection('Similarity');
 
 if (Meteor.isServer) {
@@ -35,6 +36,22 @@ if (Meteor.isServer) {
 		return Photos.find({'datetime.utc_timestamp': { $gte: startDate, $lt: endDate}},
 			{'datetime': 1, 'geolocation': 1, 'longitude': 1, 'latitude': 1, 'interest_score': 1, 'resized_uris': 1, 'original_uri': 1, 'syntactic_fingerprint': 1});
 	});
+
+	Meteor.publish('people', function allPeople() {
+		return People.find({});
+	});
+
+	// Meteor.publish('people_like', function peopleWithFacesLike(face_rep)) {
+	// 	let people = People.find({}).fetch();
+
+	// 	for (var i = 0; i < people.length; i++) {
+	// 		var sim = 0;
+
+	// 		for (var j = 0; j < people[i].median_rep.length; j++) {
+	// 			sim += Math.pow(people[i].median_rep[j] - face_rep[j]);
+	// 		}
+	// 	}
+	// }
 
 	Meteor.publish('faces_like', function photosWithFacesLike(imageId, facen) {
 		let photo = LogicalImages.find({'_id': imageId}).fetch();
