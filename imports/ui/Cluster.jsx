@@ -12,10 +12,12 @@ export default class Cluster extends Component {
         return (a.interest_score < b.interest_score);
       }).slice(0,3);
 
+      var cluster = this.props.cluster;
+
       var render_images = best_images.map(function(img,i) {
-        return(<img key={this.props.cluster._id._str + "_photo_" + i} src={'http://localhost:3022/' + img.resized_uris["320"]} />
+        return(<img key={cluster._id._str + "_photo_" + i} src={'http://localhost:3022/' + img.resized_uris["320"]} />
           );
-      }, this);
+      });
 
       var location_text = [];
 
@@ -27,7 +29,7 @@ export default class Cluster extends Component {
             } else {
               location_text.push(<span key={"location" + this.props.cluster._id._str + i} className="location">, <a href="#">{l}</a></span>)
             }
-          });
+          }, this);
 
           location_text.push(<span key={"location" + this.props.cluster._id._str + "last"} className="location"> and <a href="#">{this.props.cluster.location.slice(-1,this.props.cluster.location.length)}</a></span>)
         } else {
@@ -40,6 +42,8 @@ export default class Cluster extends Component {
       } else {
         var location_block = [];
       }
+
+
 
       return (<div className="cluster">
         <div className="cluster-description">
@@ -60,9 +64,7 @@ export default class Cluster extends Component {
     } else {
       return <div style={{backgroundImage: 'url(http://localhost:3022/' + this.props.photos[0].resized_uris["320"] + ')'}}></div>;
     }
-
-   }
- 
+  }
 }
  
 Cluster.propTypes = {
