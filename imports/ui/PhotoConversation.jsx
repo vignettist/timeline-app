@@ -1,61 +1,68 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
+import TextMessage from './Conversation/TextMessage.jsx';
+import TextInputMessage from './Conversation/TextInputMessage.jsx';
 
-export default class Photo extends Component {
+export default class PhotoConversation extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-          parse_tree: ''
+          conversationHistory: [{from: 'app', content: 'Who is in this photo?'}],
+          promptText: 'This is my friend...'
         }
+    }
+
+    addResponse(r) {
+      var newHistory = this.state.conversationHistory;
+      newHistory.push(r);
+      this.setState({conversationHistory: newHistory});
     }
 
     handleSubmit(event) {
       event.preventDefault();
 
-      const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
+      var inputBox = ReactDOM.findDOMNode(this.refs.textInput.refs.textInput);
+      const text = inputBox.value.trim();
+      inputBox.value = '';
+
+      this.addResponse({from: 'user', content: text});
+      this.setState({promptText: ''});
 
       Meteor.call('conversation.whoIs', text, (err, res) => {
         if (err) {
           alert(err);
         } else {
-          var parse_tree = ''
-          if (res.document.sentences.sentence.length > 1) {
-            for( var i = 0; i < res.document.sentences.sentence.length; i++) {
-              parse_tree += res.document.sentences.sentence[i].parse;
-            }
-          } else {
-            parse_tree = res.document.sentences.sentence.parse;
-          }
-
-
-          this.setState({parse_tree: parse_tree});
+          this.addResponse({from: 'app', content: res});
         }
       });
     }
 
   render() {
 
-    if (this.state.parse_tree.length > 0) {
-      var response = this.state.parse_tree;
-    } else {
-      var response = <form className="conversational-ui" onSubmit={this.handleSubmit.bind(this)} >
-            <input
-              type="text"
-              ref="textInput"
-              placeholder="This is my friend..."
-            />
-          </form>;
-    }
+    var human_input = <div className="conversation input human-side">
+        <form className="conversational-ui" onSubmit={this.handleSubmit.bind(this)} >
+          <input
+            type="text"
+            ref="textInput"
+            placeholder={this.state.promptText}
+          />
+        </form>
+        </div>;
 
     if (this.props.photo.openfaces.length > 0) {
+      var conversation = this.state.conversationHistory.map(function(m) {
+        if (m.from == 'app') {
+          return <TextMessage idTag="computer-side" content={m.content} />
+        } else {
+          return <TextMessage idTag="human-side" content={m.content} />
+        }
+      });
+
+
       return <div className="cluster-debug-conversation">
-        <div className="conversation computer-side">
-          Who is in this photo?
-        </div>
-        <div className="conversation human-side">
-          {response}
-        </div>
+          {conversation}
+          <TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} placeholder={this.state.promptText} />
         </div>
     } else {
       return <div className="cluster-debug-conversation">
@@ -65,7 +72,7 @@ export default class Photo extends Component {
   }
 }
  
-Photo.propTypes = {
+PhotoConversation.propTypes = {
   // This component gets the task to display through a React prop.
   // We can use propTypes to indicate it is required
   photo: PropTypes.object.isRequired

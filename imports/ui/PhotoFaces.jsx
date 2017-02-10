@@ -43,7 +43,7 @@ export default class PhotoFaces extends Component {
 
     return (
       <div className="face-photo">
-        <img ref={this.getHeight.bind(this)} id={this.props.photo._id + "_img_id" + (this.props.size === "160" ? "_tiny" : "")} key={this.props.photo._id + "_img"} src={"http://localhost:3022/" + this.props.photo.resized_uris[this.props.size]} />
+        <img ref={this.getHeight.bind(this)} id={this.props.photo._id + "_img_id" + (this.props.size === "160" ? "_tiny" : "")} key={this.props.photo._id + "_img"} src={"http://localhost:3022/" + this.props.photo.resized_uris[this.props.size]} onClick={() => FlowRouter.go('/image/' + img._id._str, {})} />
         {faceboxes}
       </div>
     );

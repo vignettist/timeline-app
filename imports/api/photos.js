@@ -5,7 +5,9 @@ export const LogicalImages = new Mongo.Collection('logical_images');
 export const Stories = new Mongo.Collection('stories');
 export const Clusters = new Mongo.Collection('clusters');
 export const People = new Mongo.Collection('people');
-// export const Similarity = new Mongo.Collection('Similarity');
+
+//TODO split these into separate files
+
 
 function euclideanDistance(vec1, vec2) {
 	if (vec1.length != vec2.length) {
@@ -13,11 +15,7 @@ function euclideanDistance(vec1, vec2) {
 	}
 
 	var sum = 0;
-
-	for (var i = 0; i < vec1.length; i++) {
-		sum += Math.pow(vec1[i] - vec2[i]);
-	}
-
+	for (var i = 0; i < vec1.length; i++) { sum += Math.pow(vec1[i] - vec2[i], 2); }
 	return sum;
 }
 
@@ -28,7 +26,11 @@ if (Meteor.isServer) {
 	Meteor.publish('single_photo', function singlePhotoPublication(imageId) {
 		photo = Photos.find({'_id': imageId});
 		return photo;
-	})
+	});
+
+	Meteor.publish('single_logical_image', function singleLogicalImage(imageId) {
+		return LogicalImages.find({'_id': imageId});
+	});
 
 	Meteor.publish('photos', function photoPublication(startDate, endDate) {
 		return Photos.find({'datetime.utc_timestamp': { $gte: startDate, $lt: endDate}}, 
@@ -61,6 +63,7 @@ if (Meteor.isServer) {
 		let people = People.find({}).fetch();
 		let best_people = [];
 
+
 		for (let facen = 0; facen < photo[0].openfaces.length; facen++) {
 
 			let face_rep = photo[0].openfaces[facen].rep;
@@ -73,16 +76,14 @@ if (Meteor.isServer) {
 
 				if (sim < min_sim) {
 					min_sim = sim;
-					best_person = people[i]._id.toString();
+					best_person = people[i]._id;
 				}
 			}
 
-			console.log(min_sim);
-			console.log(best_person);
-
-			best_people.append({'_id': best_person});
+			best_people[facen] = ({'_id': best_person});
 		}
 
+		console.log(best_people);
 		return People.find({$or: best_people});
 	});
 
@@ -94,10 +95,7 @@ if (Meteor.isServer) {
 		var similarity = [];
 
 		for (var i = 0; i < aggregate.length; i++) {
-			var sim = 0;
-			for (var j = 0; j < aggregate[i].openfaces.rep.length; j++) {
-	            sim += Math.pow(aggregate[i].openfaces.rep[j] - face[j],2);
-		    }
+			var sim = euclideanDistance(aggregate[i].openfaces.rep, face);
 
 			similarity.push({'_id': aggregate[i]._id.toString(), 'similarity': sim});
 		}
@@ -188,5 +186,5 @@ if (Meteor.isServer) {
 		}
 
 		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'all_photos': 1, 'geolocation': 1, 'size': 1}});
-	})
+	});
 }

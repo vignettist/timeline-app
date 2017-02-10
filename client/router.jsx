@@ -5,6 +5,8 @@ import Face from '../imports/ui/Face.jsx';
 import ClusterCalendar from '../imports/ui/ClusterCalendar.jsx';
 import ClusterTimeline from '../imports/ui/ClusterTimeline.jsx';
 import ClusterOverview from '../imports/ui/ClusterOverview.jsx';
+import ImageConversation from '../imports/ui/ImageConversation.jsx';
+import ClusterConversation from '../imports/ui/ClusterConversation.jsx';
 
 FlowRouter.route('/', {
   action() {
@@ -28,11 +30,12 @@ FlowRouter.route('/image/:imageId', {
 	name: 'imageConversationView',
 
 	subscriptions: function(params) {
-    	this.register('faces_like', Meteor.subscribe('faces_like', new Meteor.Collection.ObjectID(params.imageId), params.facen))
+		this.register('people_like', Meteor.subscribe('people_like', new Meteor.Collection.ObjectID(params.imageId)));
+		this.register('single_logical_image', Meteor.subscribe('single_logical_image', new Meteor.Collection.ObjectID(params.imageId)));
     },
 
     action: function(params) {
-		mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: params.facen})
+		mount(ImageConversation, {imageId: new Meteor.Collection.ObjectID(params.imageId)});
     }
 });
 
@@ -44,8 +47,7 @@ FlowRouter.route('/image/:imageId/face/:facen', {
     },
 
     action: function(params) {
-    	console.log("mounting image");
-		// mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: params.facen})
+		mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: params.facen})
     }
 });
 
@@ -107,6 +109,19 @@ FlowRouter.route('/cluster/:clusterid', {
 
 	action: function(params) {
 		mount(ClusterTimeline)
+	}
+});
+
+FlowRouter.route('/conversation/:clusterid', {
+	name: 'clusterConversationView',
+
+	subscriptions: function(params) {
+		this.register('cluster', Meteor.subscribe('cluster', new Meteor.Collection.ObjectID(params.clusterid)));
+		this.register('conversation_from_cluster', Meteor.subscribe('conversation_from_cluster', new Meteor.Collection.ObjectID(params.clusterid)));
+	},
+
+	action: function(params) {
+		mount(ClusterConversation)
 	}
 });
 
