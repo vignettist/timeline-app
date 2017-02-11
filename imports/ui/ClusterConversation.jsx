@@ -18,9 +18,18 @@ export class ClusterConversation extends Component {
     autoSubmit() {
       var update = this.autoTransition();
 
-      if (update != 'none') {
-        Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
+      if ((update != 'none') && (this.state.pending === false)) {
+        var transition = function() {
+          Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
+        }.bind(this);
+
+        setTimeout(transition.bind(update), 1000);
+        this.setState({pending: true});
       }
+    }
+
+    componentWillReceiveProps() {
+      this.setState({pending: false});
     }
 
     componentDidUpdate() {
@@ -87,7 +96,18 @@ export class ClusterConversation extends Component {
           break;
 
         case 'confirming_person':
-          console.log('confirming_person');
+          Meteor.call('conversation.confirm', text, (err, yn) => {
+            if (err) {
+              alert(err);
+            } else {
+              this.setState({pending: false});
+              if (yn) {
+                Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'app', content: 'Awesome. Computer out.'}, 'no_comment');
+              } else {
+                Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'app', content: 'Oh, so who is it?'}, 'determining_name');
+              }
+            }
+          })
           break;
 
         case 'are_there_people':
@@ -132,12 +152,11 @@ export class ClusterConversation extends Component {
 
 
       return (
-        <div className="cluster-debug-row">
-          <div className="cluster-debug-conversation">
+          <div className="cluster-conversation">
             {conversation}
             {post_conversation}
           </div>
-        </div>);
+      );
     } else {
       return <div>Loading...</div>
     }

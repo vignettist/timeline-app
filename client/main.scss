@@ -922,35 +922,39 @@ a {
 	.cluster-debug-conversation {
 		width: 250px;
 	}
+}
 
-	.conversation {
-		border-radius: 0.25em;
-		padding: 0.25em;
-		box-shadow: 3px 3px 6px black;
-		font-size: 1em;
-		width: 200px;
-		margin-top: 0.5em;
-		color: black;
+.cluster-conversation {
+	width: 400px;
+}
 
-		input {
-			border: 0px dotted black;
-			background: none;
-			font: inherit;
-			width: 100%;
-		}
+.conversation {
+	border-radius: 0.25em;
+	padding: 0.25em;
+	box-shadow: 3px 3px 6px black;
+	font-size: 1em;
+	width: 80%;
+	margin-top: 0.5em;
+	color: black;
+
+	input {
+		border: 0px dotted black;
+		background: none;
+		font: inherit;
+		width: 100%;
 	}
+}
 
-	.human-side {
-		background-color: #93d6ff;
-		margin-left: auto;
-		margin-right: 0px;
-	}
+.human-side {
+	background-color: #93d6ff;
+	margin-left: auto;
+	margin-right: 0px;
+}
 
-	.computer-side {
-		background-color: #ffc796;
-		margin-right: auto;
-		margin-left: 0px;
-	}
+.computer-side {
+	background-color: #ffc796;
+	margin-right: auto;
+	margin-left: 0px;
 }
 
 .highlighted {
