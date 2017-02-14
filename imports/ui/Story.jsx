@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
-import Photo from './Photo.jsx';
+import PhotoFaces from './PhotoFaces.jsx';
 import { Photos, Stories } from '../api/photos.js';
 
 export class Story extends Component {
@@ -26,7 +26,7 @@ export class Story extends Component {
           console.log(photo);
 
           if (photo.length === 1) {
-            contentList.push(<Photo size="640" photos={photo} />);
+            contentList.push(<PhotoFaces size="640" photos={photo} />);
           }
         }
       }

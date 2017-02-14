@@ -5,7 +5,6 @@ import Face from '../imports/ui/Face.jsx';
 import ClusterCalendar from '../imports/ui/ClusterCalendar.jsx';
 import ClusterTimeline from '../imports/ui/ClusterTimeline.jsx';
 import ClusterOverview from '../imports/ui/ClusterOverview.jsx';
-import ImageConversation from '../imports/ui/ImageConversation.jsx';
 import ClusterConversation from '../imports/ui/ClusterConversation.jsx';
 
 FlowRouter.route('/', {
@@ -25,20 +24,6 @@ FlowRouter.route('/clusters/', {
 		FlowRouter.go('/clusters/2015-01-01');
 	}
 });
-
-FlowRouter.route('/image/:imageId', {
-	name: 'imageConversationView',
-
-	subscriptions: function(params) {
-		this.register('people_like', Meteor.subscribe('people_like', new Meteor.Collection.ObjectID(params.imageId)));
-		this.register('single_logical_image', Meteor.subscribe('single_logical_image', new Meteor.Collection.ObjectID(params.imageId)));
-    },
-
-    action: function(params) {
-		mount(ImageConversation, {imageId: new Meteor.Collection.ObjectID(params.imageId)});
-    }
-});
-
 
 FlowRouter.route('/image/:imageId/face/:facen', {
 	name: 'faceDebugView',

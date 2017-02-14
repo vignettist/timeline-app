@@ -204,7 +204,8 @@ export class ClusterConversation extends Component {
  
 ClusterConversation.propTypes = {
   conversation: PropTypes.object.isRequired,
-  cluster: PropTypes.object.isRequired
+  cluster: PropTypes.object.isRequired,
+  photos: PropTypes.object.isRequired
 };
 
 export default createContainer(() => {

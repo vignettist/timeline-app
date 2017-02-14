@@ -5,7 +5,6 @@
   import ReactDOM from 'react-dom';
   import PhotoFaces from './PhotoFaces.jsx';
   import ClusterMap from './ClusterMap.jsx';
-  import PhotoConversation from './PhotoConversation.jsx';
 
   export class ClusterTimeline extends Component {
 
@@ -96,7 +95,6 @@
                 </div>
               </div>
               <PhotoFaces photo={img} displayDuplicates={false} size="640" />
-              <PhotoConversation photo={img} />
             </div>
           );
         }, this
