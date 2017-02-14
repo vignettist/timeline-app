@@ -47,7 +47,7 @@ FlowRouter.route('/image/:imageId/face/:facen', {
     },
 
     action: function(params) {
-		mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: params.facen})
+		mount(Face, {imageId: new Meteor.Collection.ObjectID(params.imageId), facen: Number(params.facen)})
     }
 });
 
@@ -118,6 +118,7 @@ FlowRouter.route('/conversation/:clusterid', {
 	subscriptions: function(params) {
 		this.register('cluster', Meteor.subscribe('cluster', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('conversation_from_cluster', Meteor.subscribe('conversation_from_cluster', new Meteor.Collection.ObjectID(params.clusterid)));
+		this.register('single_cluster_photos', Meteor.subscribe('single_cluster_photos', new Meteor.Collection.ObjectID(params.clusterid)));
 	},
 
 	action: function(params) {

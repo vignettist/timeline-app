@@ -936,6 +936,7 @@ a {
 	width: 80%;
 	margin-top: 0.5em;
 	color: black;
+	transition: 0.25s;
 
 	input {
 		border: 0px dotted black;
@@ -1047,4 +1048,31 @@ a {
 
 .ontop {
 	z-index: 100000!important;
+}
+
+.timeline-strip {
+	height: 120px;
+	// width: 100%;
+	overflow-x: scroll;
+	overflow-y: none;
+	display: flex;
+
+	img {
+		height: 100%;
+		margin-left: 1em;
+		margin-right: 1em;
+	}
+}
+
+.cluster-conversation-controls {
+	display: flex;
+	margin-top: 1em;
+	margin-bottom: 1em;
+
+	button {
+		background-color: #93d6ff;
+		padding: 10px;
+		font-size: 1em;
+		border-radius: 10px;
+	}
 }

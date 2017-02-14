@@ -74,7 +74,11 @@ Meteor.methods({
 			console.log(e);
 			return false;
 		}
-	},
+	}
+});
+
+if (Meteor.isServer) {
+Meteor.methods({
 
 	'conversation.confirm'(responseText) {
 		check(responseText, String);
@@ -91,6 +95,7 @@ Meteor.methods({
 
 	'conversation.whoIs'(responseText) {
   		check(responseText, String);
+
   		this.unblock();
 		try {
 			var result = HTTP.call("POST", "http://localhost:3050/parse",
@@ -130,3 +135,4 @@ Meteor.methods({
 		}
 	}
 });
+}

@@ -1,10 +1,14 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import ReactDOM from 'react-dom';
-import {Clusters} from '../api/photos.js';
+import {Clusters, LogicalImages} from '../api/photos.js';
 import {Conversations} from '../api/conversation.js';
 import TextMessage from './Conversation/TextMessage.jsx';
 import TextInputMessage from './Conversation/TextInputMessage.jsx';
+import TimelineStrip from './TimelineStrip.jsx';
+import Controls from './Controls.jsx';
+
+const DELAY_TIME = 1000;
 
 export class ClusterConversation extends Component {
     constructor(props) {
@@ -18,24 +22,34 @@ export class ClusterConversation extends Component {
     autoSubmit() {
       var update = this.autoTransition();
 
+      // if there is an automatic state transition and we're not currently waiting for a state transition (to avoid infinite loops)
       if ((update != 'none') && (this.state.pending === false)) {
         var transition = function() {
           Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
         }.bind(this);
 
-        setTimeout(transition.bind(update), 1000);
+        // add a 1.5 second delay to make it seem more natural
+        setTimeout(transition.bind(update), DELAY_TIME);
         this.setState({pending: true});
       }
     }
 
-    componentWillReceiveProps() {
-      this.setState({pending: false});
+    componentWillReceiveProps(newProps) {
+      // when new a new chat state is arriving, disable pending indicator
+      if (newProps.conversation.history.length > 0) {
+        if (newProps.conversation.history[newProps.conversation.history.length-1].from == 'app') {
+          console.log(newProps);
+          console.log('set pending false in componentWillReceiveProps');
+          this.setState({pending: false});
+        }
+      }
     }
 
     componentDidUpdate() {
       this.autoSubmit();
     }
 
+    // some states should automatically transition into another one
     autoTransition() {
       if (typeof this.props.conversation !== 'undefined') {
         switch(this.props.conversation.state) {
@@ -64,6 +78,7 @@ export class ClusterConversation extends Component {
       }
     }
 
+    // some transitions are triggered by input
     stateTransition(text) {
       switch(this.props.conversation.state) {
         case 'determining_name':
@@ -89,8 +104,13 @@ export class ClusterConversation extends Component {
                 var newState = 'determining_name';
               }
 
-              this.setState({pending: false});
-              Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'app', content: content}, newState);
+              var transition = function() {
+                Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
+              }.bind(this);
+
+              var update = {output: {from: 'app', content: content}, newState: newState};
+              setTimeout(transition.bind(update), DELAY_TIME);
+
             }
           });
           break;
@@ -102,10 +122,20 @@ export class ClusterConversation extends Component {
             } else {
               this.setState({pending: false});
               if (yn) {
-                Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'app', content: 'Awesome. Computer out.'}, 'no_comment');
+                content = 'Awesome. Computer out.';
+                newState = 'no_comment';
               } else {
-                Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'app', content: 'Oh, so who is it?'}, 'determining_name');
+                content = 'Oh, so who is it?';
+                newState = 'determining_name';
               }
+
+              var transition = function() {
+                Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
+              }.bind(this);
+
+              var update = {output: {from: 'app', content: content}, newState: newState};
+              setTimeout(transition.bind(update), DELAY_TIME);
+
             }
           })
           break;
@@ -125,11 +155,16 @@ export class ClusterConversation extends Component {
 
       var inputBox = ReactDOM.findDOMNode(this.refs.textInput.refs.textInput);
       const text = inputBox.value.trim();
-      inputBox.value = '';
-      this.setState({pending: true});
-      Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user', content: text}, this.props.conversation.state);
 
-      this.stateTransition(text);
+      // check to make sure that the user typed anything
+      if (typeof text !== 'undefined') {
+        inputBox.value = '';
+        console.log('set pending true in handleSubmit');
+        this.setState({pending: true});
+        Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user', content: text}, this.props.conversation.state);
+
+        this.stateTransition(text);
+      }
     }
 
   render() {
@@ -152,9 +187,13 @@ export class ClusterConversation extends Component {
 
 
       return (
-          <div className="cluster-conversation">
-            {conversation}
-            {post_conversation}
+          <div className="cluster-conversation-wrapper">
+            <Controls debug={true} backUrl="/clusters" />
+            <TimelineStrip photos={this.props.photos} />
+            <div className="cluster-conversation">
+              {conversation}
+              {post_conversation}
+            </div>
           </div>
       );
     } else {
@@ -171,7 +210,8 @@ ClusterConversation.propTypes = {
 export default createContainer(() => {
   return {
     conversation: Conversations.find({}).fetch()[0],
-    cluster: Clusters.find({}).fetch()[0]
+    cluster: Clusters.find({}).fetch()[0],
+    photos: LogicalImages.find({}).fetch()
   };
 
 }, ClusterConversation);
