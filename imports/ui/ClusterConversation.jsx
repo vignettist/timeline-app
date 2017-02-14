@@ -15,7 +15,8 @@ export class ClusterConversation extends Component {
         super(props);
 
         this.state = {
-          pending: false
+          pending: false,
+          currentImage: undefined,
         };
     }
 
@@ -38,8 +39,6 @@ export class ClusterConversation extends Component {
       // when new a new chat state is arriving, disable pending indicator
       if (newProps.conversation.history.length > 0) {
         if (newProps.conversation.history[newProps.conversation.history.length-1].from == 'app') {
-          console.log(newProps);
-          console.log('set pending false in componentWillReceiveProps');
           this.setState({pending: false});
         }
       }
@@ -54,7 +53,8 @@ export class ClusterConversation extends Component {
       if (typeof this.props.conversation !== 'undefined') {
         switch(this.props.conversation.state) {
           case 'init':
-            var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on [PLACEHOLDER DATE].";
+            var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
+            var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
             return({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
 
           case 'unrecognized_person':
@@ -188,7 +188,7 @@ export class ClusterConversation extends Component {
 
       return (
           <div className="cluster-conversation-wrapper">
-            <Controls debug={true} backUrl="/clusters" />
+            <Controls debug={true} cluster={this.props.cluster} />
             <TimelineStrip photos={this.props.photos} />
             <div className="cluster-conversation">
               {conversation}

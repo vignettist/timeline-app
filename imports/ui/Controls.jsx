@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 
 export default class Controls extends Component {
 	back() {
-		 FlowRouter.go(this.props.backUrl);
+		var date = new moment(this.props.cluster.start_time.utc_timestamp);
+		FlowRouter.go("/clusters/" + date.format("YYYY-MM-DDDD"));
 	}
 
 	reset() {
@@ -29,5 +30,5 @@ export default class Controls extends Component {
 
 Controls.propTypes = {
 	debug: PropTypes.bool.isRequired,
-	backUrl: PropTypes.string.isRequired
+	cluster: PropTypes.object.isRequired
 };

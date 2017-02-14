@@ -74,6 +74,17 @@ Meteor.methods({
 			console.log(e);
 			return false;
 		}
+	},
+
+	'conversation.resetHistory'(clusterId) {
+		this.unblock();
+
+		try {
+			Conversations.update({'cluster_id': clusterId}, {$set: {'history': [], 'state': 'init'}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
 	}
 });
 
