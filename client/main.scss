@@ -1051,7 +1051,7 @@ a {
 }
 
 .timeline-strip {
-	height: 120px;
+	height: 160px;
 	// width: 100%;
 	overflow-x: scroll;
 	overflow-y: none;
@@ -1059,8 +1059,8 @@ a {
 
 	img {
 		height: 100%;
-		margin-left: 1em;
-		margin-right: 1em;
+		margin-right: 2em;
+		border-radius: 5px;
 	}
 }
 
@@ -1073,7 +1073,7 @@ a {
 		background-color: #93d6ff;
 		padding: 10px;
 		font-size: 1em;
-		border-radius: 10px;
+		border-radius: 5px;
 		border: 1px solid black;
 		margin-right: 2em;
 	}
