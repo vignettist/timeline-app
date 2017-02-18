@@ -5,6 +5,7 @@ import {Clusters, LogicalImages} from '../api/photos.js';
 import {Conversations} from '../api/conversation.js';
 import TextMessage from './Conversation/TextMessage.jsx';
 import TextInputMessage from './Conversation/TextInputMessage.jsx';
+import PhotoMessage from './Conversation/PhotoMessage.jsx';
 import TimelineStrip from './TimelineStrip.jsx';
 import Controls from './Controls.jsx';
 
@@ -24,35 +25,55 @@ export class ClusterConversation extends Component {
       var update = this.autoTransition();
 
       // if there is an automatic state transition and we're not currently waiting for a state transition (to avoid infinite loops)
-      if ((update != 'none') && (this.state.pending === false)) {
+      if ((update != 'none')) {
         var transition = function() {
           Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
-        }.bind(this);
+        }.bind(this, update);
 
         // add a 1.5 second delay to make it seem more natural
-        setTimeout(transition.bind(update), DELAY_TIME);
+        setTimeout(transition, DELAY_TIME);
         this.setState({pending: true});
       }
     }
 
     componentWillReceiveProps(newProps) {
       // when new a new chat state is arriving, disable pending indicator
-      if (newProps.conversation.history.length > 0) {
-        if (newProps.conversation.history[newProps.conversation.history.length-1].from == 'app') {
-          this.setState({pending: false});
+      if (typeof this.props.conversation == 'undefined') {
+        var old_length = 0;
+      } else {
+        var old_length = this.props.conversation.history.length;
+      }
+
+      if (newProps.conversation.history.length != old_length) {
+        if (newProps.conversation.history.length > 0) {
+          if (newProps.conversation.history[newProps.conversation.history.length-1].from.slice(0,3) == 'app') {
+            this.setState({pending: false});
+          }
         }
       }
+      
     }
 
     componentDidUpdate() {
-      this.autoSubmit();
+      console.log("componentDidUpdate");
+      if (this.state.pending === false) {
+        console.log("autoSubmitting");
+        this.autoSubmit();
+      }
     }
 
     // some states should automatically transition into another one
     autoTransition() {
       if (typeof this.props.conversation !== 'undefined') {
-        switch(this.props.conversation.state) {
-          case 'init':
+        var split_state = this.props.conversation.state.split("?");
+        if (split_state.length > 0) {
+          var parameter = split_state[1];
+        } else {
+          var parameter = '';
+        }
+
+        switch(split_state[0]) {
+          case 'uninitialized':
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
             return({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
@@ -68,7 +89,24 @@ export class ClusterConversation extends Component {
             return({output: {from: 'app', content: content}, newState: newState});
 
           case 'person_in_photo':
-            return({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name'});
+            // select first image with a person
+            for (var i = 0; i < this.props.photos.length; i++) {
+              if (this.props.photos[i].openfaces.length > 0) {
+                break;
+              }
+            }
+
+            var photo_id = this.props.photos[i]._id._str;
+            console.log(photo_id);
+
+            return({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?' + photo_id});
+
+          case 'presenting_image':
+            if (parameter.length == 0) {
+              console.log("ERROR, parameter should exist here");
+            }
+
+            return({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?' + parameter});
 
           default:
             return('none');
@@ -80,7 +118,14 @@ export class ClusterConversation extends Component {
 
     // some transitions are triggered by input
     stateTransition(text) {
-      switch(this.props.conversation.state) {
+      var split_state = this.props.conversation.state.split("?");
+      if (split_state.length > 0) {
+        var parameter = split_state[1];
+      } else {
+        var parameter = '';
+      }
+
+      switch(split_state[0]) {
         case 'determining_name':
           Meteor.call('conversation.whoIs', text, (err, names) => {
             if (err) {
@@ -88,10 +133,10 @@ export class ClusterConversation extends Component {
             } else {
               if (names.length == 0) {
                 var content =  "Sorry, I'm not sure I got that. Is there a person in this image?";
-                var newState = 'are_there_people';
+                var newState = 'are_there_people?' + parameter;
               } else if (names.length == 1) {
                 var content = "Oh, so that's " + names[0] + "?";
-                var newState = 'confirming_person';
+                var newState = 'confirming_person?' + parameter;
               } else if (names.length > 1) {
                 var listed_names = names.reduce(function(list, n, i, a) {
                   if (i == a.length - 1) {
@@ -101,7 +146,7 @@ export class ClusterConversation extends Component {
                   }
                 });
                 var content = "Wait, is that " + listed_names + "?";
-                var newState = 'determining_name';
+                var newState = 'determining_name?' + parameter;
               }
 
               var transition = function() {
@@ -169,15 +214,29 @@ export class ClusterConversation extends Component {
 
   render() {
     if (typeof this.props.conversation !== 'undefined') {
-      var state = this.props.conversation.state;
+
+      var split_state = this.props.conversation.state.split("?");
+      if (split_state.length > 0) {
+        var parameter = split_state[1];
+        var state = split_state[0];
+      } else {
+        var parameter = '';
+        var state = this.props.conversation.state;
+      }
 
       var conversation = this.props.conversation.history.map(function(m) {
         if (m.from == 'app') {
           return <TextMessage idTag="computer-side" content={m.content} />
+        } else if (m.from == 'app_image') {
+          var selectedPhoto = this.props.photos.filter(function(p) {
+            return p._id._str == m.content;
+          })[0];
+
+          return <PhotoMessage idTag="computer-side" content={selectedPhoto} />
         } else {
           return <TextMessage idTag="human-side" content={m.content} />
         }
-      });
+      }, this);
 
       if (this.state.pending) {
         var post_conversation = <TextMessage idTag="computer-side" content="..." />;

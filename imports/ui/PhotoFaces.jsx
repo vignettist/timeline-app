@@ -12,9 +12,10 @@ export default class PhotoFaces extends Component {
   getHeight(element) {
     // something bad has happened where the size values in the database no longer reflect the true, rotated height/width
     if (element) {
-      var rendered_height = element.clientHeight;
-      if (this.state.scale != rendered_height/960) {
-        this.setState({scale: rendered_height/960});
+      var rendered_width = element.clientWidth;
+
+      if (this.state.scale != rendered_width/1280) {
+        this.setState({scale: rendered_width/1280});
       }
     }
   }

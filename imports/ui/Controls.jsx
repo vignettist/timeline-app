@@ -22,6 +22,7 @@ export default class Controls extends Component {
 		return(
 			<div className="cluster-conversation-controls">
         		<button className="back-button" onClick={this.back.bind(this)}>Back</button>
+        		<button className="compose-button">Start Composing</button>
         		{debug}
         	</div>
         );

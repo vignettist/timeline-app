@@ -49,6 +49,11 @@ function recognize_confirmation(text) {
 
 if (Meteor.isServer) {
 	Meteor.publish('conversation_from_cluster', function getConversation(clusterId) {
+		var ndocs = Conversations.find({'cluster_id': clusterId}).fetch().length;
+		if (ndocs == 0) {
+			Conversations.insert({'cluster_id': clusterId, 'state': 'uninitialized', 'history': []});
+		}
+
 		return Conversations.find({'cluster_id': clusterId});
 	})
 }
@@ -80,7 +85,7 @@ Meteor.methods({
 		this.unblock();
 
 		try {
-			Conversations.update({'cluster_id': clusterId}, {$set: {'history': [], 'state': 'init'}});
+			Conversations.update({'cluster_id': clusterId}, {$set: {'history': [], 'state': 'uninitialized'}});
 		} catch(e) {
 			console.log(e);
 			return false;
