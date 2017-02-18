@@ -136,7 +136,11 @@ export class ClusterConversation extends Component {
                 var content =  "Sorry, I'm not sure I got that. Is there a person in this image?";
                 var newState = 'are_there_people?' + parameter;
               } else if (names.length == 1) {
-                var content = "Oh, so that's " + names[0] + "?";
+                if (Math.random() > 0.5) {
+                  var content = "Just double checking, that's " + names[0] + "?";
+                } else {
+                  var content = "Oh, so that's " + names[0] + "?";
+                }
                 var newState = 'confirming_person?' + parameter;
               } else if (names.length > 1) {
                 var listed_names = names.reduce(function(list, n, i, a) {
@@ -167,10 +171,16 @@ export class ClusterConversation extends Component {
               alert(err);
             } else {
               this.setState({pending: false});
+
               if (yn) {
-                content = 'Awesome. Computer out.';
+
+                // name is confirmed (need to figre out how to pass that name down as a parameter)
+                content = 'Ok, great! What were you doing with ';
                 newState = 'no_comment';
+
               } else {
+
+                // could not confirm name
                 content = 'Oh, so who is it?';
                 newState = 'determining_name';
               }

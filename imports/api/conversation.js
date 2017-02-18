@@ -5,6 +5,7 @@ import { check } from 'meteor/check';
 export const Conversations = new Mongo.Collection('conversations');
 
 function listInString(list, text) {
+	var text = text.toLowerCase();
 	con = false;
 
 	for (var i = 0; i < list.length; i++ ) {

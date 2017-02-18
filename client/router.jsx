@@ -1,6 +1,5 @@
 import {mount} from 'react-mounter';
 import Calendar from '../imports/ui/Calendar/Calendar.jsx';
-import Story from '../imports/ui/Story.jsx';
 import Face from '../imports/ui/Face.jsx';
 import ClusterCalendar from '../imports/ui/ClusterCalendar.jsx';
 import ClusterTimeline from '../imports/ui/ClusterTimeline.jsx';
@@ -68,19 +67,6 @@ FlowRouter.route('/clusters/:date', {
 
 	action: function(params) {
 		mount(ClusterCalendar, {date: moment.utc(params.date)})
-	}
-});
-
-FlowRouter.route('/story', {
-	name: 'storyView',
-
-	subscriptions: function(params) {
-		this.register('stories', Meteor.subscribe('stories'));
-		this.register('story_photos', Meteor.subscribe('story_photos'));
-	},
-
-	action: function(params) {
-		mount(Story);
 	}
 });
 
