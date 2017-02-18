@@ -6,6 +6,7 @@ import {Conversations} from '../api/conversation.js';
 import TextMessage from './Conversation/TextMessage.jsx';
 import TextInputMessage from './Conversation/TextInputMessage.jsx';
 import PhotoMessage from './Conversation/PhotoMessage.jsx';
+import PlaceMessage from './Conversation/PlaceMessage.jsx';
 import TimelineStrip from './TimelineStrip.jsx';
 import Controls from './Controls.jsx';
 
@@ -187,10 +188,6 @@ export class ClusterConversation extends Component {
 
         case 'are_there_people':
           console.log('are_there_people');
-          break;
-
-        case 'determining_name':
-          console.log('determining_name');
           break;
       }
     }
