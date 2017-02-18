@@ -41,19 +41,15 @@ export class ClusterConversation extends Component {
         };
     }
 
-    autoSubmit() {
-      var update = this.autoTransition();
-
+    finishTransition(update) {
       // if there is an automatic state transition and we're not currently waiting for a state transition (to avoid infinite loops)
-      if ((update != 'none')) {
-        var transition = function() {
-          Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
-        }.bind(this, update);
+      var transition = function() {
+        Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
+      }.bind(this, update);
 
-        // add a 1.5 second delay to make it seem more natural
-        setTimeout(transition, DELAY_TIME);
-        this.setState({pending: true});
-      }
+      // add a 1.5 second delay to make it seem more natural
+      setTimeout(transition, DELAY_TIME);
+      this.setState({pending: true});
     }
 
     componentWillReceiveProps(newProps) {
@@ -78,12 +74,12 @@ export class ClusterConversation extends Component {
       console.log("componentDidUpdate");
       if (this.state.pending === false) {
         console.log("autoSubmitting");
-        this.autoSubmit();
+        this.autoTransition(this.finishTransition.bind(this));
       }
     }
 
     // some states should automatically transition into another one
-    autoTransition() {
+    autoTransition(transitionCallback) {
       if (typeof this.props.conversation !== 'undefined') {
         var split_state = splitParameters(this.props.conversation.state);
 
@@ -91,7 +87,8 @@ export class ClusterConversation extends Component {
           case 'uninitialized':
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-            return({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
+            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
+            break;
 
           case 'unrecognized_person':
             if (this.props.cluster.faces.length > 0) {
@@ -101,7 +98,9 @@ export class ClusterConversation extends Component {
               var newState = 'no_comment';
               var content = "I don't have anything to ask you right now."
             }
-            return({output: {from: 'app', content: content}, newState: newState});
+
+            transitionCallback({output: {from: 'app', content: content}, newState: newState});
+            break;
 
           case 'person_in_photo':
             // select first image with a person
@@ -114,30 +113,30 @@ export class ClusterConversation extends Component {
             var photo_id = this.props.photos[i]._id._str;
             console.log(photo_id);
 
-            return({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + '?face=0'});
+            transitionCallback({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + '?face=0'});
+            break;
 
           case 'presenting_image':
             if (!('image' in split_state.parameters)) {
               console.log("ERROR, parameter image should exist here");
             }
 
-            return({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image});
+            transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image});
+            break;
 
           default:
-            return('none');
+            break;
         }
-      } else {
-        return 'none';
       }
     }
 
     // some transitions are triggered by input
-    stateTransition(text) {
+    stateTransition(text, transitionCallback) {
       var split_state = splitParameters(this.props.conversation.state);
 
       switch(split_state.state) {
         case 'determining_name':
-          Meteor.call('conversation.whoIs', text, (err, names) => {
+          var interpretPerson = function interpretPerson(err, names) {
             if (err) {
               alert(err);
             } else {
@@ -165,29 +164,24 @@ export class ClusterConversation extends Component {
                 var newState = 'determining_name?image=' + split_state.parameters.image;
               }
 
-              var transition = function() {
-                Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
-              }.bind(this);
+              transitionCallback({output: {from: 'app', content: content}, newState: newState})
+          }}.bind(transitionCallback);
 
-              var update = {output: {from: 'app', content: content}, newState: newState};
-              setTimeout(transition.bind(update), DELAY_TIME);
+          Meteor.call('conversation.whoIs', text, interpretPerson);
 
-            }
-          });
           break;
 
         case 'confirming_person':
-          Meteor.call('conversation.confirm', text, (err, yn) => {
+          var confirmName = function confirmName(err, yn) {
             if (err) {
               alert(err);
             } else {
-              this.setState({pending: false});
 
               if (yn) {
 
                 // add name to names database
 
-
+                // Meteor.call
 
                 content = 'Ok, great! What were you doing with ' + split_state.parameters.name + ' on that day?';
                 newState = 'gathering_clustering_information?name=' + split_state.parameters.name;
@@ -199,15 +193,12 @@ export class ClusterConversation extends Component {
                 newState = 'determining_name';
               }
 
-              var transition = function() {
-                Meteor.call('conversation.addHistory', this.props.cluster._id, update.output, update.newState);
-              }.bind(this);
-
-              var update = {output: {from: 'app', content: content}, newState: newState};
-              setTimeout(transition.bind(update), DELAY_TIME);
+              transitionCallback({output: {from: 'app', content: content}, newState: newState});
 
             }
-          })
+          }.bind(transitionCallback);
+
+          Meteor.call('conversation.confirm', text, confirmName);
           break;
 
         case 'are_there_people':
@@ -229,11 +220,10 @@ export class ClusterConversation extends Component {
       // check to make sure that the user typed anything
       if (typeof text !== 'undefined') {
         inputBox.value = '';
-        console.log('set pending true in handleSubmit');
-        this.setState({pending: true});
         Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user', content: text}, this.props.conversation.state);
+        this.setState({pending: true});
 
-        this.stateTransition(text);
+        this.stateTransition(text, this.finishTransition.bind(this));
       }
     }
 

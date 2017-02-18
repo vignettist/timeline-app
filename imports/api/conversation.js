@@ -65,7 +65,6 @@ Meteor.methods({
 		check(output.content, String);
 		check(output.from, String);
 		check(newState, String);
-		this.unblock();
 
 		try {
 			console.log(clusterId);
