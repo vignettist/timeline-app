@@ -4,7 +4,7 @@ export default class TimelineStrip extends Component {
 	render() {
 		if (this.props.photos.length > 0) {
 			var photos_list = this.props.photos.map(function(p) {
-				return <img src={"http://localhost:3022/" + p.resized_uris[320]} />
+				return <img src={"http://localhost:3022/" + p.resized_uris[640]} />
 			})
 		} else {
 			var photos_list = [];

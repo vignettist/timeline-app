@@ -71,6 +71,7 @@ Meteor.methods({
 			console.log(clusterId);
 			var current_conversation = Conversations.find({'cluster_id': clusterId}).fetch()[0];
 			var current_history = current_conversation.history;
+			output['old_state'] = current_conversation.state;
 			current_history.push(output);
 
 			console.log([{'_id': current_conversation._id}, {$set: {'history': current_history, 'state': newState}}])

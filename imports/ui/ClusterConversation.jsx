@@ -12,6 +12,25 @@ import Controls from './Controls.jsx';
 
 const DELAY_TIME = 1000;
 
+function splitParameters(state) {
+  console.log(state);
+  var split_state = state.split("?");
+
+  if (split_state.length > 1) {
+    console.log(split_state);
+    var parameters = {};
+    var split_parameters = split_state[1].split(",");
+    for (var i = 0; i < split_parameters.length; i++) {
+      var split_parameter = split_parameters[i].split("=");
+      parameters[split_parameter[0]] = split_parameter[1];
+    }
+  } else {
+    var parameters = [];
+  }
+
+  return {state: split_state[0], parameters: parameters};
+}
+
 export class ClusterConversation extends Component {
     constructor(props) {
         super(props);
@@ -66,14 +85,9 @@ export class ClusterConversation extends Component {
     // some states should automatically transition into another one
     autoTransition() {
       if (typeof this.props.conversation !== 'undefined') {
-        var split_state = this.props.conversation.state.split("?");
-        if (split_state.length > 0) {
-          var parameter = split_state[1];
-        } else {
-          var parameter = '';
-        }
+        var split_state = splitParameters(this.props.conversation.state);
 
-        switch(split_state[0]) {
+        switch(split_state.state) {
           case 'uninitialized':
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
@@ -100,14 +114,14 @@ export class ClusterConversation extends Component {
             var photo_id = this.props.photos[i]._id._str;
             console.log(photo_id);
 
-            return({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?' + photo_id});
+            return({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + '?face=0'});
 
           case 'presenting_image':
-            if (parameter.length == 0) {
-              console.log("ERROR, parameter should exist here");
+            if (!('image' in split_state.parameters)) {
+              console.log("ERROR, parameter image should exist here");
             }
 
-            return({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?' + parameter});
+            return({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image});
 
           default:
             return('none');
@@ -119,14 +133,9 @@ export class ClusterConversation extends Component {
 
     // some transitions are triggered by input
     stateTransition(text) {
-      var split_state = this.props.conversation.state.split("?");
-      if (split_state.length > 0) {
-        var parameter = split_state[1];
-      } else {
-        var parameter = '';
-      }
+      var split_state = splitParameters(this.props.conversation.state);
 
-      switch(split_state[0]) {
+      switch(split_state.state) {
         case 'determining_name':
           Meteor.call('conversation.whoIs', text, (err, names) => {
             if (err) {
@@ -134,14 +143,16 @@ export class ClusterConversation extends Component {
             } else {
               if (names.length == 0) {
                 var content =  "Sorry, I'm not sure I got that. Is there a person in this image?";
-                var newState = 'are_there_people?' + parameter;
+                var newState = 'are_there_people?image=' + split_state.parameters.image;
+
               } else if (names.length == 1) {
                 if (Math.random() > 0.5) {
                   var content = "Just double checking, that's " + names[0] + "?";
                 } else {
                   var content = "Oh, so that's " + names[0] + "?";
                 }
-                var newState = 'confirming_person?' + parameter;
+
+                var newState = 'confirming_person?image=' + split_state.parameters.image + ',name=' + names[0];
               } else if (names.length > 1) {
                 var listed_names = names.reduce(function(list, n, i, a) {
                   if (i == a.length - 1) {
@@ -151,7 +162,7 @@ export class ClusterConversation extends Component {
                   }
                 });
                 var content = "Wait, is that " + listed_names + "?";
-                var newState = 'determining_name?' + parameter;
+                var newState = 'determining_name?image=' + split_state.parameters.image;
               }
 
               var transition = function() {
@@ -174,9 +185,12 @@ export class ClusterConversation extends Component {
 
               if (yn) {
 
-                // name is confirmed (need to figre out how to pass that name down as a parameter)
-                content = 'Ok, great! What were you doing with ';
-                newState = 'no_comment';
+                // add name to names database
+
+
+
+                content = 'Ok, great! What were you doing with ' + split_state.parameters.name + ' on that day?';
+                newState = 'gathering_clustering_information?name=' + split_state.parameters.name;
 
               } else {
 
@@ -198,6 +212,10 @@ export class ClusterConversation extends Component {
 
         case 'are_there_people':
           console.log('are_there_people');
+          break;
+
+        case 'gathering_clustering_information':
+          console.log('gathering_clustering_information');
           break;
       }
     }
@@ -239,7 +257,8 @@ export class ClusterConversation extends Component {
             return p._id._str == m.content;
           })[0];
 
-          return <PhotoMessage idTag="computer-side" content={selectedPhoto} />
+          return [<PhotoMessage idTag="computer-side" content={selectedPhoto} />,
+                  <div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>]
         } else {
           return <TextMessage idTag="human-side" content={m.content} />
         }
@@ -255,11 +274,20 @@ export class ClusterConversation extends Component {
       return (
           <div className="cluster-conversation-wrapper">
             <Controls debug={true} cluster={this.props.cluster} />
-            <TimelineStrip photos={this.props.photos} />
-            <div className="cluster-conversation">
-              {conversation}
-              {post_conversation}
+
+            <div className="cluster-conversation-lower">
+              <div className="cluster-conversation-left">
+                <div className="cluster-conversation">
+                  {conversation}
+                  {post_conversation}
+                </div>
+              </div>
+
+              <div className="cluster-conversation-right">
+                <TimelineStrip photos={this.props.photos} /> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
+              </div>
             </div>
+
           </div>
       );
     } else {

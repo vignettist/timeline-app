@@ -1,4 +1,5 @@
 @import "{francocatena:compass}/compass/css3/transition";
+@import url('https://fonts.googleapis.com/css?family=Merriweather:300,400,700');
 
 $grass: #FEF8CF;
 $sage: #D4DFC7;
@@ -924,19 +925,18 @@ a {
 	}
 }
 
-.cluster-conversation {
-	width: 400px;
-}
-
 .conversation {
 	border-radius: 0.25em;
 	padding: 0.25em;
 	box-shadow: 3px 3px 6px black;
 	font-size: 1em;
-	width: 80%;
+	margin-right: 10em;
 	margin-top: 0.5em;
 	color: black;
 	transition: 0.25s;
+	width: 80%;
+	margin: 5px;
+	margin-bottom: 10px;
 
 	input {
 		border: 0px dotted black;
@@ -944,16 +944,20 @@ a {
 		font: inherit;
 		width: 100%;
 	}
+
+	img {
+		max-width: 100%;
+	}
 }
 
 .human-side {
-	background-color: #93d6ff;
+	background-color: #ccc;
 	margin-left: auto;
 	margin-right: 0px;
 }
 
 .computer-side {
-	background-color: #ffc796;
+	background-color: #93d6ff;
 	margin-right: auto;
 	margin-left: 0px;
 }
@@ -1050,37 +1054,84 @@ a {
 	z-index: 100000!important;
 }
 
+.cluster-conversation-left, .cluster-conversation-right {
+	width: calc(50% - 1em);
+}
+
 .timeline-strip {
-	height: 160px;
-	// width: 100%;
-	overflow-x: scroll;
-	overflow-y: none;
-	display: flex;
+	height: calc(100vh - 6em + 6px);
+	width: 100%;
+	overflow-y: scroll;
 
 	img {
-		height: 100%;
+		display: block;
+		width: 100%;
+		// width: 400px;
 		margin-right: 2em;
-		border-radius: 5px;
+		margin-bottom: 1em;
+		// border-radius: 5px;
 	}
 }
 
 .cluster-conversation-controls {
 	display: flex;
-	margin-top: 1em;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 1em;
+	padding-bottom: 10px;
 	margin-bottom: 1em;
 
+	height: 3em;
+	// maring-top: 1em;
+
 	button {
-		background-color: #93d6ff;
+		background-color: #eee;
 		padding: 10px;
 		font-size: 1em;
 		border-radius: 5px;
 		border: 1px solid black;
-		margin-right: 2em;
+		height: 40px;
+		display: flex;
+
+		img {
+			height: 28px;
+			margin-top: -4px;
+			margin-right: 8px;
+		}
+	}
+
+	button:hover {
+		background-color: #4286f4;
+		color: white;
+		border: 1px solid white;
+
+		img {
+			filter: invert(100%);
+		}
+	}
+
+	button:active {
+		margin-top: 4px;
+	}
+
+	h1 {
+		color: black;
+		font-weight: bold;
+		font-family: "Merriweather", serif;
 	}
 }
 
 .cluster-conversation-wrapper {
-	margin: 1em;
+	margin-left: auto;
+	margin-right: auto;
+	height: 100%;
+	width: 80%;
+	max-width: 1200px;
+}
+
+.cluster-conversation-lower {
+	display: flex;
+	justify-content: space-between;
 }
 
 .conversation .leaflet-container {
@@ -1088,5 +1139,14 @@ a {
 	border-radius: 5px;
 }
 
+.computer-avatar {
+	position: relative;
 
+	img {
+		position: absolute;
+		left: -70px;
+		height: 60px;
+		top: -70px;
+	}
+}
 
