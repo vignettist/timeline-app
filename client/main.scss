@@ -951,7 +951,7 @@ a {
 }
 
 .human-side {
-	background-color: #ccc;
+	background-color: #ddd;
 	margin-left: auto;
 	margin-right: 0px;
 }
@@ -1054,22 +1054,28 @@ a {
 	z-index: 100000!important;
 }
 
-.cluster-conversation-left, .cluster-conversation-right {
-	width: calc(50% - 1em);
+.cluster-conversation {
+	width: calc(100% - 50px);
 }
+
+.cluster-conversation-left, .cluster-conversation-right {
+	width: calc(50% - 0.5em);
+}
+
 
 .timeline-strip {
 	height: calc(100vh - 6em + 6px);
 	width: 100%;
 	overflow-y: scroll;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
 
 	img {
 		display: block;
-		width: 100%;
-		// width: 400px;
-		margin-right: 2em;
+		max-width: calc(50% - 1em);
+		margin-left: 1em;
 		margin-bottom: 1em;
-		// border-radius: 5px;
 	}
 }
 
@@ -1146,7 +1152,17 @@ a {
 		position: absolute;
 		left: -70px;
 		height: 60px;
-		top: -70px;
+		top: -50px;
 	}
 }
 
+.user-avatar {
+	position: relative;
+
+	img {
+		position: absolute;
+		right: -60px;
+		height: 60px;
+		top: -50px;
+	}
+}

@@ -8,6 +8,7 @@ export default class TextInputMessage extends Component {
 					<input
 						type="text"
 						ref="textInput"
+						placeholder="Type a response..."
 					/>
         		</form>
         	</div>

@@ -178,10 +178,9 @@ export class ClusterConversation extends Component {
             } else {
 
               if (yn) {
-
                 // add name to names database
 
-                // Meteor.call
+                // Meteor.call('conversation.associateFace', split_state.parameters.name, split_state.parameters.image, split_state.parameters.face)
 
                 content = 'Ok, great! What were you doing with ' + split_state.parameters.name + ' on that day?';
                 newState = 'gathering_clustering_information?name=' + split_state.parameters.name;
@@ -239,26 +238,55 @@ export class ClusterConversation extends Component {
         var state = this.props.conversation.state;
       }
 
-      var conversation = this.props.conversation.history.map(function(m) {
-        if (m.from == 'app') {
-          return <TextMessage idTag="computer-side" content={m.content} />
-        } else if (m.from == 'app_image') {
-          var selectedPhoto = this.props.photos.filter(function(p) {
-            return p._id._str == m.content;
-          })[0];
+      var conversation = [];
+      var app_side = true;
+      var user_side = true;
 
-          return [<PhotoMessage idTag="computer-side" content={selectedPhoto} />,
-                  <div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>]
+      for (var i = this.props.conversation.history.length; i >= 0; i--) {
+        if (i == this.props.conversation.history.length) {
+          if (this.state.pending) {
+            conversation = [<TextMessage idTag="computer-side" content="..." />, <div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>];
+            app_side = false;
+          } else {
+            conversation = [<TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} />, <div className="user-avatar"><img src="/icons/user.png" /></div>];
+            user_side = false;
+          }
         } else {
-          return <TextMessage idTag="human-side" content={m.content} />
-        }
-      }, this);
+          var m = this.props.conversation.history[i];
 
-      if (this.state.pending) {
-        var post_conversation = <TextMessage idTag="computer-side" content="..." />;
-      } else {
-        var post_conversation = <TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} />;
+          if (m.from == 'app') {
+            var new_items = [<TextMessage idTag="computer-side" content={m.content} />];
+            if (app_side) {
+              new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
+            }
+            app_side = false;
+            conversation = new_items.concat(conversation);
+
+          } else if (m.from == 'app_image') {
+            var selectedPhoto = this.props.photos.filter(function(p) {
+              return p._id._str == m.content;
+            })[0];
+
+            var new_items = [<PhotoMessage idTag="computer-side" content={selectedPhoto} />];
+            if (app_side) {
+              new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
+            }
+            app_side = false;
+            conversation = new_items.concat(conversation);
+
+          } else {
+            var new_items = [<TextMessage idTag="human-side" content={m.content} />];
+
+            if (user_side) {
+              new_items.push(<div className="user-avatar"><img src="/icons/user.png" /></div>);
+            }
+            user_side = false;
+            conversation = new_items.concat(conversation);
+          }
+        }
       }
+
+      
 
 
       return (
@@ -269,7 +297,6 @@ export class ClusterConversation extends Component {
               <div className="cluster-conversation-left">
                 <div className="cluster-conversation">
                   {conversation}
-                  {post_conversation}
                 </div>
               </div>
 
