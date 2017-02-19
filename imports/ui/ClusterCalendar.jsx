@@ -181,7 +181,7 @@ export class ClusterCalendar extends Component {
               </button>
             </div>
             <div className="middle">
-              <DatePicker customInput={<CalendarButton />} selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="middle right" popoverTargetAttachment="middle left" popoverTargetOffset="0px 0px"/>
+              <DatePicker customInput={<CalendarButton />} selected={this.props.date} onChange={this.newDate.bind(this)} popoverAttachment="middle right" popoverTargetAttachment="middle left" popoverTargetOffset="0px 0px" forceShowMonthNavigation="true" />
             </div>
             <div className="bottom">
               <button className="down" onClick={this.next.bind(this)}>

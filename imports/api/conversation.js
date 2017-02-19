@@ -3,6 +3,7 @@ import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
 
 export const Conversations = new Mongo.Collection('conversations');
+// People = new Mongo.Collection('people');
 
 function listInString(list, text) {
 	var text = text.toLowerCase();
@@ -83,11 +84,32 @@ Meteor.methods({
 	},
 
 	'conversation.resetHistory'(clusterId) {
-		this.unblock();
-
 		try {
 			Conversations.update({'cluster_id': clusterId}, {$set: {'history': [], 'state': 'uninitialized'}});
 		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'conversation.namePerson'(name, image, facen) {
+		check(name, String);
+		check(image, String);
+		check(facen, String);
+
+		try {
+			facen = parseInt(facen);
+
+			
+
+			//  find person in database with 'name'
+			// find image in database with 'image' id
+			// update image to contain 'name', person id
+			//  add new face representation
+			//  compute new mean representation
+			//  add image to image list
+
+		} catch (e) {
 			console.log(e);
 			return false;
 		}
