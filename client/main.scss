@@ -1111,6 +1111,14 @@ a {
 			left: 0%;
 			box-shadow: 0px 0px 0px black; 
 		}
+
+		img.highlighted {
+			box-shadow: 0px 0px 20px #588099;
+		}
+
+		img.unhighlighted {
+			opacity: 0.5;
+		}
 	}
 
 	.timeline-strip-left {
@@ -1121,6 +1129,13 @@ a {
 			margin-right: 0em;
 			box-shadow: 10px 10px 20px black; 
 		}
+
+		img.unhighlighted:hover {
+			width: 100%;
+			z-index: 10;
+			left: 0%;
+			box-shadow: 0px 0px 0px black; 
+		}
 	}
 
 	.timeline-strip-right {
@@ -1129,6 +1144,13 @@ a {
 			left: calc(-50% - 1em);
 			transition: 0.3s;
 			box-shadow: 10px 10px 40px black; 
+		}
+
+		img.unhighlighted:hover {
+			width: 100%;
+			z-index: 10;
+			left: 0%;
+			box-shadow: 0px 0px 0px black; 
 		}
 	}
 }

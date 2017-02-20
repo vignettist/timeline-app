@@ -17,7 +17,6 @@ function splitParameters(state) {
   var split_state = state.split("?");
 
   if (split_state.length > 1) {
-    console.log(split_state);
     var parameters = {};
     var split_parameters = split_state[1].split(",");
     for (var i = 0; i < split_parameters.length; i++) {
@@ -71,17 +70,12 @@ export class ClusterConversation extends Component {
     }
 
     componentDidUpdate() {
-      console.log("componentDidUpdate");
       if (this.state.pending === false) {
         console.log("autoSubmitting");
         this.autoTransition(this.finishTransition.bind(this));
       }
 
       this.refs.conversation.scrollTop = this.refs.conversation.scrollHeight;
-      console.log(this.refs.conversation.scrollHeight);
-      console.log(this.refs.conversation.scrollTop);
-      console.log("cDU");
-
     }
 
     // some states should automatically transition into another one
@@ -98,7 +92,7 @@ export class ClusterConversation extends Component {
 
           case 'unrecognized_place':
             if (this.props.cluster.places.length > 0) {
-              var newState = 'place_in_cluster';
+              var newState = 'place_in_cluster?place=' + this.props.places[0]._id._str;
               var content = 'You took a lot of photos in a place I\'m not familiar with.';
             }
 
@@ -107,7 +101,23 @@ export class ClusterConversation extends Component {
 
           case 'place_in_cluster':
             // TODO: trigger some kind of a highlight on photos in list that were taken there
-            transitionCallback({output: {from: 'app_place', content: {center: this.props.places[0].location.coordinates, size: this.props.places[0].radius}}, newState: 'gathering_clustering_information'});
+            console.log(this.props.photos);
+            var images_in_place = this.props.photos.filter(function(p) {
+              if ('place' in p) {
+                console.log(p.place.place_id._str);
+                return p.place.place_id._str === split_state.parameters.place;
+              } else {
+                return false;
+              }
+            }, split_state);
+
+            var highlight_list = images_in_place.reduce(function(a, b) {
+              return a + ';' + b._id._str;
+            }, '');
+
+            highlight_list = highlight_list.slice(1, highlight_list.length);
+
+            transitionCallback({output: {from: 'app_place', content: {center: this.props.places[0].location.coordinates, size: this.props.places[0].radius}}, newState: 'place_info?place=' + split_state.parameters.place + ',highlighted=' + highlight_list});
             break;
 
           case 'unrecognized_person':
@@ -133,7 +143,7 @@ export class ClusterConversation extends Component {
             var photo_id = this.props.photos[i]._id._str;
             console.log(photo_id);
 
-            transitionCallback({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + '?face=0'});
+            transitionCallback({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + ',face=0'});
             break;
 
           case 'presenting_image':
@@ -249,18 +259,18 @@ export class ClusterConversation extends Component {
   render() {
     if (typeof this.props.conversation !== 'undefined') {
 
-      var split_state = this.props.conversation.state.split("?");
-      if (split_state.length > 0) {
-        var parameter = split_state[1];
-        var state = split_state[0];
-      } else {
-        var parameter = '';
-        var state = this.props.conversation.state;
-      }
+      var split_state = splitParameters(this.props.conversation.state);
 
       var conversation = [];
       var app_side = true;
       var user_side = true;
+
+      if ('highlighted' in split_state.parameters) {
+        var highlighted_list = split_state.parameters.highlighted.split(';');
+        console.log(highlighted_list);
+      } else {
+        var highlighted_list = [];
+      }
 
       for (var i = this.props.conversation.history.length; i >= 0; i--) {
         if (i == this.props.conversation.history.length) {
@@ -333,7 +343,7 @@ export class ClusterConversation extends Component {
               </div>
 
               <div className="cluster-conversation-right">
-                <TimelineStrip photos={this.props.photos} /> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
+                <TimelineStrip photos={this.props.photos} highlighted={highlighted_list}/> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
               </div>
             </div>
 
