@@ -13,7 +13,6 @@ import Controls from './Controls.jsx';
 const DELAY_TIME = 1000;
 
 function splitParameters(state) {
-  console.log(state);
   var split_state = state.split("?");
 
   if (split_state.length > 1) {
@@ -28,6 +27,16 @@ function splitParameters(state) {
   }
 
   return {state: split_state[0], parameters: parameters};
+}
+
+function combineParameters(params) {
+  var combined_params = '';
+
+  for (var k in params) {
+    combined_params += k + '=' + params[k] + ',';
+  }
+
+  return combined_params;
 }
 
 export class ClusterConversation extends Component {
@@ -71,7 +80,6 @@ export class ClusterConversation extends Component {
 
     componentDidUpdate() {
       if (this.state.pending === false) {
-        console.log("autoSubmitting");
         this.autoTransition(this.finishTransition.bind(this));
       }
 
@@ -85,6 +93,8 @@ export class ClusterConversation extends Component {
 
         switch(split_state.state) {
           case 'uninitialized':
+            // TODO: make this intro dialog more responsive/interesting!
+
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
             transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
@@ -102,10 +112,8 @@ export class ClusterConversation extends Component {
             break;
 
           case 'place_in_cluster':
-            console.log(this.props.photos);
             var images_in_place = this.props.photos.filter(function(p) {
               if ('place' in p) {
-                console.log(p.place.place_id._str);
                 return p.place.place_id._str === split_state.parameters.place;
               } else {
                 return false;
@@ -118,7 +126,7 @@ export class ClusterConversation extends Component {
 
             highlight_list = highlight_list.slice(1, highlight_list.length);
 
-            transitionCallback({output: {from: 'app_place', content: {center: this.props.places[0].location.coordinates, size: this.props.places[0].radius}}, newState: 'place_info?place=' + split_state.parameters.place + ',highlighted=' + highlight_list});
+            transitionCallback({output: {from: 'app_place', content: {center: this.props.places[0].location.coordinates, size: this.props.places[0].radius}}, newState: 'presenting_place?place=' + split_state.parameters.place + ',highlighted=' + highlight_list});
             break;
 
           case 'unrecognized_person':
@@ -126,8 +134,10 @@ export class ClusterConversation extends Component {
               var newState = 'person_in_photo';
               var content = "I see some people I don't recognize.";
             } else {
-              var newState = 'no_comment';
-              var content = "I don't have anything to ask you right now."
+              if (this.props.cluster.places.length > 0) {
+                var newState = 'place_in_cluster?place=' + this.props.places[0]._id._str;
+                var content = 'You took a lot of photos in a place I\'m not familiar with.';
+              }
             }
 
             transitionCallback({output: {from: 'app', content: content}, newState: newState});
@@ -143,7 +153,6 @@ export class ClusterConversation extends Component {
             }
 
             var photo_id = this.props.photos[i]._id._str;
-            console.log(photo_id);
 
             transitionCallback({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + ',face=0'});
             break;
@@ -155,6 +164,9 @@ export class ClusterConversation extends Component {
 
             transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image + ',highlighted=' + split_state.parameters.image});
             break;
+
+          case 'presenting_place':
+            transitionCallback({output: {from: 'app', content: 'What is the name of this place?'}, newState: 'place_info?' + combineParameters(split_state.parameters)});
 
           default:
             break;
@@ -285,7 +297,6 @@ export class ClusterConversation extends Component {
 
       if ('highlighted' in split_state.parameters) {
         var highlighted_list = split_state.parameters.highlighted.split(';');
-        console.log(highlighted_list);
       } else {
         var highlighted_list = [];
       }

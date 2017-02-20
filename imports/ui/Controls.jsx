@@ -3,7 +3,7 @@ import React, { Component, PropTypes } from 'react';
 export default class Controls extends Component {
 	back() {
 		var date = new moment(this.props.cluster.start_time.utc_timestamp);
-		FlowRouter.go("/clusters/" + date.format("YYYY-MM-DDDD"));
+		FlowRouter.go("/clusters/" + date.format("YYYY-MM-DD"));
 	}
 
 	reset() {
@@ -11,8 +11,6 @@ export default class Controls extends Component {
 	}
 
 	render() {
-		console.log(this.props);
-
 		if (this.props.debug) {
 			var debug = <button className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>
 		} else {

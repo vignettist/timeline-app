@@ -69,7 +69,7 @@ export class ClusterCalendar extends Component {
   }
 
   goToCluster(e) {
-    FlowRouter.go('/cluster/' + e._id._str);
+    FlowRouter.go('/conversation/' + e._id._str);
   }
 
   render() {
