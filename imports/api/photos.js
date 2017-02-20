@@ -5,7 +5,7 @@ export const LogicalImages = new Mongo.Collection('logical_images');
 export const Stories = new Mongo.Collection('stories');
 export const Clusters = new Mongo.Collection('clusters');
 export const People = new Mongo.Collection('people');
-
+export const Places = new Mongo.Collection('places');
 //TODO split these into separate files
 
 
@@ -187,4 +187,16 @@ if (Meteor.isServer) {
 
 		return LogicalImages.find({$or: id_or_statement}, {fields: {'datetime': 1, 'latitude': 1, 'longitude': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'all_photos': 1, 'geolocation': 1, 'size': 1}});
 	});
+
+	Meteor.publish('single_cluster_places', function clusterPlaces(clusterId) {
+		let cluster = Clusters.find({'_id': clusterId}).fetch();
+		let id_or_statement = [];
+		let places_ids = cluster[0].places;
+
+		for (var j = 0; j < places_ids.length; j++) {
+			id_or_statement.push({'_id': places_ids[j].place_id});
+		}
+
+		return Places.find({$or: id_or_statement});
+	})
 }

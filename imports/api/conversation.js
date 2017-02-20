@@ -63,7 +63,6 @@ if (Meteor.isServer) {
 Meteor.methods({
 	// add a new part of the conversation log to the database
 	'conversation.addHistory'(clusterId, output, newState) {
-		check(output.content, String);
 		check(output.from, String);
 		check(newState, String);
 
@@ -100,7 +99,7 @@ Meteor.methods({
 		try {
 			facen = parseInt(facen);
 
-			
+
 
 			//  find person in database with 'name'
 			// find image in database with 'image' id

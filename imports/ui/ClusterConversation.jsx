@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import ReactDOM from 'react-dom';
-import {Clusters, LogicalImages} from '../api/photos.js';
+import {Clusters, LogicalImages, Places} from '../api/photos.js';
 import {Conversations} from '../api/conversation.js';
 import TextMessage from './Conversation/TextMessage.jsx';
 import TextInputMessage from './Conversation/TextInputMessage.jsx';
@@ -76,6 +76,12 @@ export class ClusterConversation extends Component {
         console.log("autoSubmitting");
         this.autoTransition(this.finishTransition.bind(this));
       }
+
+      this.refs.conversation.scrollTop = this.refs.conversation.scrollHeight;
+      console.log(this.refs.conversation.scrollHeight);
+      console.log(this.refs.conversation.scrollTop);
+      console.log("cDU");
+
     }
 
     // some states should automatically transition into another one
@@ -87,7 +93,21 @@ export class ClusterConversation extends Component {
           case 'uninitialized':
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
+            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_place'});
+            break;
+
+          case 'unrecognized_place':
+            if (this.props.cluster.places.length > 0) {
+              var newState = 'place_in_cluster';
+              var content = 'You took a lot of photos in a place I\'m not familiar with.';
+            }
+
+            transitionCallback({output: {from: 'app', content: content}, newState: newState});
+            break;
+
+          case 'place_in_cluster':
+            // TODO: trigger some kind of a highlight on photos in list that were taken there
+            transitionCallback({output: {from: 'app_place', content: {center: this.props.places[0].location.coordinates, size: this.props.places[0].radius}}, newState: 'gathering_clustering_information'});
             break;
 
           case 'unrecognized_person':
@@ -274,6 +294,14 @@ export class ClusterConversation extends Component {
             app_side = false;
             conversation = new_items.concat(conversation);
 
+          } else if (m.from == 'app_place') {
+            var new_items = [<PlaceMessage idTag="computer-side" content={m.content} />];
+            if (app_side) {
+              new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
+            }
+            app_side = false;
+            conversation = new_items.concat(conversation);
+
           } else {
             var new_items = [<TextMessage idTag="human-side" content={m.content} />];
 
@@ -291,12 +319,16 @@ export class ClusterConversation extends Component {
 
       return (
           <div className="cluster-conversation-wrapper">
-            <Controls debug={true} cluster={this.props.cluster} />
+            <div className="cluster-conversation-header">
+              <Controls debug={true} cluster={this.props.cluster} />
+            </div>
 
             <div className="cluster-conversation-lower">
-              <div className="cluster-conversation-left">
+              <div className="cluster-conversation-left" ref="conversation">
                 <div className="cluster-conversation">
                   {conversation}
+                  <div className="cluster-spacer">
+                  </div>
                 </div>
               </div>
 
@@ -316,14 +348,16 @@ export class ClusterConversation extends Component {
 ClusterConversation.propTypes = {
   conversation: PropTypes.object.isRequired,
   cluster: PropTypes.object.isRequired,
-  photos: PropTypes.object.isRequired
+  photos: PropTypes.object.isRequired,
+  places: PropTypes.array.isRequired
 };
 
 export default createContainer(() => {
   return {
     conversation: Conversations.find({}).fetch()[0],
     cluster: Clusters.find({}).fetch()[0],
-    photos: LogicalImages.find({}).fetch()
+    photos: LogicalImages.find({}).fetch(),
+    places: Places.find({}).fetch()
   };
 
 }, ClusterConversation);
