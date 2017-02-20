@@ -119,30 +119,36 @@ export default class ClusterMap extends Component {
 
     }
 
-    if (("zoomTo" in this.props) && (this.props.zoomTo >= 0)) {
-      var min_latitude = this.props.cluster.locations.coordinates[this.props.zoomTo][1] - 0.004;
-      var max_latitude = this.props.cluster.locations.coordinates[this.props.zoomTo][1] + 0.004;
-      var min_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] - 0.004;
-      var max_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] + 0.004;
+    if ('bounds' in this.props) {
+      var bounds = this.props.bounds;
     } else {
-      var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
-      var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
-      var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
-      var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
-    }
+      if (("zoomTo" in this.props) && (this.props.zoomTo >= 0)) {
+        var min_latitude = this.props.cluster.locations.coordinates[this.props.zoomTo][1] - 0.004;
+        var max_latitude = this.props.cluster.locations.coordinates[this.props.zoomTo][1] + 0.004;
+        var min_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] - 0.004;
+        var max_longitude = this.props.cluster.locations.coordinates[this.props.zoomTo][0] + 0.004;
+      } else {
+        var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
+        var min_longitude = longitudes.min() - (longitudes.max() - longitudes.min()) * 0.05;
+        var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
+        var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
+      }
 
-    if (this.props.offset) {
-      var square_distance = Math.sqrt(Math.pow(longitudes.max() - longitudes.min(),2) + Math.pow(latitudes.max() - latitudes.min(), 2));
-      // var square_distance = longitudes.max() - longitudes.min();
+      if (this.props.offset) {
+        var square_distance = Math.sqrt(Math.pow(longitudes.max() - longitudes.min(),2) + Math.pow(latitudes.max() - latitudes.min(), 2));
+        // var square_distance = longitudes.max() - longitudes.min();
 
-      var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
-      var min_longitude = longitudes.min() - square_distance * 0.8 * this.props.width / this.props.height;
-      var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
-      var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
+        var min_latitude = latitudes.min() - (latitudes.max() - latitudes.min()) * 0.05;
+        var min_longitude = longitudes.min() - square_distance * 0.8 * this.props.width / this.props.height;
+        var max_latitude = latitudes.max() + (latitudes.max() - latitudes.min()) * 0.05;
+        var max_longitude = longitudes.max() + (longitudes.max() - longitudes.min()) * 0.05;
+      }
+
+      var bounds = [[min_latitude, min_longitude], [max_latitude, max_longitude]]
     }
 
     return (
-          <Map key={this.props.cluster._id + "_map"} bounds={[[min_latitude, min_longitude], [max_latitude, max_longitude]]}>
+          <Map key={this.props.cluster._id + "_map"} bounds={bounds}>
             <TileLayer
               key = {this.props.cluster._id._str + "_tilelayer"}
               url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
@@ -151,6 +157,7 @@ export default class ClusterMap extends Component {
            
             {image_markers}
             {cluster_path}
+            {('additionalMarker' in this.props) ? this.props.additionalMarker : []}
           </Map>
         );       
    
@@ -158,14 +165,14 @@ export default class ClusterMap extends Component {
 }
  
 ClusterMap.propTypes = {
-  // This component gets the task to display through a React prop.
-  // We can use propTypes to indicate it is required
   cluster: PropTypes.object.isRequired,
   photos: PropTypes.array.isRequired,
   zoomTo: PropTypes.number,
   popup: PropTypes.bool,
   offset: PropTypes.bool,
   width: PropTypes.number,
-  height: PropTypes.number
+  height: PropTypes.number,
+  bounds: PropTypes.array,
+  additionalMarker: PropTypes.object
 };
 

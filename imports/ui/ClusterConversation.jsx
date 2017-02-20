@@ -87,10 +87,12 @@ export class ClusterConversation extends Component {
           case 'uninitialized':
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_place'});
+            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
             break;
 
           case 'unrecognized_place':
+            // TODO: select only unnamed places
+
             if (this.props.cluster.places.length > 0) {
               var newState = 'place_in_cluster?place=' + this.props.places[0]._id._str;
               var content = 'You took a lot of photos in a place I\'m not familiar with.';
@@ -100,7 +102,6 @@ export class ClusterConversation extends Component {
             break;
 
           case 'place_in_cluster':
-            // TODO: trigger some kind of a highlight on photos in list that were taken there
             console.log(this.props.photos);
             var images_in_place = this.props.photos.filter(function(p) {
               if ('place' in p) {
@@ -134,6 +135,7 @@ export class ClusterConversation extends Component {
 
           case 'person_in_photo':
             // select first image with a person
+            // TODO: select only unnamed people
             for (var i = 0; i < this.props.photos.length; i++) {
               if (this.props.photos[i].openfaces.length > 0) {
                 break;
@@ -151,7 +153,7 @@ export class ClusterConversation extends Component {
               console.log("ERROR, parameter image should exist here");
             }
 
-            transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image});
+            transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image + ',highlighted=' + split_state.parameters.image});
             break;
 
           default:
@@ -231,7 +233,23 @@ export class ClusterConversation extends Component {
           break;
 
         case 'are_there_people':
-          console.log('are_there_people');
+          var isPerson = function isPerson(err, yn) {
+            if (err) {
+              alert(err);
+            } else {
+              if (yn) {
+                content = 'Okay, so who is it?';
+                newState = 'determining_name';
+              } else {
+                content = 'Oh, sorry about that.';
+                newState = 'unrecognized_place';
+              }
+
+              transitionCallback({output: {from: 'app', content: content}, newState: newState});
+            }
+          }.bind(transitionCallback);
+
+          Meteor.call('conversation.confirm', text, isPerson);
           break;
 
         case 'gathering_clustering_information':
@@ -305,7 +323,7 @@ export class ClusterConversation extends Component {
             conversation = new_items.concat(conversation);
 
           } else if (m.from == 'app_place') {
-            var new_items = [<PlaceMessage idTag="computer-side" content={m.content} />];
+            var new_items = [<PlaceMessage idTag="computer-side" content={m.content} cluster={this.props.cluster} photos={this.props.photos}/>];
             if (app_side) {
               new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
             }

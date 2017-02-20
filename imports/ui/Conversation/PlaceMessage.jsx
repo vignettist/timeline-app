@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { Map, TileLayer, CircleMarker, Circle } from 'react-leaflet';
-
+import ClusterMap from '../ClusterMap.jsx';
 
 export default class PlaceMessage extends Component {
 	render() {
@@ -20,18 +20,13 @@ export default class PlaceMessage extends Component {
 		              [center[0] + 2*(size/111111), center[1] + 2*(size/(Math.cos(center[0]*2*Math.PI/360)*111111))]];
 
 		return <div className={"conversation " + this.props.idTag}>
-			<Map bounds={bounds} >
-	            <TileLayer
-	              url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-	              subdomains='abcd'
-	            />
-	            <Circle center={center} radius={size} />
-	        </Map>
+	        <ClusterMap cluster={this.props.cluster} photos={this.props.photos} bounds={bounds} additionalMarker={<Circle center={center} radius={size} />}/>
 		</div>
 	}
 }
 
 PlaceMessage.propTypes = {
 	content: PropTypes.object.isRequired,
-	idTag: PropTypes.string.isRequired
+	idTag: PropTypes.string.isRequired,
+	cluster: PropTypes.object.isRequired
 };
