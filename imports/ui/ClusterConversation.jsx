@@ -9,35 +9,9 @@ import PhotoMessage from './Conversation/PhotoMessage.jsx';
 import PlaceMessage from './Conversation/PlaceMessage.jsx';
 import TimelineStrip from './TimelineStrip.jsx';
 import Controls from './Controls.jsx';
+import {StateMachine, splitParameters, combineParameters} from './Conversation/StateMachine.js';
 
 const DELAY_TIME = 1000;
-
-function splitParameters(state) {
-  var split_state = state.split("?");
-
-  if (split_state.length > 1) {
-    var parameters = {};
-    var split_parameters = split_state[1].split(",");
-    for (var i = 0; i < split_parameters.length; i++) {
-      var split_parameter = split_parameters[i].split("=");
-      parameters[split_parameter[0]] = split_parameter[1];
-    }
-  } else {
-    var parameters = [];
-  }
-
-  return {state: split_state[0], parameters: parameters};
-}
-
-function combineParameters(params) {
-  var combined_params = '';
-
-  for (var k in params) {
-    combined_params += k + '=' + params[k] + ',';
-  }
-
-  return combined_params;
-}
 
 export class ClusterConversation extends Component {
     constructor(props) {
@@ -79,208 +53,26 @@ export class ClusterConversation extends Component {
     }
 
     componentDidUpdate() {
-      if (this.state.pending === false) {
-        this.autoTransition(this.finishTransition.bind(this));
-      }
-
-      this.refs.conversation.scrollTop = this.refs.conversation.scrollHeight;
-    }
-
-    // some states should automatically transition into another one
-    autoTransition(transitionCallback) {
       if (typeof this.props.conversation !== 'undefined') {
-        var split_state = splitParameters(this.props.conversation.state);
 
-        switch(split_state.state) {
-          case 'uninitialized':
-            // TODO: make this intro dialog more responsive/interesting!
+        // some states are automatically transitioned into other ones
+        if (this.state.pending === false) {
+          var split_state = splitParameters(this.props.conversation.state);
 
-            var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
-            var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
-            break;
-
-          case 'most_interesting_setup':
-            transitionCallback({output: {from: 'app', content: "Which image from this cluster do you find most interesting? You can select from the photos displayed on the right."}, newState: 'get_interesting_photo?input=photo'});
-            break;
-
-          case 'unrecognized_place':
-            // TODO: select only unnamed places
-
-            if (this.props.cluster.places.length > 0) {
-              var newState = 'place_in_cluster?place=' + this.props.places[0]._id._str;
-              var content = 'You took a lot of photos in a place I\'m not familiar with.';
-            }
-
-            transitionCallback({output: {from: 'app', content: content}, newState: newState});
-            break;
-
-          case 'place_in_cluster':
-            var images_in_place = this.props.photos.filter(function(p) {
-              if ('place' in p) {
-                return p.place.place_id._str === split_state.parameters.place;
-              } else {
-                return false;
-              }
-            }, split_state);
-
-            var highlight_list = images_in_place.reduce(function(a, b) {
-              return a + ';' + b._id._str;
-            }, '');
-
-            highlight_list = highlight_list.slice(1, highlight_list.length);
-
-            transitionCallback({output: {from: 'app_place', content: {center: this.props.places[0].location.coordinates, size: this.props.places[0].radius}}, newState: 'presenting_place?place=' + split_state.parameters.place + ',highlighted=' + highlight_list});
-            break;
-
-          case 'unrecognized_person':
-            if (this.props.cluster.faces.length > 0) {
-              var newState = 'person_in_photo';
-              var content = "I see some people I don't recognize.";
-            } else {
-              if (this.props.cluster.places.length > 0) {
-                var newState = 'place_in_cluster?place=' + this.props.places[0]._id._str;
-                var content = 'You took a lot of photos in a place I\'m not familiar with.';
-              }
-            }
-
-            transitionCallback({output: {from: 'app', content: content}, newState: newState});
-            break;
-
-          case 'person_in_photo':
-            // select first image with a person
-            // TODO: select only unnamed people
-            for (var i = 0; i < this.props.photos.length; i++) {
-              if (this.props.photos[i].openfaces.length > 0) {
-                break;
-              }
-            }
-
-            var photo_id = this.props.photos[i]._id._str;
-
-            transitionCallback({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + ',face=0'});
-            break;
-
-          case 'presenting_image':
-            if (!('image' in split_state.parameters)) {
-              console.log("ERROR, parameter image should exist here");
-            }
-
-            transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + split_state.parameters.image + ',highlighted=' + split_state.parameters.image});
-            break;
-
-          case 'presenting_place':
-            transitionCallback({output: {from: 'app', content: 'What is the name of this place?'}, newState: 'determining_place?' + combineParameters(split_state.parameters)});
-
-          default:
-            break;
+          if ('autoTransition' in StateMachine[split_state.state]) {
+            StateMachine[split_state.state].autoTransition(this.finishTransition.bind(this), this.props, split_state.parameters);
+          }
         }
+
+        this.refs.conversation.scrollTop = this.refs.conversation.scrollHeight;
       }
-    }
+    } 
 
     // some transitions are triggered by input
     stateTransition(text, transitionCallback) {
       var split_state = splitParameters(this.props.conversation.state);
 
-      switch(split_state.state) {
-        case 'determining_name':
-          var interpretPerson = function interpretPerson(err, names) {
-            if (err) {
-              alert(err);
-            } else {
-              if (names.length == 0) {
-                var content =  "Sorry, I'm not sure I got that. Is there a person in this image?";
-                var newState = 'are_there_people?image=' + split_state.parameters.image;
-
-              } else if (names.length == 1) {
-                if (Math.random() > 0.5) {
-                  var content = "Just double checking, that's " + names[0] + "?";
-                } else {
-                  var content = "Oh, so that's " + names[0] + "?";
-                }
-
-                var newState = 'confirming_person?image=' + split_state.parameters.image + ',name=' + names[0];
-              } else if (names.length > 1) {
-                var listed_names = names.reduce(function(list, n, i, a) {
-                  if (i == a.length - 1) {
-                    return list + " or " + n
-                  } else {
-                    return list + ", " + n
-                  }
-                });
-                var content = "Wait, is that " + listed_names + "?";
-                var newState = 'determining_name?image=' + split_state.parameters.image;
-              }
-
-              transitionCallback({output: {from: 'app', content: content}, newState: newState})
-          }}.bind(transitionCallback);
-
-          Meteor.call('conversation.whoIs', text, interpretPerson);
-
-          break;
-
-        case 'determining_place':
-          transitionCallback({output: {from: 'app', content: 'Got it.'}, newState: 'most_interesting_setup'});
-
-          break;
-
-        case 'confirming_person':
-          var confirmName = function confirmName(err, yn) {
-            if (err) {
-              alert(err);
-            } else {
-
-              if (yn) {
-                // add name to names database
-
-                // Meteor.call('conversation.associateFace', split_state.parameters.name, split_state.parameters.image, split_state.parameters.face)
-
-                content = 'Ok, great! What were you doing with ' + split_state.parameters.name + ' on that day?';
-                newState = 'gathering_clustering_information?name=' + split_state.parameters.name;
-
-              } else {
-
-                // could not confirm name
-                content = 'Oh, so who is it?';
-                newState = 'determining_name';
-              }
-
-              transitionCallback({output: {from: 'app', content: content}, newState: newState});
-
-            }
-          }.bind(transitionCallback);
-
-          Meteor.call('conversation.confirm', text, confirmName);
-          break;
-
-        case 'get_interesting_photo':
-          transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_clustering_information'});
-          break;
-
-        case 'are_there_people':
-          var isPerson = function isPerson(err, yn) {
-            if (err) {
-              alert(err);
-            } else {
-              if (yn) {
-                content = 'Okay, so who is it?';
-                newState = 'determining_name';
-              } else {
-                content = 'Oh, sorry about that.';
-                newState = 'unrecognized_place';
-              }
-
-              transitionCallback({output: {from: 'app', content: content}, newState: newState});
-            }
-          }.bind(transitionCallback);
-
-          Meteor.call('conversation.confirm', text, isPerson);
-          break;
-
-        case 'gathering_clustering_information':
-          console.log('gathering_clustering_information');
-          break;
-      }
+      StateMachine[split_state.state].stateTransition(transitionCallback, text, this.props, split_state.parameters);
     }
 
     handleSubmit(event) {
