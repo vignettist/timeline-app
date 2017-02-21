@@ -97,7 +97,7 @@ export class ClusterConversation extends Component {
 
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-            transitionCallback({output: {from: 'app', content: content}, newState: 'most_interesting_setup'});
+            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
             break;
 
           case 'most_interesting_setup':
@@ -170,7 +170,7 @@ export class ClusterConversation extends Component {
             break;
 
           case 'presenting_place':
-            transitionCallback({output: {from: 'app', content: 'What is the name of this place?'}, newState: 'place_info?' + combineParameters(split_state.parameters)});
+            transitionCallback({output: {from: 'app', content: 'What is the name of this place?'}, newState: 'determining_place?' + combineParameters(split_state.parameters)});
 
           default:
             break;
@@ -216,6 +216,11 @@ export class ClusterConversation extends Component {
           }}.bind(transitionCallback);
 
           Meteor.call('conversation.whoIs', text, interpretPerson);
+
+          break;
+
+        case 'determining_place':
+          transitionCallback({output: {from: 'app', content: 'Got it.'}, newState: 'most_interesting_setup'});
 
           break;
 

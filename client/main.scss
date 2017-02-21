@@ -1094,6 +1094,8 @@ a {
 	.timeline-strip-row {
 		width: 100%;
 		margin-bottom: 1em;
+		display: flex;
+		align-items: center;
 	}
 
 	.timeline-strip-left {
@@ -1126,7 +1128,7 @@ a {
 
 	.timeline-strip-left {
 		img:hover {
-			width: calc(150% + 1em);
+			width: calc(175% + 1em);
 			transition: 0.3s;
 			z-index: 11;
 			margin-right: 0em;
@@ -1143,8 +1145,8 @@ a {
 
 	.timeline-strip-right {
 		img:hover {
-			width: calc(150% + 1em);
-			left: calc(-50% - 1em);
+			width: calc(175% + 1em);
+			left: calc(-75% - 1em);
 			transition: 0.3s;
 			box-shadow: 10px 10px 40px black; 
 		}
