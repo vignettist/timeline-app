@@ -97,7 +97,11 @@ export class ClusterConversation extends Component {
 
             var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
             var content = "Hi! Let's talk about the day you spent in " + this.props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-            transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
+            transitionCallback({output: {from: 'app', content: content}, newState: 'most_interesting_setup'});
+            break;
+
+          case 'most_interesting_setup':
+            transitionCallback({output: {from: 'app', content: "Which image from this cluster do you find most interesting? You can select from the photos displayed on the right."}, newState: 'get_interesting_photo?input=photo'});
             break;
 
           case 'unrecognized_place':
@@ -244,6 +248,10 @@ export class ClusterConversation extends Component {
           Meteor.call('conversation.confirm', text, confirmName);
           break;
 
+        case 'get_interesting_photo':
+          transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_clustering_information'});
+          break;
+
         case 'are_there_people':
           var isPerson = function isPerson(err, yn) {
             if (err) {
@@ -286,6 +294,15 @@ export class ClusterConversation extends Component {
       }
     }
 
+    selectPhoto(photo) {
+      var split_state = splitParameters(this.props.conversation.state);
+      if (split_state.parameters.input == 'photo') {
+        Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user_image', content: photo}, this.props.conversation.state);
+        this.setState({pending: true});
+        this.stateTransition(photo, this.finishTransition.bind(this));
+      }
+    }
+
   render() {
     if (typeof this.props.conversation !== 'undefined') {
 
@@ -307,8 +324,12 @@ export class ClusterConversation extends Component {
             conversation = [<TextMessage idTag="computer-side" content="..." />, <div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>];
             app_side = false;
           } else {
-            conversation = [<TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} />, <div className="user-avatar"><img src="/icons/user.png" /></div>];
-            user_side = false;
+            if (split_state.parameters.input == 'photo') {
+              conversation = [<TextMessage idTag="human-side" content="Select a photo &#8594;" />];
+            } else {
+              conversation = [<TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} />, <div className="user-avatar"><img src="/icons/user.png" /></div>];
+              user_side = false;
+            }
           }
         } else {
           var m = this.props.conversation.history[i];
@@ -339,6 +360,19 @@ export class ClusterConversation extends Component {
               new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
             }
             app_side = false;
+            conversation = new_items.concat(conversation);
+
+          } else if (m.from == 'user_image') {
+            var selectedPhoto = this.props.photos.filter(function(p) {
+              return p._id._str == m.content;
+            })[0];
+
+            var new_items = [<PhotoMessage idTag="human-side" content={selectedPhoto} />];
+
+            if (user_side) {
+              new_items.push(<div className="user-avatar"><img src="/icons/user.png" /></div>);
+            }
+            user_side = false;
             conversation = new_items.concat(conversation);
 
           } else {
@@ -372,7 +406,7 @@ export class ClusterConversation extends Component {
               </div>
 
               <div className="cluster-conversation-right">
-                <TimelineStrip photos={this.props.photos} highlighted={highlighted_list}/> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
+                <TimelineStrip photos={this.props.photos} highlighted={highlighted_list} callback={this.selectPhoto.bind(this)} /> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
               </div>
             </div>
 

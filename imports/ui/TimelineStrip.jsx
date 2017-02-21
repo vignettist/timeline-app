@@ -22,6 +22,11 @@ export default class TimelineStrip extends Component {
 		scroll.scrollTo(scrollTop + box.top - 150, {duration: 1000, delay: 100, smooth: true});
 	}
 
+	handleCallback(photo) {
+		console.log(photo);
+		this.props.callback(photo);
+	}
+
 	render() {
 		if (this.props.photos.length > 0) {
 			var photos_list = [];
@@ -34,16 +39,16 @@ export default class TimelineStrip extends Component {
 				if (i != this.props.photos.length - 1) {
 					photos_list.push(<div className="timeline-strip-row">
 										<div className="timeline-strip-left">
-											<img ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
+											<img onClick={this.handleCallback.bind(this, this.props.photos[i]._id._str)} ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
 										</div>
 										<div className="timeline-strip-right">
-											<img ref={this.props.photos[i+1]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i+1]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i+1].resized_uris[640]} />
+											<img onClick={this.handleCallback.bind(this, this.props.photos[i+1]._id._str)} ref={this.props.photos[i+1]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i+1]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i+1].resized_uris[640]} />
 										</div>
 									</div>);
 				} else {
 					photos_list.push(<div className="timeline-strip-row">
 										<div className="timeline-strip-left">
-											<img ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
+											<img onClick={this.handleCallback.bind(this, this.props.photos[i]._id._str)} ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
 										</div>
 									</div>);
 				}
@@ -63,5 +68,6 @@ export default class TimelineStrip extends Component {
 
 TimelineStrip.propTypes = {
 	photos: PropTypes.array.isRequired,
-	highlighted: PropTypes.array.isRequired
+	highlighted: PropTypes.array.isRequired,
+	callback: PropTypes.object
 };
