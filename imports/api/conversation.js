@@ -134,6 +134,85 @@ Meteor.methods({
 
 	// },
 
+	'conversation.addNarrativeToPerson'(person_id, narrative) {
+		check(narrative, Object);
+		check(person_id, String);
+
+		try {
+			People.update({"_id": person_id}, {"$push": {"narrative": narrative}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'conversation.addNarrativeToCluster'(cluster_id, narrative) {
+		check(narrative, Object);
+		check(cluster_id, String);
+
+		try {
+			var cluster_id_object = new Meteor.Collection.ObjectID(cluster_id);
+			Clusters.update({"_id": cluster_id_object}, {"$push": {"narrative": narrative}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'conversation.addNarrativeToImage'(image, narrative) {
+		check(narrative, Object);
+		check(image, String);
+
+		try {
+			var image_id = new Meteor.Collection.ObjectID(image);
+			LogicalImages.update({"_id": image_id}, {"$push": {"narrative": narrative}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'conversation.rateImage'(image, rating) {
+		check(rating, Number);
+		check(image, String);
+
+		try {
+			var image_id = new Meteor.Collection.ObjectID(image);
+			LogicalImages.update({"_id": image_id}, {"$set": {"rating": rating}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'conversation.giveImageRole'(image, role) {
+		check(image, String);
+		check(role, String);
+
+		try {
+			var image_id = new Meteor.Collection.ObjectID(image);
+			LogicalImages.update({"_id": image_id}, {"$set": {"role": role}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	// allows the user to specifiy the name of a place. DOES NOT denormalize
+	'conversation.namePlace'(name, place_id) {
+		check(name, String);
+		check(place, String);
+
+		try {
+			Places.update({"_id": place_id}, {"$set": {"name": name}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+
+	},
+
+	// specifies the name of a person in an image, and denormalizes data
 	'conversation.associateFace'(name, image, facen, cluster_id) {
 		check(name, String);
 		check(image, String);

@@ -76,6 +76,8 @@ StateMachine['place_in_cluster'] = {
 
         highlight_list = highlight_list.slice(1, highlight_list.length);
 
+        console.log(props.places[0]._id);
+
         transitionCallback({output: {from: 'app_place', content: {center: props.places[0].location.coordinates, size: props.places[0].radius}}, newState: 'presenting_place?place=' + parameters.place + ',highlighted=' + highlight_list});
   	}	
 };
