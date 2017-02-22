@@ -38,7 +38,7 @@ StateMachine['uninitialized'] = {
 		
 		var corrected_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
         var content = "Hi! Let's talk about the day you spent in " + props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-        transitionCallback({output: {from: 'app', content: content}, newState: 'unrecognized_person'});
+        transitionCallback({output: {from: 'app', content: content}, newState: 'check_for_people'});
 	}
 };
 
@@ -53,7 +53,7 @@ StateMachine['unrecognized_place'] = {
         // TODO: select only unnamed places
 		if (props.cluster.places.length > 0) {
           var newState = 'place_in_cluster?place=' + props.places[0]._id._str;
-          var content = 'You took a lot of photos in a place I\'m not familiar with.';
+          var content = 'You took a few photos in a place I\'m not familiar with.';
         }
 
         transitionCallback({output: {from: 'app', content: content}, newState: newState});
@@ -80,10 +80,38 @@ StateMachine['place_in_cluster'] = {
   	}	
 };
 
-StateMachine['unrecognized_person'] = {
+StateMachine['check_for_people'] = {
 	autoTransition: function unrecognizedPersonAutoTransition(transitionCallback, props, parameters) {
-		if (props.cluster.faces.length > 0) {
-			var newState = 'person_in_photo';
+		// find the first unrecognized person
+
+		var foundImage = -1;
+		var foundFace = -1;
+
+		var i = 0;
+
+		while ((i < props.photos.length) && (foundImage < 0)) {
+			if (props.photos[i].openfaces.length > 0) {
+				for (var j = 0; j < props.photos[i].openfaces.length; j++) {
+					console.log(props.photos[i]);
+					if (props.photos[i].openfaces[j].size > 10000) {
+					
+							if ('name' in props.photos[i].openfaces[j]) {
+								console.log('face has been identified already: ' + props.photos[i].openfaces[j].name);
+							} else {
+								foundImage = i;
+								foundFace = j;
+								break;
+							}
+
+					}
+				}
+			}
+
+			i++;
+		}
+
+		if (foundImage >= 0) {
+			var newState = 'person_in_photo?image=' + props.photos[foundImage]._id._str + ',face=' + foundFace;
 			var content = "I see some people I don't recognize.";
         } else {
 			if (props.cluster.places.length > 0) {
@@ -98,16 +126,7 @@ StateMachine['unrecognized_person'] = {
 
 StateMachine['person_in_photo'] = {
 	autoTransition: function personInPhotoAutoTransition(transitionCallback, props, parameters) {
-		// TODO: select only unnamed people
-		for (var i = 0; i < props.photos.length; i++) {
-			if (props.photos[i].openfaces.length > 0) {
-				break;
-			}
-		}
-
-		var photo_id = props.photos[i]._id._str;
-
-		transitionCallback({output: {from: 'app_image', content: photo_id}, newState: 'presenting_image?image=' + photo_id + ',face=0'});
+		transitionCallback({output: {from: 'app_image', content: parameters.image}, newState: 'presenting_image?' + combineParameters(parameters)});
 	}
 };
 
@@ -117,7 +136,7 @@ StateMachine['presenting_image'] = {
 			console.log("ERROR, parameter image should exist here");
         }
 
-        transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?image=' + parameters.image + ',highlighted=' + parameters.image});
+        transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?' + combineParameters(parameters) + ',highlighted=' + parameters.image});
 	}
 };
 
@@ -137,7 +156,7 @@ StateMachine['determining_name'] = {
         } else {
           if (names.length == 0) {
             var content =  "Sorry, I'm not sure I got that. Is there a person in this image?";
-            var newState = 'are_there_people?image=' + parameters.image;
+            var newState = 'are_there_people?' + combineParameters(parameters);
 
           } else if (names.length == 1) {
             if (Math.random() > 0.5) {
@@ -146,7 +165,7 @@ StateMachine['determining_name'] = {
               var content = "Oh, so that's " + names[0] + "?";
             }
 
-            var newState = 'confirming_person?image=' + parameters.image + ',name=' + names[0];
+            var newState = 'confirming_person?image=' + parameters.image + ',face=' + parameters.face + ',name=' + names[0];
           } else if (names.length > 1) {
             var listed_names = names.reduce(function(list, n, i, a) {
               if (i == a.length - 1) {
@@ -182,7 +201,7 @@ StateMachine['confirming_person'] = {
 			if (yn) {
 				// add name to names database
 
-				// Meteor.call('conversation.associateFace', parameters.name, parameters.image, parameters.face)
+				Meteor.call('conversation.associateFace', parameters.name, parameters.image, parameters.face)
 
 				content = 'Ok, great! What were you doing with ' + parameters.name + ' on that day?';
 				newState = 'gathering_clustering_information?name=' + parameters.name;
@@ -221,6 +240,8 @@ StateMachine['are_there_people'] = {
 				} else {
 					content = 'Oh, sorry about that.';
 					newState = 'unrecognized_place';
+
+					Meteor.call('conversation.associateFace', "", parameters.image, parameters.face);
 				}
 
 				transitionCallback({output: {from: 'app', content: content}, newState: newState});

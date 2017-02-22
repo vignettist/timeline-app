@@ -11,7 +11,7 @@ import TimelineStrip from './TimelineStrip.jsx';
 import Controls from './Controls.jsx';
 import {StateMachine, splitParameters, combineParameters} from './Conversation/StateMachine.js';
 
-const DELAY_TIME = 1000;
+const DELAY_TIME = 100;
 
 export class ClusterConversation extends Component {
     constructor(props) {
@@ -103,6 +103,9 @@ export class ClusterConversation extends Component {
   render() {
     if (typeof this.props.conversation !== 'undefined') {
 
+
+      // build up the conversation DOM elements
+      // this should be moved to a seperate component at some point
       var split_state = splitParameters(this.props.conversation.state);
 
       var conversation = [];
@@ -190,7 +193,7 @@ export class ClusterConversation extends Component {
       return (
           <div className="cluster-conversation-wrapper">
             <div className="cluster-conversation-header">
-              <Controls debug={true} cluster={this.props.cluster} />
+              <Controls debug={true} cluster={this.props.cluster} state={split_state.state}/>
             </div>
 
             <div className="cluster-conversation-lower">

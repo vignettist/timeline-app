@@ -36,22 +36,22 @@ export default class TimelineStrip extends Component {
 			var first_highlighted = true;
 
 			for (var i = 0; i < this.props.photos.length; i += 2) {
+				var left_image = <div className="timeline-strip-left">
+											<img id={this.props.photos[i]._id._str} onClick={this.handleCallback.bind(this, this.props.photos[i]._id._str)} ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
+										</div>;
+
 				if (i != this.props.photos.length - 1) {
-					photos_list.push(<div className="timeline-strip-row">
-										<div className="timeline-strip-left">
-											<img onClick={this.handleCallback.bind(this, this.props.photos[i]._id._str)} ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
-										</div>
-										<div className="timeline-strip-right">
-											<img onClick={this.handleCallback.bind(this, this.props.photos[i+1]._id._str)} ref={this.props.photos[i+1]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i+1]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i+1].resized_uris[640]} />
-										</div>
-									</div>);
+					var right_image = <div className="timeline-strip-right">
+											<img id={this.props.photos[i+1]._id._str} onClick={this.handleCallback.bind(this, this.props.photos[i+1]._id._str)} ref={this.props.photos[i+1]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i+1]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i+1].resized_uris[640]} />
+										</div>;
 				} else {
-					photos_list.push(<div className="timeline-strip-row">
-										<div className="timeline-strip-left">
-											<img onClick={this.handleCallback.bind(this, this.props.photos[i]._id._str)} ref={this.props.photos[i]._id._str} className={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1 ? 'highlighted' : unhighlighted_default} src={"http://localhost:3022/" + this.props.photos[i].resized_uris[640]} />
-										</div>
-									</div>);
+					var right_image = [];
 				}
+
+				photos_list.push(<div className="timeline-strip-row">
+									{left_image}
+									{right_image}
+								</div>);
 			}
 
 		} else {

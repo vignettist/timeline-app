@@ -24,6 +24,7 @@ export default class Controls extends Component {
         		<button className="back-button" onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
         		<h1>{corrected_time.format('MMMM Do YYYY')}</h1>
         		<button className="compose-button"><img src="/icons/Quill With Ink-100.png" /><div>Start Composing</div></button>
+        		<div>{this.props.state}</div>
         		{debug}
         	</div>
         );
@@ -32,5 +33,6 @@ export default class Controls extends Component {
 
 Controls.propTypes = {
 	debug: PropTypes.bool.isRequired,
-	cluster: PropTypes.object.isRequired
+	cluster: PropTypes.object.isRequired,
+	state: PropTypes.string
 };

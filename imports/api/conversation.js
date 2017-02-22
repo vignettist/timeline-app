@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
+import { People, LogicalImages } from './photos.js';
 
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
@@ -44,7 +45,8 @@ function recognize_confirmation(text) {
 				 "affirmative",
 				 "aye",
 				 "uh-huh",
-				 "yup"];
+				 "yup",
+				 "yep"];
 
 	return listInString(yes_terms, text);
 }
@@ -91,7 +93,48 @@ Meteor.methods({
 		}
 	},
 
-	'conversation.namePerson'(name, image, facen) {
+	'person.identifyFromRep'(rep, callback) {
+		check(rep, Array);
+		check(callback, Function);
+
+		try {
+			// get list of all existing face reps
+
+			people = People.find({}).fetch();
+
+			var similarity = [];
+
+			for (var i = 0; i < people.length; i++) {
+				var sim = euclideanDistance(people[i].mean_rep, rep);
+
+				similarity.push({'person': people[i], 'similarity': sim});
+			}
+
+			similarity.sort(function(a,b) { return a.similarity - b.similarity});
+
+			callback(similarity[0].person);
+
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	// 'person.identifyFromName'(name, callback) {
+	// 	check(name, String);
+
+	// 	try {
+	// 		var possible_people = People.find({"name": {"$regex": name, "$options": "i"}}).fetch();
+
+
+	// 	} catch(e) {
+	// 		console.log(e);
+	// 		return false;
+	// 	}
+
+	// },
+
+	'conversation.associateFace'(name, image, facen) {
 		check(name, String);
 		check(image, String);
 		check(facen, String);
@@ -99,20 +142,93 @@ Meteor.methods({
 		try {
 			facen = parseInt(facen);
 
-
-
-			//  find person in database with 'name'
 			// find image in database with 'image' id
-			// update image to contain 'name', person id
-			//  add new face representation
-			//  compute new mean representation
-			//  add image to image list
+			var image_id = new Meteor.Collection.ObjectID(image);
+			photo = LogicalImages.find({"_id": image_id}).fetch()[0];
+
+			if (name != "") {
+				//  find person in database with 'name'
+				var possible_people = People.find({"name": {"$regex": name, "$options": "i"}}).fetch();
+
+				if (possible_people.length == 0) {
+					//  add new face representation
+					//  compute new mean representation
+					//  add image to image list
+					People.insert({"name": name, 
+								   "images": [photo._id],
+								   "reps": [photo.openfaces[facen].rep],
+								   "mean_rep": photo.openfaces[facen].rep});
+				} else if (possible_people.length == 1) {
+					var person = possible_people[0];
+
+					//  add image to image list
+					var images = person.images;
+					images.push(photo._id);
+
+					//  add new face representation
+					var reps = person.reps;
+					console.log('finding rep');
+					console.log(photo.openfaces[facen]);
+					reps.push(photo.openfaces[facen]['rep']);
+
+					//  compute new mean representation
+					var nreps = reps.length;
+					var mean_rep = Array(128);
+					var s = 0;
+
+					// mean
+					for (var i = 0; i < 128; i++) {
+						var m = 0;
+						for (var j = 0; j < nreps; j++) {
+							m += reps[j][i] * (1.0 / nreps);
+						}
+
+						mean_rep[i] = m;
+						s += m
+					}
+
+					// normalize
+					s = Math.sqrt(s);
+					for (var i = 0; i < 128; i++) {
+						mean_rep[i] /= s;
+					}
+
+					People.update({"_id": person._id}, {"$set": {"reps": reps, "images": images, "mean_rep": mean_rep}});
+
+				} else {
+					// TODO fix this
+					console.log("ERROR: UNHANDLED CASE MULTIPLE NAME MATCHES");
+				}
+
+				var person = People.find({"name": {"$regex": name, "$options": "i"}}).fetch()[0];
+
+				// update image to contain 'name', person id
+				if ('identified_faces' in photo) {
+					var identified_faces = photo.identified_faces;
+				} else {
+					var identified_faces = [];
+				}
+
+				photo.openfaces[facen]['name'] =  name;
+				photo.openfaces[facen]['person_id'] = person['_id'];
+
+				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": photo.openfaces}});
+
+			} else {
+				// name is blank, so this isn't a face. remove it from the image
+
+				var openfaces = photo.openfaces;
+				openfaces.splice(facen, 1);
+
+				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": openfaces}});
+			}
 
 		} catch (e) {
 			console.log(e);
 			return false;
 		}
-	}
+	},
+
 });
 
 if (Meteor.isServer) {
