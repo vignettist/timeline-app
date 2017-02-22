@@ -132,11 +132,22 @@ StateMachine['person_in_photo'] = {
 
 StateMachine['presenting_image'] = {
 	autoTransition: function presentingImageAutoTransition(transitionCallback, props, parameters) {
-		if (!('image' in parameters)) {
-			console.log("ERROR, parameter image should exist here");
+		var image = props.photos.filter(function(p) {
+        	return p._id._str == parameters.image
+        }, parameters)[0];
+
+		var faceCenter = image.openfaces[parameters.face].rect[0] + image.openfaces[parameters.face].rect[2]/2;
+        var width = 1280*image.size[0]/image.size[1];
+
+        if (faceCenter <= width/3) {
+        	var output = 'Who is that, on the left?';
+        } else if (faceCenter >= 2*width/3) {
+        	var output = 'Who is on the right?';
+        } else {
+        	var output = 'Who is in the middle of this picture?'
         }
 
-        transitionCallback({output: {from: 'app', content: 'Who is this?'}, newState: 'determining_name?' + combineParameters(parameters) + ',highlighted=' + parameters.image});
+        transitionCallback({output: {from: 'app', content: output}, newState: 'determining_name?' + combineParameters(parameters) + ',highlighted=' + parameters.image});
 	}
 };
 
@@ -201,7 +212,7 @@ StateMachine['confirming_person'] = {
 			if (yn) {
 				// add name to names database
 
-				Meteor.call('conversation.associateFace', parameters.name, parameters.image, parameters.face)
+				Meteor.call('conversation.associateFace', parameters.name, parameters.image, parameters.face, props.cluster._id._str);
 
 				content = 'Ok, great! What were you doing with ' + parameters.name + ' on that day?';
 				newState = 'gathering_clustering_information?name=' + parameters.name;
@@ -210,7 +221,7 @@ StateMachine['confirming_person'] = {
 
 				// could not confirm name
 				content = 'Oh, so who is it?';
-				newState = 'determining_name';
+				newState = 'determining_name?' + combineParameters(parameters);
 			}
 
 			transitionCallback({output: {from: 'app', content: content}, newState: newState});
@@ -236,12 +247,12 @@ StateMachine['are_there_people'] = {
 			} else {
 				if (yn) {
 					content = 'Okay, so who is it?';
-					newState = 'determining_name';
+					newState = 'determining_name?' + combineParameters(parameters);
 				} else {
 					content = 'Oh, sorry about that.';
 					newState = 'unrecognized_place';
 
-					Meteor.call('conversation.associateFace', "", parameters.image, parameters.face);
+					Meteor.call('conversation.associateFace', "", parameters.image, parameters.face, props.cluster._id._str);
 				}
 
 				transitionCallback({output: {from: 'app', content: content}, newState: newState});

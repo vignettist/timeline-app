@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
-import { People, LogicalImages } from './photos.js';
+import { People, LogicalImages, Clusters } from './photos.js';
 
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
@@ -134,7 +134,7 @@ Meteor.methods({
 
 	// },
 
-	'conversation.associateFace'(name, image, facen) {
+	'conversation.associateFace'(name, image, facen, cluster_id) {
 		check(name, String);
 		check(image, String);
 		check(facen, String);
@@ -213,6 +213,24 @@ Meteor.methods({
 				photo.openfaces[facen]['person_id'] = person['_id'];
 
 				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": photo.openfaces}});
+
+				var cluster_id = new Meteor.Collection.ObjectID(cluster_id);
+				cluster = Clusters.find({"_id": cluster_id}).fetch({})[0];
+				console.log(cluster);
+
+				if ('people' in cluster) {
+					var person_in_cluster = cluster.people.reduce(function (a, b) {
+						return a || (b.person_id == person['_id']);
+					}, false);
+
+					if (!person_in_cluster) {
+						var people = cluster.people;
+						people.push({'name': name, 'person_id': person['_id']});
+						Clusters.update({"_id": cluster_id}, {"$set": {"people": people}});
+					}
+				} else {
+					Clusters.update({"_id": cluster_id}, {"$set": {"people": [{'name': name, 'person_id': person['_id']}]}});
+				}
 
 			} else {
 				// name is blank, so this isn't a face. remove it from the image
