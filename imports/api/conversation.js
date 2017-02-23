@@ -2,9 +2,10 @@ import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
 import { People, LogicalImages, Clusters } from './photos.js';
-
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
+
+var nlp = require('nlp_compromise');
 
 function listInString(list, text) {
 	var text = text.toLowerCase();
@@ -214,7 +215,7 @@ Meteor.methods({
 
 	// specifies the name of a person in an image, and denormalizes data
 	'conversation.associateFace'(name, image, facen, cluster_id) {
-		check(name, String);
+		check(name, Object);
 		check(image, String);
 		check(facen, String);
 
@@ -227,13 +228,18 @@ Meteor.methods({
 
 			if (name != "") {
 				//  find person in database with 'name'
-				var possible_people = People.find({"name": {"$regex": name, "$options": "i"}}).fetch();
+				var possible_people = People.find({"name": {"$regex": name.firstName, "$options": "i"}}).fetch();
+
+				if (possible_people.length > 1) {
+					var possible_people = People.find({"name": {"$regex": name.firstName + " " + name.lastName, "$options": "i"}}).fetch();
+				}
 
 				if (possible_people.length == 0) {
 					//  add new face representation
 					//  compute new mean representation
 					//  add image to image list
-					People.insert({"name": name, 
+					People.insert({"name": name.firstName + " " + name.lastName,
+								   "gender": name.gender, 
 								   "images": [photo._id],
 								   "reps": [photo.openfaces[facen].rep],
 								   "mean_rep": photo.openfaces[facen].rep});
@@ -279,7 +285,7 @@ Meteor.methods({
 					console.log("ERROR: UNHANDLED CASE MULTIPLE NAME MATCHES");
 				}
 
-				var person = People.find({"name": {"$regex": name, "$options": "i"}}).fetch()[0];
+				var person = People.find({"name": {"$regex": name.firstName, "$options": "i"}}).fetch()[0];
 
 				// update image to contain 'name', person id
 				if ('identified_faces' in photo) {
@@ -294,22 +300,7 @@ Meteor.methods({
 				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": photo.openfaces}});
 
 				var cluster_id = new Meteor.Collection.ObjectID(cluster_id);
-				cluster = Clusters.find({"_id": cluster_id}).fetch({})[0];
-				console.log(cluster);
-
-				if ('people' in cluster) {
-					var person_in_cluster = cluster.people.reduce(function (a, b) {
-						return a || (b.person_id == person['_id']);
-					}, false);
-
-					if (!person_in_cluster) {
-						var people = cluster.people;
-						people.push({'name': name, 'person_id': person['_id']});
-						Clusters.update({"_id": cluster_id}, {"$set": {"people": people}});
-					}
-				} else {
-					Clusters.update({"_id": cluster_id}, {"$set": {"people": [{'name': name, 'person_id': person['_id']}]}});
-				}
+				Clusters.update({"_id": cluster_id}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
 
 			} else {
 				// name is blank, so this isn't a face. remove it from the image
@@ -340,6 +331,43 @@ Meteor.methods({
 		} catch (e) {
 			console.log(e);
 
+			return false;
+		}
+	},
+
+	'conversation.NER'(responseText) {
+		check(responseText, String);
+
+		this.unblock();
+
+		try {
+			var people = nlp.text(responseText).people();
+			console.log(people);
+
+			// exclude some common confounders
+			people = people.filter(function(p) { 
+				return ((p.normal != 'i') && (p.normal != "you"));
+			});
+
+			people = people.map(function(p) {
+				var gender = 'n';
+
+				if ('MalePerson' in p.pos) {
+					gender = 'm';
+				} else if ('FemalePerson' in p.pos) {
+					gender = 'f';
+				}
+
+				return {'firstName': p.firstName,
+						'lastName': p.lastName,
+						'gender': gender};
+			});
+
+			console.log(people);
+
+			return people;
+		} catch(e) {
+			console.log(e);
 			return false;
 		}
 	},
@@ -385,5 +413,17 @@ Meteor.methods({
 			return false;
 		}
 	}
+	// },
+
+	// 'conversation.dominantNounPhrase'(responseText) {
+	// 	check(responseText, String);
+
+	// 	this.unblock();
+	// 	try{
+	// 		var result = HTTP.call("POST", "http://localhost:3050/parse",
+	// 	                       {params: {text: responseText}});
+	// 		console.log(result);
+	// 	}
+	// }
 });
 }

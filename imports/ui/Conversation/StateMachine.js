@@ -173,18 +173,18 @@ StateMachine['determining_name'] = {
 
           } else if (names.length == 1) {
             if (Math.random() > 0.5) {
-              var content = "Just double checking, that's " + names[0] + "?";
+              var content = "Just double checking, that's " + names[0].firstName + "?";
             } else {
-              var content = "Oh, so that's " + names[0] + "?";
+              var content = "Oh, so that's " + names[0].firstName + "?";
             }
 
-            var newState = 'confirming_person?image=' + parameters.image + ',face=' + parameters.face + ',name=' + names[0];
+            var newState = 'confirming_person?image=' + parameters.image + ',face=' + parameters.face + ',firstName=' + names[0].firstName + ',lastName=' + names[0].lastName + ',gender=' + names[0].gender;
           } else if (names.length > 1) {
             var listed_names = names.reduce(function(list, n, i, a) {
               if (i == a.length - 1) {
-                return list + " or " + n
+                return list + " or " + n.firstName;
               } else {
-                return list + ", " + n
+                return list + ", " + n.firstName;
               }
             });
             var content = "Wait, is that " + listed_names + "?";
@@ -194,7 +194,7 @@ StateMachine['determining_name'] = {
           transitionCallback({output: {from: 'app', content: content}, newState: newState})
       }}.bind(transitionCallback);
 
-      Meteor.call('conversation.whoIs', text, interpretPerson);
+      Meteor.call('conversation.NER', text, interpretPerson);
   }
 }
 
@@ -214,9 +214,9 @@ StateMachine['confirming_person'] = {
 			if (yn) {
 				// add name to names database
 
-				Meteor.call('conversation.associateFace', parameters.name, parameters.image, parameters.face, props.cluster._id._str);
+				Meteor.call('conversation.associateFace', {firstName: parameters.firstName, lastName: parameters.lastName, gender: parameters.gender}, parameters.image, parameters.face, props.cluster._id._str);
 
-				content = 'Ok, great! What were you doing with ' + parameters.name + ' on that day?';
+				content = 'Ok, great! What were you doing with ' + parameters.firstName + ' on that day?';
 				newState = 'gathering_clustering_information?name=' + parameters.name;
 
 			} else {

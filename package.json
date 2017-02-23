@@ -6,11 +6,13 @@
   },
   "dependencies": {
     "babel-runtime": "^6.18.0",
+    "compromise": "^7.0.18",
     "indexof": "0.0.1",
     "java": "^0.8.0",
     "leaflet": "^0.7.7",
     "leaflet-routing-machine": "^3.2.5",
     "meteor-node-stubs": "~0.2.0",
+    "nlp_compromise": "^6.5.3",
     "rc-slider": "^5.4.0",
     "react": "^15.1.0",
     "react-addons-css-transition-group": "^15.1.0",
