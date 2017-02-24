@@ -39,6 +39,8 @@ function reversePronouns(text) {
 	text = text.replace(/\bMyself\b/, "Yourself");
 	text = text.replace(/\bam\b/, "are");
 	text = text.replace(/\bAm\b/, "Are");
+	text = text.replace(/\bwas\b/, "were");
+	text = text.replace(/\bWas\b/, "Were");
 	return text;
 }
 

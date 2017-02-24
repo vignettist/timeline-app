@@ -6,6 +6,7 @@ import { chooseRandomResponse, makeList, reversePronouns, definiteArticles } fro
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
 
+var nlp7 = require('compromise');
 var nlp = require('nlp_compromise');
 
 function listInString(list, text) {
@@ -435,22 +436,63 @@ Meteor.methods({
 		this.unblock();
 
 		try {
-			// Can you tell me more about [NOUN]?
-			// Why were you [VERB]+?
-			// What happened next?
-				// What did you do next?
-			// How did you feel?
-			// Was this what you expected?
-				// Was [PLACE] what you expected?
-			// Do you have a photo of that?
+			var choice = Math.random()*7;
 
-			var nouns = getNouns(responseText);
-			var longest_nouns = nouns.sort(function(a, b) { return a.length < b.length });
-			var longest_noun = longest_nouns[0];
+			if (choice < 1) {
+				// Can you tell me more about [NOUN]?
 
-			var longest_noun = definiteArticles(reversePronouns(longest_noun));
+				var nouns = getNouns(responseText);
+				var longest_nouns = nouns.sort(function(a, b) { return a.length < b.length });
+				var longest_noun = longest_nouns[0];
 
-			var reply = "Can you tell me more about " + longest_noun + "?";
+				var longest_noun = definiteArticles(reversePronouns(longest_noun));
+
+				var reply = "Can you tell me more about " + longest_noun + "?";
+
+			} else if (choice < 2) {
+				// Why?
+
+				if (nlp7(responseText).match("^(i|we) #Copula #Gerund").out('text').length > 0) {
+					// Why were you [VERB]+?
+					var suffix = nlp7(responseText).splitAfter("(i|we) #Copula #Gerund").get(1).out('text')
+					var copula = nlp7(nlp7(responseText).splitAfter("(i|we) #Copula #Gerund").get(0).out('text')).match("#Copula").out('text');
+					var gerund = nlp7(nlp7(responseText).splitAfter("(i|we) #Copula #Gerund").get(0).out('text')).match("#Gerund").out('text');
+					var reply = "Why " + reversePronouns(copula) + " you " + gerund + " " + suffix + "?";
+				} else if (nlp7(responseText).match("(i|we) #PastTense").out('text').length > 0) {
+					// Why did you [VERB]+?
+					var suffix = nlp7(responseText).splitAfter("(i|we) #PastTense").get(1).out('text')
+					var verb = nlp7(nlp7(responseText).splitAfter("(i|we) #Verb").get(0).out('text')).match("#Verb").verbs().conjugate()[0]['Infinitive'];
+					var reply = "Why did you " + verb + " " + suffix + "?";
+				} else if (nlp7(responseText).match("(i|we) #PresentTense").out('text').length > 0) {
+					// Why do you [VERB]+?
+					var suffix = nlp7(responseText).splitAfter("(i|we) #PresentTense").get(1).out('text')
+					var verb = nlp7(nlp7(responseText).splitAfter("(i|we) #Verb").get(0).out('text')).match("#Verb").verbs().conjugate()[0]['Infinitive'];
+					var reply = "Why do you " + verb + " " + suffix + "?";
+				} else {
+					var reply = "Why?";
+				}
+
+			} else if (choice < 3) {
+				// What happened next?
+
+				var reply = chooseRandomResponse(["What did you do next?", "What happened next?"]);
+
+			} else if (choice < 4) {
+				// How did you feel?
+
+				var reply = chooseRandomResponse(["How did you feel?", "What were you thinking about then?", "What was on your mind?"]);
+
+			} else if (choice < 5) {
+				// Was this what you expected?
+
+				var reply = chooseRandomResponse(["What were you expecting?", "Was this what you expected?"]);
+
+			} else {
+				// Do you have a photo of that?
+				//  (this is currently twice as likely as everything else)
+
+				var reply = chooseRandomResponse(["I'd love to see a photo of that. Do you have one?", "Do you have a photo of that?", "What photo best shows that moment?", "I want to see a picture!"]);
+			}
 
 			return reply;
 

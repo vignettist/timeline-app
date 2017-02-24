@@ -64,9 +64,6 @@ StateMachine['grand_central'] = {
 		var unrecognized_people = [];
 		var recognized_people = [];
 
-
-		console.log(props);
-
 		for (var i = 0; i < props.photos.length; i++) {
 			if (props.photos[i].openfaces.length > 0) {
 				for (var j = 0; j < props.photos[i].openfaces.length; j++) {
@@ -88,10 +85,6 @@ StateMachine['grand_central'] = {
 		var unnamed_places = places.filter(function(p) {
 			return !('name' in p);
 		});
-
-		console.log(unrecognized_people);
-		console.log(recognized_people);
-
 
 		if (unrecognized_people.length > 0) {
 			var newState = 'person_in_photo?image=' + unrecognized_people[0].image + ',face=' + unrecognized_people[0].face;
@@ -117,8 +110,6 @@ StateMachine['grand_central'] = {
 			}
 		}
 
-		console.log(content);
-		console.log(newState);
 		transitionCallback({output: {from: 'app', content: content}, newState: newState});
 	}
 };
@@ -133,6 +124,7 @@ StateMachine['person_in_photo'] = {
 
 StateMachine['presenting_image'] = {
 	autoTransition: function presentingImageAutoTransition(transitionCallback, props, parameters) {
+		// TODO: this should try to identify the person based on face representation first
 		var image = props.photos.filter(function(p) {
         	return p._id._str == parameters.image
         }, parameters)[0];
@@ -264,9 +256,11 @@ StateMachine['place_in_cluster'] = {
 
         highlight_list = highlight_list.slice(1, highlight_list.length);
 
-        console.log(props.places[0]._id);
+        var place = props.places.filter(function(p) {
+        	return p._id._str === parameters.place;
+        })[0];
 
-        transitionCallback({output: {from: 'app_place', content: {center: props.places[0].location.coordinates, size: props.places[0].radius}}, newState: 'presenting_place?place=' + parameters.place + ',highlighted=' + highlight_list});
+        transitionCallback({output: {from: 'app_place', content: {center: place.location.coordinates, size: place.radius}}, newState: 'presenting_place?place=' + parameters.place + ',highlighted=' + highlight_list});
   	}	
 };
 
