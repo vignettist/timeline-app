@@ -1107,7 +1107,7 @@ a {
 		max-width: calc(50% - 0.5em);
 		position: relative;
 
-		img {
+		img.story-image {
 			z-index: 10;
 			width: 100%;
 			height: auto;
@@ -1126,8 +1126,8 @@ a {
 		}
 	}
 
-	.timeline-strip-left {
-		img:hover {
+	.timeline-strip-left:hover {
+		img.story-image {
 			width: calc(175% + 1em);
 			transition: 0.3s;
 			z-index: 11;
@@ -1135,7 +1135,7 @@ a {
 			box-shadow: 10px 10px 20px black; 
 		}
 
-		img.unhighlighted:hover {
+		img.unhighlighted {
 			width: 100%;
 			z-index: 10;
 			left: 0%;
@@ -1143,21 +1143,109 @@ a {
 		}
 	}
 
-	.timeline-strip-right {
-		img:hover {
+	.timeline-strip-full {
+		max-width: 100%;
+		position: relative;
+
+		img.story-image {
+			z-index: 10;
+			width: 100%;
+			height: auto;
+			position: relative;
+			transition: 0.3s;
+			left: 0%;
+			box-shadow: 0px 0px 0px black; 
+		}
+
+		img.highlighted {
+			box-shadow: 0px 0px 20px #588099;
+		}
+
+		img.unhighlighted {
+			opacity: 0.5;
+		}
+	}
+
+	.timeline-strip-full:hover {
+		img.story-image {
+			width: calc(100% + 1em);
+			transition: 0.3s;
+			z-index: 11;
+			margin-left: -0.5em;
+			box-shadow: 10px 10px 20px black; 
+		}
+	}
+
+	.timeline-strip-right:hover {
+		img.story-image {
 			width: calc(175% + 1em);
 			left: calc(-75% - 1em);
 			transition: 0.3s;
 			box-shadow: 10px 10px 40px black; 
 		}
 
-		img.unhighlighted:hover {
+		img.unhighlighted {
 			width: 100%;
 			z-index: 10;
 			left: 0%;
 			box-shadow: 0px 0px 0px black; 
 		}
 	}
+
+	.rating-controls {
+		opacity: 0;
+		position: absolute;
+		display: flex;
+		bottom: 1.25em;
+		right: 0.3em;
+		width: 125px;
+		z-index: 12;
+		transition: 0.1s;
+
+		button {
+			margin-right: 10px;
+			width: 50px;
+			height: 50px;
+			border-radius: 25px;
+			box-shadow: 5px 5px 10px rgba(0,0,0,0.8);
+			background-color: white;
+
+			img {
+				box-shadow: 0px 0px 0px black;
+				max-width: 35px;
+				height: auto;
+			}
+		}
+
+		button:hover {
+			background-color: #4286f4;
+			color: white;
+			box-shadow: 10px 10px 20px rgba(0,0,0,0.8);
+
+			img {
+				filter: invert(100%);
+			}
+		}
+
+		button:active {
+			transition: 0.1s;
+			border: 1px solid white;
+			box-shadow: 5px 5px 10px rgba(0,0,0,0.8);
+		}
+	}
+
+	.timeline-strip-left:hover, .timeline-strip-right:hover, .timeline-strip-full:hover {
+		.rating-controls {
+			// display: flex;
+			opacity: 1;
+			transition: 0.3s;
+		}
+	}
+
+	.timeline-strip-left:hover .rating-controls {
+		right: -80%;
+	}
+
 }
 
 .cluster-conversation-header {

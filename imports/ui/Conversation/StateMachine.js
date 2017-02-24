@@ -342,7 +342,9 @@ StateMachine['most_interesting_setup'] = {
 
 StateMachine['get_interesting_photo'] = {
 	stateTransition: function getInterestingPhotoTransition(transitionCallback, text, props, parameters) {
-		transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_clustering_information'});
+		Meteor.call('conversation.rateImage', text, 3);
+
+		transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_image_information?image=' + text});
 	}
 }
 
@@ -370,8 +372,19 @@ StateMachine['gathering_clustering_information'] = {
 
 StateMachine['gathering_image_information'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
-		console.log('gathering_image_information');
+		function imageFollowUp(err, response) {
+			if (err) {
+				alert(err);
+			} else {
+				var newState = 'gathering_image_information?' + combineParameters(this);
+				var output = response;
+				transitionCallback({output: {from: 'app', content: response}, newState: newState});
+			}
+		}
 
-		// Meteor.call('conversation.followup', text, )
+		console.log('gathering_image_information');
+		console.log(parameters.image);
+
+		Meteor.call('conversation.followUp', text, imageFollowUp.bind(parameters));
 	}
 }
