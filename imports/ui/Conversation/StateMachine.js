@@ -1,3 +1,5 @@
+import { chooseRandomResponse, makeList, reversePronouns, definiteArticles } from '../../api/nlp_helper.js';
+
 export var StateMachine = {};
 
 // HELPER FUNCTIONS
@@ -27,45 +29,6 @@ function combineParameters(params) {
   }
 
   return combined_params;
-}
-
-function chooseRandomResponse(responses) {
-	var i = Math.floor(responses.length * Math.random());
-	return responses[i];
-}
-
-function makeList(list, n, i, a) {
-	if (i == a.length - 1) {
-		return list + " or " + n;
-	} else {
-		return list + ", " + n;
-	}
-}
-
-function reversePronouns(text) {
-	text = text.replace(/\bour\b/, "your");
-	text = text.replace(/\bOur\b/, "Your");	
-	text = text.replace(/\bours\b/, "yours");
-	text = text.replace(/\bOurs\b/, "Yours");
-	text = text.replace(/\bus\b/, "you");
-	text = text.replace(/\bUs\b/, "You");
-	text = text.replace(/\bwe\b/, "you");
-	text = text.replace(/\bWe\b/, "You");
-	text = text.replace(/\bourselves\b/, "yourselves");
-	text = text.replace(/\bOurselves\b/, "Yourselves");
-	text = text.replace(/\bI\b/, "you");
-	text = text.replace(/\bi\b/, "you");
-	text = text.replace(/\bme\b/, "you");
-	text = text.replace(/\bMe\b/, "You");
-	text = text.replace(/\bmy\b/, "your");
-	text = text.replace(/\bMy\b/, "Your");
-	text = text.replace(/\bmine\b/, "yours");
-	text = text.replace(/\bMine\b/, "Yours");
-	text = text.replace(/\bmyself\b/, "yourself");
-	text = text.replace(/\bMyself\b/, "Yourself");
-	text = text.replace(/\bam\b/, "are");
-	text = text.replace(/\bAm\b/, "Are");
-	return text;
 }
 
 export { combineParameters };
@@ -331,7 +294,7 @@ StateMachine['determining_place'] = {
 
 				// the place might have pronouns in it, (e.g. "our hotel") so we should reverse those before generating display output
 				var displayName = reversePronouns(name);
-				transitionCallback({output: {from: 'app', content: "Ok, I'll mark those as taken at " + displayName + "."}, newState: 'most_interesting_setup'});
+				transitionCallback({output: {from: 'app', content: "Ok, I'll mark those as taken at " + displayName + "."}, newState: 'gathering_clustering_information'});
 
 			}
 		}
@@ -359,6 +322,27 @@ StateMachine['get_interesting_photo'] = {
 StateMachine['gathering_clustering_information'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		console.log('gathering_clustering_information');
+
+		function followUp(err, response) {
+			if (err) {
+				alert(err);
+			} else {
+				var newState = 'gathering_clustering_information';
+				var output = response;
+				transitionCallback({output: {from: 'app', content: response}, newState: newState});
+			}
+		}
+
+		Meteor.call('conversation.followUp', text, followUp);
 	}
 }
 
+// STATE FOR GATHERING GENERIC IMAGE INFORMATION
+
+StateMachine['gathering_image_information'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('gathering_image_information');
+
+		// Meteor.call('conversation.followup', text, )
+	}
+}

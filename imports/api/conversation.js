@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
 import { People, LogicalImages, Clusters, Places } from './photos.js';
+import { chooseRandomResponse, makeList, reversePronouns, definiteArticles } from './nlp_helper.js';
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
 
@@ -50,6 +51,70 @@ function recognize_confirmation(text) {
 				 "yep"];
 
 	return listInString(yes_terms, text);
+}
+
+function getNouns(responseText) {
+	// * get parse tree result
+	var result = HTTP.call("POST", "http://localhost:3050/parse",
+                       {params: {text: responseText}});
+
+	console.log(result);
+	var nlp = JSON.parse(result.content).document;
+	var names = [];
+
+	if ('$' in nlp.sentences.sentence) {
+		var num_sentences = 1;
+	} else {
+		var num_sentences = nlp.sentences.sentence.length;
+	}
+
+	all_nouns = []
+
+	for (var s = 0; s < num_sentences; s++) {
+		if (num_sentences == 1) {
+			var sentence = nlp.sentences.sentence;
+		} else {
+			var sentence = nlp.sentences.sentence[s];
+		}
+
+		var parse_tree = sentence.parsedTree;
+
+		// traverses tree throwing out noun phrases
+		function get_noun_phrase(tree) {
+			if ((tree.type === "NP") || (tree.type === "NN") || (tree.type === "N") || (tree.type === "NNP")) {
+				return tree;
+			} else if ('children' in tree) {
+				return tree.children.map(function(t) { return get_noun_phrase(t) });
+			} else {
+				return [];
+			}
+		}
+
+		// * find all top level noun phrases
+		var noun_phrases = flatten(get_noun_phrase(parse_tree));
+
+		// traverses tree concatenating words back together
+		function flatten_text(tree) {
+			if ("word" in tree) {
+				return tree.word;
+
+			} else {
+				return tree.children.reduce(function(a,b) {
+					if (a.length > 0) {
+						return a + " " + flatten_text(b);
+					} else {
+						return flatten_text(b);
+					}
+				}, "");
+			}
+		}
+
+		// * converts noun phrases to text
+		var noun_text = noun_phrases.map(flatten_text);
+		all_nouns.push(noun_text);
+	}
+	
+	return flatten(noun_text);
 }
 
 // denests arrays
@@ -370,10 +435,20 @@ Meteor.methods({
 		this.unblock();
 
 		try {
-			var t = nlp.text(responseText);
-			var nouns = t.nouns();
-			var longest_nouns = nouns.sort(function(a, b) { return a.normal.length < b.normal.length });
-			var longest_noun = longest_nouns[0].normal;
+			// Can you tell me more about [NOUN]?
+			// Why were you [VERB]+?
+			// What happened next?
+				// What did you do next?
+			// How did you feel?
+			// Was this what you expected?
+				// Was [PLACE] what you expected?
+			// Do you have a photo of that?
+
+			var nouns = getNouns(responseText);
+			var longest_nouns = nouns.sort(function(a, b) { return a.length < b.length });
+			var longest_noun = longest_nouns[0];
+
+			var longest_noun = definiteArticles(reversePronouns(longest_noun));
 
 			var reply = "Can you tell me more about " + longest_noun + "?";
 
@@ -492,67 +567,7 @@ Meteor.methods({
 
 		this.unblock();
 		try{
-			// * get parse tree result
-
-			var result = HTTP.call("POST", "http://localhost:3050/parse",
-		                       {params: {text: responseText}});
-
-			var nlp = JSON.parse(result.content).document;
-			var names = [];
-
-			if ('$' in nlp.sentences.sentence) {
-				var num_sentences = 1;
-			} else {
-				var num_sentences = nlp.sentences.sentence.length;
-			}
-
-			all_nouns = []
-
-			for (var s = 0; s < num_sentences; s++) {
-				if (num_sentences == 1) {
-					var sentence = nlp.sentences.sentence;
-				} else {
-					var sentence = nlp.sentences.sentence[s];
-				}
-
-				var parse_tree = sentence.parsedTree;
-
-				// traverses tree throwing out noun phrases
-				function get_noun_phrase(tree) {
-					if ((tree.type === "NP") || (tree.type === "NN") || (tree.type === "N")) {
-						return tree;
-					} else if ('children' in tree) {
-						return tree.children.map(function(t) { return get_noun_phrase(t) });
-					} else {
-						return [];
-					}
-				}
-
-				// * find all top level noun phrases
-				var noun_phrases = flatten(get_noun_phrase(parse_tree));
-
-				// traverses tree concatenating words back together
-				function flatten_text(tree) {
-					if ("word" in tree) {
-						return tree.word;
-
-					} else {
-						return tree.children.reduce(function(a,b) {
-							if (a.length > 0) {
-								return a + " " + flatten_text(b);
-							} else {
-								return flatten_text(b);
-							}
-						}, "");
-					}
-				}
-
-				// * converts noun phrases to text
-				var noun_text = noun_phrases.map(flatten_text);
-				all_nouns.push(noun_text);
-			}
-
-			return flatten(all_nouns);
+			return getNouns(responseText);
 		} catch(e) {
 			console.log(e);
 			return false;

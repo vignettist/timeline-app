@@ -207,7 +207,7 @@ export class ClusterConversation extends Component {
               </div>
 
               <div className="cluster-conversation-right">
-                <TimelineStrip photos={this.props.photos} highlighted={highlighted_list} callback={this.selectPhoto.bind(this)} /> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
+                {/* <TimelineStrip photos={this.props.photos} highlighted={highlighted_list} callback={this.selectPhoto.bind(this)} /> {/* <TimelineStrip photos={this.props.photos} callback={this.selectPhoto} scrollPosition={} /> */}
               </div>
             </div>
 
