@@ -1,4 +1,4 @@
-import { chooseRandomResponse, makeList, reversePronouns, definiteArticles } from '../../api/nlp_helper.js';
+import { chooseRandomResponse, makeList, makeAndList, reversePronouns, definiteArticles } from '../../api/nlp_helper.js';
 
 export var StateMachine = {};
 
@@ -82,8 +82,37 @@ StateMachine['grand_central'] = {
 		}
 
 		var places = props.places;
+
 		var unnamed_places = places.filter(function(p) {
-			return !('name' in p);
+			var photos_in_place = props.photos.filter(function(photo) {
+				if ('place' in photo) {
+					return photo.place.place_id._str === p._id._str;
+				} else {
+					return false;
+				}
+			});
+
+			if (photos_in_place.length > 4) {
+				return !('name' in p);
+			} else {
+				return false;
+			}
+		});
+
+		var named_places = places.filter(function(p) {
+			var photos_in_place = props.photos.filter(function(photo) {
+				if ('place' in photo) {
+					return photo.place.place_id === p._id._str;
+				} else {
+					return false;
+				}
+			});
+
+			if (photos_in_place.length > 4) {
+				return ('name' in p);
+			} else {
+				return false;
+			}
 		});
 
 		if (unrecognized_people.length > 0) {
@@ -97,10 +126,14 @@ StateMachine['grand_central'] = {
 
 		} else if (unnamed_places.length > 0) {
 			var newState = 'place_in_cluster?place=' + unnamed_places[0]._id._str;
-			var content = "I'm going to ask about some of the places that you stopped to take photos.";
+			if (parameters.first === 'n') {
+				var content = "There's a few more places I don't know.";
+			} else {
+				var content = "I'm going to ask about some of the places that you stopped to take photos.";
+			}
 		} else {
 			if (recognized_people.length > 0) {
-				var nameList = recognized_people.map(function(p){ return p.name.firstName }).reduce(makeList);
+				var nameList = recognized_people.map(function(p){ return p.name.firstName }).reduce(makeAndList);
 				var content = "It looks like you were with " + nameList + ".";
 				var newState = "most_interesting_setup";
 			} else if (places.length > 0) {
@@ -288,8 +321,10 @@ StateMachine['determining_place'] = {
 
 				// the place might have pronouns in it, (e.g. "our hotel") so we should reverse those before generating display output
 				var displayName = reversePronouns(name);
-				transitionCallback({output: {from: 'app', content: "Ok, I'll mark those as taken at " + displayName + "."}, newState: 'gathering_clustering_information'});
 
+				var response = chooseRandomResponse(["Ok, I'll mark those as taken at " + displayName + ".", "Great, now I know that photos there are at "+ displayName + ".", "Got it, those are from " + displayName + "."]);
+
+				transitionCallback({output: {from: 'app', content: response}, newState: 'grand_central?first=n'});
 			}
 		}
 

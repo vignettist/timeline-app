@@ -54,7 +54,6 @@ export class ClusterConversation extends Component {
 
     componentDidUpdate() {
       if (FlowRouter.subsReady()) {
-
         // some states are automatically transitioned into other ones
         if (this.state.pending === false) {
           var split_state = splitParameters(this.props.conversation.state);
@@ -65,7 +64,7 @@ export class ClusterConversation extends Component {
         }
 
         this.refs.conversation.scrollTop = this.refs.conversation.scrollHeight;
-      }
+      } 
     } 
 
     // some transitions are triggered by input

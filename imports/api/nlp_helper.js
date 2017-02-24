@@ -15,6 +15,16 @@ function makeList(list, n, i, a) {
 
 export {makeList};
 
+function makeAndList(list, n, i, a) {
+	if (i == a.length - 1) {
+		return list + " and " + n;
+	} else {
+		return list + ", " + n;
+	}
+}
+
+export {makeAndList};
+
 // changes pronouns from first person to second person
 function reversePronouns(text) {
 	text = text.replace(/\bour\b/, "your");
