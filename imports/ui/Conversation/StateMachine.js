@@ -1,5 +1,7 @@
 export var StateMachine = {};
 
+// HELPER FUNCTIONS
+
 function splitParameters(state) {
   var split_state = state.split("?");
 
@@ -27,104 +29,138 @@ function combineParameters(params) {
   return combined_params;
 }
 
+function chooseRandomResponse(responses) {
+	var i = Math.floor(responses.length * Math.random());
+	return responses[i];
+}
+
+function makeList(list, n, i, a) {
+	if (i == a.length - 1) {
+		return list + " or " + n;
+	} else {
+		return list + ", " + n;
+	}
+}
+
+function reversePronouns(text) {
+	text = text.replace(/\bour\b/, "your");
+	text = text.replace(/\bOur\b/, "Your");	
+	text = text.replace(/\bours\b/, "yours");
+	text = text.replace(/\bOurs\b/, "Yours");
+	text = text.replace(/\bus\b/, "you");
+	text = text.replace(/\bUs\b/, "You");
+	text = text.replace(/\bwe\b/, "you");
+	text = text.replace(/\bWe\b/, "You");
+	text = text.replace(/\bourselves\b/, "yourselves");
+	text = text.replace(/\bOurselves\b/, "Yourselves");
+	text = text.replace(/\bI\b/, "you");
+	text = text.replace(/\bi\b/, "you");
+	text = text.replace(/\bme\b/, "you");
+	text = text.replace(/\bMe\b/, "You");
+	text = text.replace(/\bmy\b/, "your");
+	text = text.replace(/\bMy\b/, "Your");
+	text = text.replace(/\bmine\b/, "yours");
+	text = text.replace(/\bMine\b/, "Yours");
+	text = text.replace(/\bmyself\b/, "yourself");
+	text = text.replace(/\bMyself\b/, "Yourself");
+	text = text.replace(/\bam\b/, "are");
+	text = text.replace(/\bAm\b/, "Are");
+	return text;
+}
+
 export { combineParameters };
 export { splitParameters };
 
-// auto transition states
-
+// new conversations always start in the uninitialized state
 StateMachine['uninitialized'] = {
 	autoTransition: function uninitializedAutoTransition(transitionCallback, props, parameters) {
 		// TODO: make this intro dialog more responsive/interesting!
 		
-		var corrected_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
-        var content = "Hi! Let's talk about the day you spent in " + props.cluster.location + " on " + corrected_time.format('MMMM Do YYYY') + ".";
-        transitionCallback({output: {from: 'app', content: content}, newState: 'check_for_people'});
+		var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
+		var end_time = moment(props.cluster.end_time.utc_timestamp).utcOffset(props.cluster.end_time.tz_offset/60);
+
+		var duration = moment.duration(end_time - start_time);
+
+		if ((end_time.date() != start_time.date()) && (end_time.hour() >= 4)) {
+			// this event spans multiple days
+			var intro = 'your time';
+		} else {
+			var intro = 'the day you spent';
+		}
+
+        var content = "Hi! Let's talk about " + intro + " in " + props.cluster.location + " on " + start_time.format('MMMM Do') + ".";
+        transitionCallback({output: {from: 'app', content: content}, newState: 'grand_central?first=y'});
 	}
 };
 
-StateMachine['most_interesting_setup'] = {
-	autoTransition: function mostInterestingAutoTransition(transitionCallback, props, parameters) {
-        transitionCallback({output: {from: 'app', content: "Which image from this cluster do you find most interesting? You can select from the photos displayed on the right."}, newState: 'get_interesting_photo?input=photo'});
-	}
-};
 
-StateMachine['unrecognized_place'] = {
-	autoTransition: function unrecognizedPlaceAutoTransition(transitionCallback, props, parameters) {
-        // TODO: select only unnamed places
-		if (props.cluster.places.length > 0) {
-          var newState = 'place_in_cluster?place=' + props.places[0]._id._str;
-          var content = 'You took a few photos in a place I\'m not familiar with.';
-        }
+// This state is kind o the master state -- returning here will provide a new task of some kind
+StateMachine['grand_central'] = {
+	autoTransition: function grandCentral(transitionCallback, props, parameters) {
+		// create list of people, and what image they are in
+		var unrecognized_people = [];
+		var recognized_people = [];
 
-        transitionCallback({output: {from: 'app', content: content}, newState: newState});
-    }
-};
 
-StateMachine['place_in_cluster'] = {
-	autoTransition: function placeInClusterAutoTransition(transitionCallback, props, parameters) {
-		var images_in_place = props.photos.filter(function(p) {
-        	if ('place' in p) {
-                return p.place.place_id._str === parameters.place;
-            } else {
-            	return false;
-            }
-        }, parameters);
+		console.log(props);
 
-        var highlight_list = images_in_place.reduce(function(a, b) {
-          return a + ';' + b._id._str;
-        }, '');
-
-        highlight_list = highlight_list.slice(1, highlight_list.length);
-
-        console.log(props.places[0]._id);
-
-        transitionCallback({output: {from: 'app_place', content: {center: props.places[0].location.coordinates, size: props.places[0].radius}}, newState: 'presenting_place?place=' + parameters.place + ',highlighted=' + highlight_list});
-  	}	
-};
-
-StateMachine['check_for_people'] = {
-	autoTransition: function unrecognizedPersonAutoTransition(transitionCallback, props, parameters) {
-		// find the first unrecognized person
-
-		var foundImage = -1;
-		var foundFace = -1;
-
-		var i = 0;
-
-		while ((i < props.photos.length) && (foundImage < 0)) {
+		for (var i = 0; i < props.photos.length; i++) {
 			if (props.photos[i].openfaces.length > 0) {
 				for (var j = 0; j < props.photos[i].openfaces.length; j++) {
-					console.log(props.photos[i]);
 					if (props.photos[i].openfaces[j].size > 10000) {
 					
 							if ('name' in props.photos[i].openfaces[j]) {
+								recognized_people.push({image: props.photos[i]._id._str, face: j, name: props.photos[i].openfaces[j].name});
 								console.log('face has been identified already: ' + props.photos[i].openfaces[j].name);
 							} else {
-								foundImage = i;
-								foundFace = j;
-								break;
+								unrecognized_people.push({image: props.photos[i]._id._str, face: j});
 							}
 
 					}
 				}
 			}
-
-			i++;
 		}
 
-		if (foundImage >= 0) {
-			var newState = 'person_in_photo?image=' + props.photos[foundImage]._id._str + ',face=' + foundFace;
-			var content = "I see some people I don't recognize.";
-        } else {
-			if (props.cluster.places.length > 0) {
-				var newState = 'place_in_cluster?place=' + props.places[0]._id._str;
-				var content = 'You took a lot of photos in a place I\'m not familiar with.';
-			}
-        }
+		var places = props.places;
+		var unnamed_places = places.filter(function(p) {
+			return !('name' in p);
+		});
 
-        transitionCallback({output: {from: 'app', content: content}, newState: newState});
-    }
+		console.log(unrecognized_people);
+		console.log(recognized_people);
+
+
+		if (unrecognized_people.length > 0) {
+			var newState = 'person_in_photo?image=' + unrecognized_people[0].image + ',face=' + unrecognized_people[0].face;
+
+			if (parameters.first === 'y') {
+				var content = "Let's start by helping me identify some people you were with.";
+			} else {
+				var content = "There's " + ((unrecognized_people.length === 1) ? 'another person' : 'a few more people') + " I need some help with.";
+			}
+
+		} else if (unnamed_places.length > 0) {
+			var newState = 'place_in_cluster?place=' + unnamed_places[0]._id._str;
+			var content = "I'm going to ask about some of the places that you stopped to take photos.";
+		} else {
+			if (recognized_people.length > 0) {
+				var nameList = recognized_people.map(function(p){ return p.name.firstName }).reduce(makeList);
+				var content = "It looks like you were with " + nameList + ".";
+				var newState = "most_interesting_setup";
+			} else if (places.length > 0) {
+				// TODO fix this
+				var content = "It looks like you started at ";
+				var newState = "most_interesting_setup";
+			}
+		}
+
+		console.log(content);
+		console.log(newState);
+		transitionCallback({output: {from: 'app', content: content}, newState: newState});
+	}
 };
+
+// STATES FOR DETERMINING THE NAME OF PEOPLE IN PHOTOS
 
 StateMachine['person_in_photo'] = {
 	autoTransition: function personInPhotoAutoTransition(transitionCallback, props, parameters) {
@@ -153,13 +189,6 @@ StateMachine['presenting_image'] = {
 	}
 };
 
-StateMachine['presenting_place'] = {
-	autoTransition: function presentingPlaceAutoTransition(transitionCallback, props, parameters) {
-    	transitionCallback({output: {from: 'app', content: 'What is the name of this place?'}, newState: 'determining_place?' + combineParameters(parameters)});
-	}
-};
-
-// states that transition on input
 
 StateMachine['determining_name'] = {
 	stateTransition: function determiningNameTransition(transitionCallback, text, props, parameters) {
@@ -198,12 +227,6 @@ StateMachine['determining_name'] = {
   }
 }
 
-StateMachine['determining_place'] = {
-	stateTransition: function determiningPlaceTransition(transitionCallback, text, props, parameters) {
-        transitionCallback({output: {from: 'app', content: 'Got it.'}, newState: 'most_interesting_setup'});
-	}
-}
-
 StateMachine['confirming_person'] = {
 	stateTransition: function confirmingPersonTransition(transitionCallback, text, props, parameters) {
 		var confirmName = function confirmName(err, yn) {
@@ -216,9 +239,11 @@ StateMachine['confirming_person'] = {
 
 				Meteor.call('conversation.associateFace', {firstName: parameters.firstName, lastName: parameters.lastName, gender: parameters.gender}, parameters.image, parameters.face, props.cluster._id._str);
 
-				content = 'Ok, great! What were you doing with ' + parameters.firstName + ' on that day?';
-				newState = 'gathering_clustering_information?name=' + parameters.name;
+				// content = 'Ok, great! What were you doing with ' + parameters.firstName + ' on that day?';
+				// newState = 'gathering_clustering_information?name=' + parameters.name;
 
+				content = 'Ok, great!';
+				newState = 'grand_central';
 			} else {
 
 				// could not confirm name
@@ -235,12 +260,6 @@ StateMachine['confirming_person'] = {
 	}
 }
 
-StateMachine['get_interesting_photo'] = {
-	stateTransition: function getInterestingPhotoTransition(transitionCallback, text, props, parameters) {
-		transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_clustering_information'});
-	}
-}
-
 StateMachine['are_there_people'] = {
 	stateTransition: function areTherePeopleTransition(transitionCallback, text, props, parameters) {
 		var isPerson = function isPerson(err, yn) {
@@ -252,7 +271,7 @@ StateMachine['are_there_people'] = {
 					newState = 'determining_name?' + combineParameters(parameters);
 				} else {
 					content = 'Oh, sorry about that.';
-					newState = 'unrecognized_place';
+					newState = 'grand_central';
 
 					Meteor.call('conversation.associateFace', "", parameters.image, parameters.face, props.cluster._id._str);
 				}
@@ -263,6 +282,79 @@ StateMachine['are_there_people'] = {
 		Meteor.call('conversation.confirm', text, isPerson);
 	}
 }
+
+// STATES FOR DETEMRINING NAME OF PLACES IN CLUSTER
+
+StateMachine['place_in_cluster'] = {
+	autoTransition: function placeInClusterAutoTransition(transitionCallback, props, parameters) {
+		var images_in_place = props.photos.filter(function(p) {
+        	if ('place' in p) {
+                return p.place.place_id._str === parameters.place;
+            } else {
+            	return false;
+            }
+        }, parameters);
+
+        var highlight_list = images_in_place.reduce(function(a, b) {
+          return a + ';' + b._id._str;
+        }, '');
+
+        highlight_list = highlight_list.slice(1, highlight_list.length);
+
+        console.log(props.places[0]._id);
+
+        transitionCallback({output: {from: 'app_place', content: {center: props.places[0].location.coordinates, size: props.places[0].radius}}, newState: 'presenting_place?place=' + parameters.place + ',highlighted=' + highlight_list});
+  	}	
+};
+
+StateMachine['presenting_place'] = {
+	autoTransition: function presentingPlaceAutoTransition(transitionCallback, props, parameters) {
+		var response = chooseRandomResponse(["Where did you take these photos?", "What is the name of this place?", "Where is this?", "What do you call this area?"]);
+    	transitionCallback({output: {from: 'app', content: response}, newState: 'determining_place?' + combineParameters(parameters)});
+	}
+};
+
+StateMachine['determining_place'] = {
+	stateTransition: function determiningPlaceTransition(transitionCallback, text, props, parameters) {
+
+		function findLongestPhrase(err, nouns) {
+			if (err) {
+				alert(err);
+			} else {
+				var sorted_nouns = nouns.sort(function(a,b) {
+					return a.length < b.length;
+				});
+
+				var name = sorted_nouns[0];
+				// update the place database with the name
+				Meteor.call('conversation.namePlace', name, this.place);
+
+				// the place might have pronouns in it, (e.g. "our hotel") so we should reverse those before generating display output
+				var displayName = reversePronouns(name);
+				transitionCallback({output: {from: 'app', content: "Ok, I'll mark those as taken at " + displayName + "."}, newState: 'most_interesting_setup'});
+
+			}
+		}
+
+		Meteor.call('conversation.nounPhrases', text, findLongestPhrase.bind(parameters));
+	}
+}
+
+// STATES FOR IDENTIFYING INTERESTING PHOTOS
+
+StateMachine['most_interesting_setup'] = {
+	autoTransition: function mostInterestingAutoTransition(transitionCallback, props, parameters) {
+        transitionCallback({output: {from: 'app', content: "Which image from this cluster do you find most interesting? You can select from the photos displayed on the right."}, newState: 'get_interesting_photo?input=photo'});
+	}
+};
+
+StateMachine['get_interesting_photo'] = {
+	stateTransition: function getInterestingPhotoTransition(transitionCallback, text, props, parameters) {
+		transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_clustering_information'});
+	}
+}
+
+// STATE FOR GATHERING GENERIC CLUSTER INFORMATION
 
 StateMachine['gathering_clustering_information'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {

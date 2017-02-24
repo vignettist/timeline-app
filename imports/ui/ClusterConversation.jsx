@@ -53,7 +53,7 @@ export class ClusterConversation extends Component {
     }
 
     componentDidUpdate() {
-      if (typeof this.props.conversation !== 'undefined') {
+      if (FlowRouter.subsReady()) {
 
         // some states are automatically transitioned into other ones
         if (this.state.pending === false) {
@@ -101,6 +101,7 @@ export class ClusterConversation extends Component {
     }
 
   render() {
+    console.log(this.props);
     if (typeof this.props.conversation !== 'undefined') {
 
 

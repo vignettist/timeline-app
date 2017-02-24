@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
-import { People, LogicalImages, Clusters } from './photos.js';
+import { People, LogicalImages, Clusters, Places } from './photos.js';
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
 
@@ -51,6 +51,32 @@ function recognize_confirmation(text) {
 
 	return listInString(yes_terms, text);
 }
+
+// denests arrays
+function flatten(arr) {
+	return arr.reduce(function (flat, toFlatten) {
+		return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+	}, []);
+}
+
+String.prototype.toTitleCase = function(){
+  var smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
+
+  return this.replace(/[A-Za-z0-9\u00C0-\u00FF]+[^\s-]*/g, function(match, index, title){
+    if (index > 0 && index + match.length !== title.length &&
+      match.search(smallWords) > -1 && title.charAt(index - 2) !== ":" &&
+      (title.charAt(index + match.length) !== '-' || title.charAt(index - 1) === '-') &&
+      title.charAt(index - 1).search(/[^\s-]/) < 0) {
+      return match.toLowerCase();
+    }
+
+    if (match.substr(1).search(/[A-Z]|\../) > -1) {
+      return match;
+    }
+
+    return match.charAt(0).toUpperCase() + match.substr(1);
+  });
+};
 
 if (Meteor.isServer) {
 	Meteor.publish('conversation_from_cluster', function getConversation(clusterId) {
@@ -202,10 +228,11 @@ Meteor.methods({
 	// allows the user to specifiy the name of a place. DOES NOT denormalize
 	'conversation.namePlace'(name, place_id) {
 		check(name, String);
-		check(place, String);
+		check(place_id, String);
 
 		try {
-			Places.update({"_id": place_id}, {"$set": {"name": name}});
+			var place_id_obj = new Meteor.Collection.ObjectID(place_id);
+			Places.update({"_id": place_id_obj}, {"$set": {"name": name}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -335,6 +362,29 @@ Meteor.methods({
 		}
 	},
 
+	// attempts to generate a follow up question
+	//   this is really really shitty right now
+	'conversation.followUp'(responseText) {
+		check(responseText, String);
+
+		this.unblock();
+
+		try {
+			var t = nlp.text(responseText);
+			var nouns = t.nouns();
+			var longest_nouns = nouns.sort(function(a, b) { return a.normal.length < b.normal.length });
+			var longest_noun = longest_nouns[0].normal;
+
+			var reply = "Can you tell me more about " + longest_noun + "?";
+
+			return reply;
+
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	'conversation.NER'(responseText) {
 		check(responseText, String);
 
@@ -349,19 +399,42 @@ Meteor.methods({
 				return ((p.normal != 'i') && (p.normal != "you"));
 			});
 
-			people = people.map(function(p) {
-				var gender = 'n';
+			// okay, maybe a person was mentioned, but they weren't in the NLP compromise list
+			if (people.length == 0) {
+				var people = nlp.text(responseText).nouns();
 
-				if ('MalePerson' in p.pos) {
-					gender = 'm';
-				} else if ('FemalePerson' in p.pos) {
-					gender = 'f';
+				people = people.filter(function(p) { 
+					return ((p.normal != 'i') && (p.normal != "you") && !(p.reasoning.includes('lexicon_pass')));
+				});
+
+				if (people.length > 0) {
+					people = people[people.length - 1].normal.toTitleCase().split(" ");
+
+					if (people.length > 1) {
+						people = [{'firstName': people[0], 'lastName': people[1]}];
+					} else {
+						people = [{'firstName': people[0]}];
+					}
+				} else {
+					people = [];
 				}
 
-				return {'firstName': p.firstName,
-						'lastName': p.lastName,
-						'gender': gender};
-			});
+			} else {
+				// extract person data and return
+				people = people.map(function(p) {
+					var gender = 'n';
+
+					if ('MalePerson' in p.pos) {
+						gender = 'm';
+					} else if ('FemalePerson' in p.pos) {
+						gender = 'f';
+					}
+
+					return {'firstName': p.firstName,
+							'lastName': p.lastName,
+							'gender': gender};
+				});
+			}
 
 			console.log(people);
 
@@ -412,18 +485,78 @@ Meteor.methods({
 			// Got a network error, time-out or HTTP error in the 400 or 500 range.
 			return false;
 		}
+	},
+
+	'conversation.nounPhrases'(responseText) {
+		check(responseText, String);
+
+		this.unblock();
+		try{
+			// * get parse tree result
+
+			var result = HTTP.call("POST", "http://localhost:3050/parse",
+		                       {params: {text: responseText}});
+
+			var nlp = JSON.parse(result.content).document;
+			var names = [];
+
+			if ('$' in nlp.sentences.sentence) {
+				var num_sentences = 1;
+			} else {
+				var num_sentences = nlp.sentences.sentence.length;
+			}
+
+			all_nouns = []
+
+			for (var s = 0; s < num_sentences; s++) {
+				if (num_sentences == 1) {
+					var sentence = nlp.sentences.sentence;
+				} else {
+					var sentence = nlp.sentences.sentence[s];
+				}
+
+				var parse_tree = sentence.parsedTree;
+
+				// traverses tree throwing out noun phrases
+				function get_noun_phrase(tree) {
+					if ((tree.type === "NP") || (tree.type === "NN") || (tree.type === "N")) {
+						return tree;
+					} else if ('children' in tree) {
+						return tree.children.map(function(t) { return get_noun_phrase(t) });
+					} else {
+						return [];
+					}
+				}
+
+				// * find all top level noun phrases
+				var noun_phrases = flatten(get_noun_phrase(parse_tree));
+
+				// traverses tree concatenating words back together
+				function flatten_text(tree) {
+					if ("word" in tree) {
+						return tree.word;
+
+					} else {
+						return tree.children.reduce(function(a,b) {
+							if (a.length > 0) {
+								return a + " " + flatten_text(b);
+							} else {
+								return flatten_text(b);
+							}
+						}, "");
+					}
+				}
+
+				// * converts noun phrases to text
+				var noun_text = noun_phrases.map(flatten_text);
+				all_nouns.push(noun_text);
+			}
+
+			return flatten(all_nouns);
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
 	}
-	// },
-
-	// 'conversation.dominantNounPhrase'(responseText) {
-	// 	check(responseText, String);
-
-	// 	this.unblock();
-	// 	try{
-	// 		var result = HTTP.call("POST", "http://localhost:3050/parse",
-	// 	                       {params: {text: responseText}});
-	// 		console.log(result);
-	// 	}
-	// }
 });
 }

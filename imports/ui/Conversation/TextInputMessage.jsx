@@ -9,6 +9,7 @@ export default class TextInputMessage extends Component {
 						type="text"
 						ref="textInput"
 						placeholder="Type a response..."
+						autofocus="autofocus"
 					/>
         		</form>
         	</div>
