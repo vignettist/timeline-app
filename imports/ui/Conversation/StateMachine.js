@@ -364,6 +364,16 @@ StateMachine['gathering_clustering_information'] = {
 			}
 		}
 
+		var question = '';
+
+		for (var i = props.conversation.history.length - 1; i >= 0; i--) {
+			if (props.conversation.history[i].from === 'app') {
+				question = props.conversation.history[i].content;
+				break;
+			}
+		}
+
+		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
 		Meteor.call('conversation.followUp', text, followUp);
 	}
 }
@@ -372,19 +382,31 @@ StateMachine['gathering_clustering_information'] = {
 
 StateMachine['gathering_image_information'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('gathering_image_information');
+		console.log(parameters.image);
+
 		function imageFollowUp(err, response) {
 			if (err) {
 				alert(err);
 			} else {
 				var newState = 'gathering_image_information?' + combineParameters(this);
 				var output = response;
+
+
 				transitionCallback({output: {from: 'app', content: response}, newState: newState});
 			}
 		}
 
-		console.log('gathering_image_information');
-		console.log(parameters.image);
+		var question = '';
 
+		for (var i = props.conversation.history.length - 1; i >= 0; i--) {
+			if (props.conversation.history[i].from === 'app') {
+				question = props.conversation.history[i].content;
+				break;
+			}
+		}
+
+		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
 		Meteor.call('conversation.followUp', text, imageFollowUp.bind(parameters));
 	}
 }
