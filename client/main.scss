@@ -1,15 +1,18 @@
 @import "{francocatena:compass}/compass/css3/transition";
 @import url('https://fonts.googleapis.com/css?family=Merriweather:300,400,700');
 
-$grass: #FEF8CF;
-$sage: #D4DFC7;
-$mint: #96C0B7;
-$stone: #878E88;
-$redwood: #725752;
-$blaze: #EDBF26;
+$selected-blue: #4286f4;
+$conversation-blue: #93d6ff;
 
 $short-transition: 100ms;
-$medium-transition: 500ms;
+$long-transition: 300ms;
+
+$no-shadow: 0px 0px 0px #ffffff;
+$short-shadow: 3px 3px 6px #444;
+$medium-shadow: 5px 5px 10px #444;
+$high-shadow: 10px 10px 20px #444;
+$highlighted-shadow: 0px 0px 20px $selected-blue;
+$header-shadow: 0px 0px 10px black;
 
 @import 'imports/datepicker';
 @import 'imports/rc-slider';
@@ -18,198 +21,11 @@ body {
 	margin: 0px;
 	background-color: white;
 	font-family: 'Titillium Web', sans-serif;
-	color: $redwood;
-}
-
-header {
-	position: fixed;
-	z-index: 1500;
-	width: 100%;
-	height: 80px;
-	top: 0px;
-	box-shadow: 0px 0px 20px $stone;
-}
-
-main {
-	margin-top: 100px;
-}
-
-.timelines span {
-	display: flex;
-	flex-flow: row wrap;
-	justify-content: space-around;
-	align-items: flex-start;
-}
-
-div.timeline {
-	background-color: $grass;
-	box-shadow: 0px 0px 10px $stone;
-}
-
-div.timeline, .bigImage {
-	border-radius: 25px;
-	padding: 15px;
-}
-
-.bigImage img {
-	display: block;
-	max-width: 100%;
-	border: 4px solid $redwood;
-	border-radius: 25px;
-}
-
-.highlightedImage {
-	flex-basis: 60%;
-	display: fixed;
-}
-
-.timeline {
-	flex-basis: 30%;
-	max-width: 400px;
-
-	.revealDuplicates {
-		display: block;
-		right: 2px;
-		bottom: 6px;
-
-		z-index: 100;
-		position: absolute;
-		height: 48px;
-		width: 48px;
-	}
-
-	.duplicateBlock {
-		position: relative;
-
-		.revealDuplicates {
-			background-image: url("/icons/Copy-48.png");
-			transition: 0.7s;
-		}
-
-		.revealDuplicates:hover {
-			background-image: url("/icons/Copy-48-sage.png");
-			transition: 0.7s;
-		}
-
-		.timelinePhoto {
-			overflow: scroll;
-			position: relative;
-			border: 4px solid $redwood;
-			border-radius: 5px;
-			margin-left: auto;
-			margin-right: auto;
-
-			button {
-
-				img {
-					width: 100%;
-					margin: 0;
-					padding: 0;
-					display: block;
-					position: static;
-	  				bottom: 100%;
-					max-height: 0px;
-					transition: max-height 0.7s ease-in;
-				}
-
-				&:last-child img {
-					max-height: 800px;
-				}
-			}
-
-		}
-
-		&.expanded {
-			.revealDuplicates {
-			background-image: url("/icons/Copy-48-sage.png");
-			transition: 0.7s;
-			}
-
-			.revealDuplicates:hover {
-				background-image: url("/icons/Copy-48.png");
-				transition: 0.7s;
-			}
-
-			.timelinePhoto button img {
-				transition: max-height 0.7s ease-in;
-				max-height: 800px;
-			}
-		}
-	}
-
-	h2 {
-		text-align: center;
-		font-weight: 200;
-		font-size: 36px;
-		margin: 0;
-		margin-bottom: 10px;
-	}
-}
-
-.spacer {
-	background: url(/dots.png);
-	background-repeat: repeat-y;
-	background-position: center;
-	display: flex;
-}
-
-header {
-	background-color: $mint;
-	margin: 0px;
-	margin-bottom: 25px;
-	padding-left: 40px;
-	padding-right: 0px;
-	display: flex;
-
-	.pagination {
-		margin-top: auto;
-		margin-bottom: auto;
-		margin-left: auto;
-		margin-right: 40px;
-		display: flex;
-	}
-
-	.datePicker {
-		margin: auto;
-		background-color: $sage;
-		border-radius: 5px;
-		font-size: 24px;
-
-		input {
-			font-size: 24px;
-			padding: 0;
-			border: 0;
-			background-color: transparent;
-			text-align: center;
-		}
-	}
-}
-
-.left, .right {
-	border:0;
-    background:transparent;
-    margin-left: 20px;
-    margin-right: 20px;
-}
-
-.spacerText {
-	font-size: 16px;
-	text-align: center;
-	background-color: $stone;
-	border-radius: 5px;
-	margin: auto;
-	max-width: 100px;
-	padding: 4px;
-	box-shadow: 0px 0px 5px $stone;
-	color: $sage;
+	color: black;
 }
 
 *:focus {
 	outline: 0;
-}
-
-.hiddenLeft, .hiddenRight {
-	display: none;
 }
 
 button {
@@ -221,323 +37,18 @@ button {
 	display: block;
 }
 
-.tinyTimeline {
-	background-color: $grass;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 5px;
-	margin-bottom: 5px;
-	border-radius: 10px;
-	font-size: 36px;
-	width: 100%;
-	display: flex;
-	justify-content: space-between;
-	height: 130px;
-
-	span {
-		display: block;
-		justify-content: center;
-		width: 120px;
-	}
-
-	.tinyTimelineLabel {
-		display: block;
-		font-size: 16px;
-		text-align: center;
-		margin: auto;
-		transform: rotate(-90deg);
-		width: 40px;
-		overflow: hidden;
-		margin-left: -25px;
-		margin-top: -10px;
-		width: 90px;
-		height: 25px;
-	}
-
-	.ellipsis {
-		display: block;
-		width: 80px;
-		text-align: right;
-		margin: auto;
-		margin-top: 10px;
-	}
-
-	div {
-		margin: auto;
-
-		.duplicateBlock {
-			display: block;
-			justify-content: center;
-			margin: auto;
-			margin-left: 5px;
-			margin-right: 5px;
-
-			.timelinePhoto {
-				display: block;
-				margin: auto;
-
-				button {
-					display: block;
-					margin: auto;
-
-					img {
-						display: block;
-						margin: 5px;
-						border-radius: 10px;
-						max-height: 100px;
-						border: 2px solid $redwood;
-						transition: all $short-transition ease-in;
-					}
-				}
-			}
-		}
-	}
-
-	.nearbyPhoto {
-		.duplicateBlock .timelinePhoto button {
-			img {
-				border: 2px solid $blaze;
-				box-shadow: 0px 0px 15px 5px $blaze;
-				transition: all $short-transition ease-in;
-			} 
-
-			img:hover {
-				border: 2px solid $redwood;
-				box-shadow: 0px 0px 15px 5px $redwood;
-				transition: all $short-transition ease-in;
-			}
-		}
-	}
-
-	.timelinePhoto img:hover {
-		border: 2px solid $redwood;
-		box-shadow: 0px 0px 15px 5px $redwood;
-		transition: all $short-transition ease-in;
-	}
-}
-
-
-
-.timelineStart {
-	margin-bottom: 10px;
-}
-
-.timelineMap {
-	width: 100%;
-	height: 800px;
-	background-color: $grass;
-}
-
 .leaflet-container {
 	height: 100%;
 }
 
-// TRANSITIONS
-
-.fade-enter {
-  opacity: 0.01;
-}
-
-.fade-enter.fade-enter-active {
-  opacity: 1;
-  transition: opacity 2000ms ease-in;
-}
-
-.fade-leave {
-  opacity: 1;
-}
-
-.fade-leave.fade-leave-active {
-  opacity: 0.01;
-  transition: opacity 2000ms ease-in;
-}
-
-.fade-appear {
-  opacity: 0.01;
-}
-
-.fade-appear.fade-appear-active {
-  opacity: 1;
-  transition: opacity .5s ease-in;
-}
-
-
-// comm
-.slide-left-enter {
-  margin-left: -500px;
-}
-
-.slide-left-enter.slide-left-enter-active {
-  margin-left: 0px;
-  transition: margin-left 500ms ease-in;
-}
-
-.slide-left-leave {
-  margin-right: 0px;
-}
-
-.slide-left-leave.slide-left-leave-active {
-  margin-right: -500px;
-  transition: margin-right 500ms ease-in;
-}
-
-.slide-left-appear {
-  margin-left: -500px;
-}
-
-.slide-left-appear.slide-left-appear-active {
-  margin-left: 0px;
-  transition:  margin-left 500ms ease-in;
-}
-
-// comm
-.slide-right-enter {
-  margin-right: -500px;
-}
-
-.slide-right-enter.slide-right-enter-active {
-  margin-right: 0px;
-  transition: margin-right 500ms ease-in;
-}
-
-.slide-right-leave {
-  margin-left: 0px;
-}
-
-.slide-right-leave.slide-right-leave-active {
-  margin-left: -500px;
-  transition: margin-left 500ms ease-in;
-}
-
-.slide-right-appear {
-  margin-right: -500px;
-}
-
-.slide-right-appear.slide-right-appear-active {
-  margin-right: 0px;
-  transition:  margin-right 500ms ease-in;
-}
-
-.bigCalendarWrapper {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.bigCalendar {
-	margin: auto;
-	display: flex-item;
-
-	.header {
-		font-weight: 600;
-		display: flex;
-
-		button {
-			display: inline-block;
-		}
-
-		width: 100%;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.week {
-		.day {
-			display: inline-block;
-			width: 100px;
-			height: 120px;
-			margin: 3px;
-			text-align: left;
-			background-color: $grass;
-			border-radius: 5px;
-			overflow: hidden;
-
-			ul {
-				list-style-type: none;
-				padding: 0;
-				margin: 0;
-				font-style: italic;
-				font-size: 75%;
-			}
-		}
-
-		.today {
-			font-weight: 50px;
-			font-size: 120%;
-		}
-
-		.different-month {
-			opacity: 0.5;
-		}
-
-		.empty {
-			background-color: $grass;
-		}
-
-		.light {
-			background-color: #FAEAA5;
-		}
-
-		.moderate {
-			background-color: #F6DC7B;
-		}
-
-		.high {
-			background-color: #F1CD50;
-		}
-
-		.extreme {
-			background-color: $blaze;
-		}
-	}
-
-	.names {
-		.day {
-			height: 25px;
-			background-color: $redwood;
-			color: $grass;
-			text-align: center;
-		}
-	}
-}
-
-#story {
-	background-color: $grass;
-	width: 600px;
-	font-size: 16px;
-	border: 1px solid $stone;
-	margin: auto;
-	padding: 10px;
-	border-radius: 20px;
-	margin-top: 25px;
-	margin-bottom: 25px;
-
-	.duplicateBlock .timelinePhoto img {
-		max-width: 100%;
-	}
-}
-
-.highlightBox {
-	position: absolute;
-	border: 1px dashed #bbb;
-}
-
-.timelinePhoto:hover {
-	.highlightBox {
-		border: 4px dashed #ccc;
-	}
-}
-
-.highlightBox:hover {
-	border: 8px solid #ddd;
-}
-
 // calendar stuff
+
+.react-datepicker {
+	box-shadow: $medium-shadow;
+}
 
 .cluster-root {
 	background-color: white;
-	// margin-left: -12px;
-	// margin-right: -12px;
 	overflow: hidden;
 	height: 100vh;
 	width: calc(100vw);
@@ -566,23 +77,31 @@ button {
 				background-color: #ddd;
 				border-radius: 25px;
 				height: 50px;
-				transition: 0.1s;
+				transition: $short-transition;
 				text-align: left;
 				overflow: hidden;
 				display: flex;
 				align-items: center;
 				justify-content: left;
 				font-family: inherit;
+				box-shadow: $short-shadow;
 
 				img {
-					width: 100%;
-					height: 50px;
-					display: inline;
+					width: 90%;
+					height: auto;
+					margin-left: auto;
+					margin-right: auto;
+					// display: inline;
 				}
 			}
 
 			button.calendar-button-input:hover {
-				background-color: #62c3fe;
+				background-color: $selected-blue;
+				box-shadow: $medium-shadow;
+
+				img {
+					filter: invert(100%);
+				}
 			}
 		}
 
@@ -597,13 +116,14 @@ button {
 				background-color: #ddd;
 				border-radius: 25px;
 				height: 50px;
-				transition: 0.1s;
+				transition: $short-transition;
 				text-align: left;
 				overflow: hidden;
 				display: flex;
 				align-items: center;
 				justify-content: left;
 				font-family: inherit;
+				box-shadow: $short-shadow;
 
 				img {
 					height: 100%;
@@ -620,11 +140,17 @@ button {
 			}
 
 			button:hover {
-				background-color: #62c3fe;
+				background-color: $selected-blue;
 				width: 170px;
 				text-align: left;
 				position: relative;
-				transition: 0.25s;
+				transition: $short-transition;
+				color: white;
+				box-shadow: $medium-shadow;
+
+				img {
+					filter: invert(100%);
+				}
 			}
 
 			.up {
@@ -634,6 +160,8 @@ button {
 			.down {
 				align-self: flex-end;
 			}
+
+
 		}
 	}
 }
@@ -710,7 +238,7 @@ button {
 	border-radius: 0.5em;
 	background-color: #b5d0d0;
 	bottom: 10px;
-	transition: 1s;
+	transition: $long-transition;
 	min-width: 5%;
 	width: calc(100% - 250px);
 	left: 200px;
@@ -719,7 +247,7 @@ button {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	box-shadow: 3px 3px 6px gray;
+	box-shadow: $short-shadow;
 	border: 2px solid #4283be;
 
 	.leaflet-control-zoom {
@@ -732,24 +260,33 @@ button {
 	justify-content: center;
 	position: absolute;
 	height: 80px;
-	min-width: 80px;
-	border-radius: 60px;
+	width: 80px;
+	border-radius: 0.5em;
 	// padding-top: 40px;
 	background-color: #b7d1e1;
 	bottom: 200px;
-	transition: 1s;
+	transition: $long-transition;
 	left: 300px;
+
+	box-shadow: $medium-shadow;
 
 	div {
 	    width: 100%;
 	    height: 100%;
-	    background-size: contain;
-	    border-radius: 60px;
+	    background-size: cover;
+	    border-radius: inherit;
 	}
 }
 
+.event-singleton:hover {
+	width: 320px;
+	height: 240px;
+	box-shadow: $high-shadow;
+	z-index: 10000 !important;
+}
+
 .event:hover {
-	box-shadow: 7px 7px 15px gray;
+	box-shadow: $high-shadow;
 	z-index: 10000 !important;
 }
 
@@ -794,18 +331,8 @@ a {
 	width: 100%;
 
 	.cluster-map {
-		// background-color: #62c3fe;
-		// width: 400px;
-		// position: absolute;
-		// height: 170px;
-		// left: 575px;
-		// top: -30px;
-		// // border: 1px solid black;
-		// border-radius: 0.5em;
-		// width: calc(50% - 0.5em);
 	    height: 100%;
 	    position: relative;
-	    // flex-basis:  calc(50% - 75px - 1em);
 	    margin-right: 0em;
 	    width: 100%;
 	    z-index: -1;
@@ -820,7 +347,6 @@ a {
 	.cluster-overlay {
 		height: 100%;
 	    position: relative;
-	    // flex-basis:  calc(50% - 75px - 1em);
 	    margin-right: 0em;
 	    width: 100%;
 	    z-index: 0;
@@ -928,12 +454,12 @@ a {
 .conversation {
 	border-radius: 0.25em;
 	padding: 0.25em;
-	box-shadow: 3px 3px 6px black;
+	box-shadow: $short-shadow;
 	font-size: 1em;
 	margin-right: 10em;
 	margin-top: 0.5em;
 	color: black;
-	transition: 0.25s;
+	transition: $long-transition;
 	width: 80%;
 	margin: 5px;
 	margin-bottom: 10px;
@@ -958,7 +484,7 @@ a {
 }
 
 .computer-side {
-	background-color: #93d6ff;
+	background-color: $conversation-blue;
 	margin-right: auto;
 	margin-left: 0px;
 }
@@ -970,14 +496,6 @@ a {
 
 .leaflet-container {
 	background-color: white;
-}
-
-.leaflet-tile-container img {
-	// filter: opacity(50%);
-	// -webkit-filter: grayscale(100%);
- //    -moz-filter:    grayscale(100%);
- //    -ms-filter:     grayscale(100%);
- //    -o-filter:      grayscale(100%);
 }
 
 .overview-map {
@@ -1040,7 +558,6 @@ a {
 	}
 
 	.buttons {
-		// width: 100px;
 		display: flex;
 
 		img {
@@ -1112,13 +629,13 @@ a {
 			width: 100%;
 			height: auto;
 			position: relative;
-			transition: 0.3s;
+			transition: $long-transition;
 			left: 0%;
-			box-shadow: 0px 0px 0px black; 
+			box-shadow: $no-shadow;
 		}
 
 		img.highlighted {
-			box-shadow: 0px 0px 20px #588099;
+			box-shadow: $highlighted-shadow;
 		}
 
 		img.unhighlighted {
@@ -1129,17 +646,17 @@ a {
 	.timeline-strip-left:hover {
 		img.story-image {
 			width: calc(175% + 1em);
-			transition: 0.3s;
+			transition: $long-transition;
 			z-index: 11;
 			margin-right: 0em;
-			box-shadow: 10px 10px 20px black; 
+			box-shadow: $high-shadow;
 		}
 
 		img.unhighlighted {
 			width: 100%;
 			z-index: 10;
 			left: 0%;
-			box-shadow: 0px 0px 0px black; 
+			box-shadow: $no-shadow;
 		}
 	}
 
@@ -1152,13 +669,13 @@ a {
 			width: 100%;
 			height: auto;
 			position: relative;
-			transition: 0.3s;
+			transition: $long-transition;
 			left: 0%;
-			box-shadow: 0px 0px 0px black; 
+			box-shadow: $no-shadow;
 		}
 
 		img.highlighted {
-			box-shadow: 0px 0px 20px #588099;
+			box-shadow: $highlighted-shadow;
 		}
 
 		img.unhighlighted {
@@ -1169,10 +686,10 @@ a {
 	.timeline-strip-full:hover {
 		img.story-image {
 			width: calc(100% + 1em);
-			transition: 0.3s;
+			transition: $long-transition;
 			z-index: 11;
 			margin-left: -0.5em;
-			box-shadow: 10px 10px 20px black; 
+			box-shadow: $high-shadow;
 		}
 	}
 
@@ -1180,15 +697,15 @@ a {
 		img.story-image {
 			width: calc(175% + 1em);
 			left: calc(-75% - 1em);
-			transition: 0.3s;
-			box-shadow: 10px 10px 40px black; 
+			transition: $long-transition;
+			box-shadow: $high-shadow;
 		}
 
 		img.unhighlighted {
 			width: 100%;
 			z-index: 10;
 			left: 0%;
-			box-shadow: 0px 0px 0px black; 
+			box-shadow: $no-shadow;
 		}
 	}
 
@@ -1200,27 +717,27 @@ a {
 		right: 0.3em;
 		width: 125px;
 		z-index: 12;
-		transition: 0.1s;
+		transition: $short-transition;
 
 		button {
 			margin-right: 10px;
 			width: 50px;
 			height: 50px;
 			border-radius: 25px;
-			box-shadow: 5px 5px 10px rgba(0,0,0,0.8);
+			box-shadow: $medium-shadow;
 			background-color: white;
 
 			img {
-				box-shadow: 0px 0px 0px black;
+				box-shadow: $no-shadow;
 				max-width: 35px;
 				height: auto;
 			}
 		}
 
 		button:hover {
-			background-color: #4286f4;
+			background-color: $selected-blue;
 			color: white;
-			box-shadow: 10px 10px 20px rgba(0,0,0,0.8);
+			box-shadow: $high-shadow;
 
 			img {
 				filter: invert(100%);
@@ -1228,9 +745,9 @@ a {
 		}
 
 		button:active {
-			transition: 0.1s;
+			transition: $short-transition;
 			border: 1px solid white;
-			box-shadow: 5px 5px 10px rgba(0,0,0,0.8);
+			box-shadow: $medium-shadow;
 		}
 	}
 
@@ -1246,7 +763,7 @@ a {
 		.rating-controls {
 			display: flex;
 			opacity: 1;
-			transition: 0.3s;
+			transition: $long-transition;
 		}
 	}
 
@@ -1269,7 +786,7 @@ a {
 	padding-left: 1em;
 	border-bottom-right-radius: 1em;
 	border-bottom-left-radius: 1em;
-	box-shadow: 0px 0px 10px black;
+	box-shadow: $header-shadow;
 }
 
 .cluster-conversation-controls {
@@ -1298,7 +815,7 @@ a {
 	}
 
 	button:hover {
-		background-color: #4286f4;
+		background-color: $selected-blue;
 		color: white;
 		border: 1px solid white;
 
