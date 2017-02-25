@@ -9,7 +9,19 @@ export default class Cluster extends Component {
     if (this.props.cluster.photos.length > 1) {
 
       var best_images = this.props.photos.sort(function(a,b) {
-        return (a.interest_score < b.interest_score);
+        if ('rating' in a) {
+          var a_score = a.interest_score + a.rating - 2;
+        } else {
+          var a_score = a.interest_score;
+        }
+
+        if ('rating' in b) {
+          var b_score = b.interest_score + b.rating - 2;
+        } else {
+          var b_score = b.interest_score;
+        }
+
+        return (a_score < b_score);
       }).slice(0,3);
 
       var cluster = this.props.cluster;

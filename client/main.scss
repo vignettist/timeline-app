@@ -17,6 +17,8 @@ $header-shadow: 0px 0px 10px black;
 @import 'imports/datepicker';
 @import 'imports/rc-slider';
 
+// Generic style setup
+
 body {
 	margin: 0px;
 	background-color: white;
@@ -41,7 +43,7 @@ button {
 	height: 100%;
 }
 
-// calendar stuff
+// Cluster calendar
 
 .react-datepicker {
 	box-shadow: $medium-shadow;
@@ -283,6 +285,8 @@ button {
 	height: 240px;
 	box-shadow: $high-shadow;
 	z-index: 10000 !important;
+	margin-top: -80px;
+	margin-left: -80px;
 }
 
 .event:hover {
@@ -450,6 +454,8 @@ a {
 		width: 250px;
 	}
 }
+
+// Conversation view CSS
 
 .conversation {
 	border-radius: 0.25em;
