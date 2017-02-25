@@ -30,10 +30,9 @@ export default class TimelineStripMessage extends Component {
 	}
 
 	render() {
-		return  <div className={this.props.outerClass}>
+		return  <div className={this.props.outerClass + " " + (this.props.highlighted ? '' : this.props.unhighlighted)}>
 			    <img id={this.props.photo._id._str} 
 			   		 onClick={this.handleCallback.bind(this)}
-			   		 ref={this.props.photo._id._str}
 			   		 className={this.props.highlighted ? 'highlighted story-image' : this.props.unhighlighted}
 			   		 src={"http://localhost:3022/" + this.props.photo.resized_uris[640]} />
 

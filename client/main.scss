@@ -1234,9 +1234,17 @@ a {
 		}
 	}
 
+	.unhighlighted:hover {
+		.rating-controls {
+			button {
+				opacity: 0;
+			}
+		}
+	}
+
 	.timeline-strip-left:hover, .timeline-strip-right:hover, .timeline-strip-full:hover {
 		.rating-controls {
-			// display: flex;
+			display: flex;
 			opacity: 1;
 			transition: 0.3s;
 		}
