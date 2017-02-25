@@ -8,9 +8,9 @@ $short-transition: 100ms;
 $long-transition: 300ms;
 
 $no-shadow: 0px 0px 0px #ffffff;
-$short-shadow: 3px 3px 6px #444;
-$medium-shadow: 5px 5px 10px #444;
-$high-shadow: 10px 10px 20px #444;
+$short-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+$medium-shadow: 5px 5px 10px rgba(0,0,0,0.8);
+$high-shadow: 10px 10px 20px rgba(0,0,0,0.8);
 $highlighted-shadow: 0px 0px 20px $selected-blue;
 $header-shadow: 0px 0px 10px black;
 
@@ -466,9 +466,11 @@ a {
 	margin-top: 0.5em;
 	color: black;
 	transition: $long-transition;
-	width: 80%;
+	max-width: 80%;
+	min-width: 200px;
 	margin: 5px;
 	margin-bottom: 10px;
+	display: table;
 
 	input {
 		border: 0px dotted black;
@@ -479,7 +481,17 @@ a {
 
 	img {
 		max-width: 100%;
+		margin-bottom: -6px;
 	}
+}
+
+.input {
+	min-width: 450px;
+	word-break: break-word;
+
+	// textarea {
+	// 	height: 200px;
+	// }
 }
 
 .human-side {

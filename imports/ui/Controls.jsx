@@ -12,7 +12,7 @@ export default class Controls extends Component {
 
 	render() {
 		if (this.props.debug) {
-			var debug = <button className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>
+			var debug = [<div>{this.props.state}</div>, <button className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>];
 		} else {
 			var debug = [];
 		}
@@ -22,9 +22,8 @@ export default class Controls extends Component {
 		return(
 			<div className="cluster-conversation-controls">
         		<button className="back-button" onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
-        		<h1>{corrected_time.format('MMMM Do YYYY')}</h1>
+        		<h1 contentEditable>{corrected_time.format('MMMM Do YYYY')}</h1>
         		<button className="compose-button"><img src="/icons/Quill With Ink-100.png" /><div>Start Composing</div></button>
-        		<div>{this.props.state}</div>
         		{debug}
         	</div>
         );
