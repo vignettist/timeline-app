@@ -213,7 +213,11 @@ export class ClusterConversation extends Component {
           </div>
       );
     } else {
-      return <div>Loading...</div>
+      return <div className="cluster-conversation-wrapper">
+        <div className="cluster-conversation-header">
+          <h1>Loading...</h1>
+        </div>
+      </div>
     }
   }
 }

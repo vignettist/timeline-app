@@ -399,7 +399,7 @@ a {
 	    background-repeat: repeat-y;
 	    background-size: auto;
 	    background-position: left;
-	    border-radius: 0.5em;
+	    border-radius: 0.25em;
 	}
 }
 
@@ -863,6 +863,14 @@ a {
 	border-bottom-right-radius: 1em;
 	border-bottom-left-radius: 1em;
 	box-shadow: $header-shadow;
+
+	h1 {
+		color: black;
+		font-weight: bold;
+		font-family: "Merriweather", serif;
+		min-width: 250px;
+		text-align: center;
+	}
 }
 
 .cluster-conversation-controls {
@@ -907,13 +915,6 @@ a {
 		margin-top: 4px;
 		box-shadow: $short-shadow;
 	}
-
-	h1 {
-		color: black;
-		font-weight: bold;
-		font-family: "Merriweather", serif;
-		min-width: 250px;
-	}
 }
 
 .cluster-conversation-wrapper {
@@ -938,6 +939,8 @@ a {
 	margin-left: -4px;
 	margin-bottom: -4px;
 	margin-right: -4px;
+	border-radius: 0.25em;
+	z-index: 0;
 
 }
 
