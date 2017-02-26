@@ -34,12 +34,13 @@ body {
 	background-color: white;
 	font-family: 'Titillium Web', sans-serif;
 	color: black;
+	background-image: url('/creampaper.png');
+	background-repeat: repeat;
 }
 
 .cluster-root {
 	background-image: url('/creampaper.png');
 	background-repeat: repeat;
-	background-color: red;
 }
 
 *:focus {
@@ -522,8 +523,12 @@ a {
 	}
 
 	img {
-		max-width: 100%;
-		margin-bottom: -6px;
+		max-width: calc(100% + 8px);
+		margin-bottom: -10px;
+		margin-top: -4px;
+		margin-left: -4px;
+		margin-right: -4px;
+		border-radius: 0.25em;
 	}
 }
 
@@ -537,7 +542,7 @@ a {
 }
 
 .human-side {
-	background-color: #ddd;
+	background-color: white;
 	margin-left: auto;
 	margin-right: 0px;
 	text-align: right;
@@ -691,7 +696,7 @@ a {
 			position: relative;
 			transition: $long-transition;
 			left: 0%;
-			box-shadow: $no-shadow;
+			box-shadow: $short-shadow;
 		}
 
 		img.highlighted {
