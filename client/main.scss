@@ -160,8 +160,7 @@ button {
 				.hide {
 					font-size: 1.5em;
 					top: 10px;
-					display: block;
-					overflow: hidden;
+					display: none;
 				}
 			}
 
@@ -175,6 +174,10 @@ button {
 
 				img {
 					filter: invert(100%);
+				}
+
+				.hide {
+					display: block;
 				}
 			}
 
@@ -199,6 +202,8 @@ button {
 	// display: flex;
 	/*margin: 10px;*/
 	padding: 10px;
+	padding-top: 0px;
+	margin-top: -1px;
 	height: 100%;
 	width: 100%;
 }
@@ -206,7 +211,7 @@ button {
 .weekdays {
 	position: relative;
 	overflow: hidden;
-	width: 100%;
+	width: calc(100% - 140px);
 	margin-left: 110px;
 	background-color: white;
 	box-shadow: 0px 3px 6px rgba(0,0,0,0.8);
@@ -217,11 +222,12 @@ button {
 	margin-bottom: 0em;
 	background-color: none;
 	text-align: left;
-	padding-left: 1em;
-	padding-top: 0.5em;
+	padding-left: 26px;
+	margin-left: -20px;
+	// padding-top: 0.5em;
 	font-weight: 600;
-	height: calc(20% - 0.5em - 4px);
-	border-top: 2px dashed gray;
+	height: calc(20% - 4px);
+	border-top: 1px dashed gray;
 	display: flex;
 	align-items: center;
 
@@ -251,6 +257,10 @@ button {
 	}
 }
 
+.first {
+	padding-top: 0.5em;
+}
+
 .location {
 	font-style: italic;
 	margin-top: 0.5em;
@@ -272,7 +282,7 @@ button {
 	bottom: 10px;
 	transition: $long-transition;
 	min-width: 5%;
-	width: calc(100% - 250px);
+	width: calc(100% - 200px);
 	left: 160px;
 	text-align: center;
 	min-height: 100px;
@@ -414,6 +424,7 @@ a {
 
 	.cluster-title {
 		font-size: 1.25em;
+		font-weight: bold;
 	}
 
 	.small {
@@ -922,6 +933,12 @@ a {
 .conversation .leaflet-container {
 	height: 200px;
 	border-radius: 5px;
+	width: 400px;
+	margin-top: -4px;
+	margin-left: -4px;
+	margin-bottom: -4px;
+	margin-right: -4px;
+
 }
 
 .computer-avatar {

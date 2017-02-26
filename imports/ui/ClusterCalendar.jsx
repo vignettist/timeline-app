@@ -105,18 +105,18 @@ export class ClusterCalendar extends Component {
         return (event_photos.indexOf(p._id._str) >= 0);
       });
 
-      var photo_markers = e.times.map(function(t, i) {
-        var marker_start = new moment(t.utc_timestamp).utcOffset(t.tz_offset/60);
+      // var photo_markers = e.times.map(function(t, i) {
+      //   var marker_start = new moment(t.utc_timestamp).utcOffset(t.tz_offset/60);
 
-        var marker_top = marker_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + t.tz_offset;
-        marker_top /= (60*60*24);
-        marker_top *= 20;
+      //   var marker_top = marker_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + t.tz_offset;
+      //   marker_top /= (60*60*24);
+      //   marker_top *= 20;
 
-        var marker_style = {top: "calc(" + marker_top.toString() + "% - 5px)"};
+      //   var marker_style = {top: "calc(" + marker_top.toString() + "% - 5px)"};
 
-        return <div key={e._id._str + "_marker_" + i.toString()} className="photo-marker" style={marker_style}></div>
+      //   return <div key={e._id._str + "_marker_" + i.toString()} className="photo-marker" style={marker_style}></div>
 
-      }, this);
+      // }, this);
 
       if (e.photos.length > 1) {
         // This should be its own react component
@@ -125,14 +125,14 @@ export class ClusterCalendar extends Component {
           <div className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
             <Cluster cluster={e} photos={photos_in_event} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
           </div>
-          {photo_markers}
+          {/* photo_markers */}
           </div>);
       } else {
         return (<div key={e._id._str} >
           <div className="event-singleton" style={event_styles}>
             <Cluster cluster={e} photos={photos_in_event}/>
           </div>
-          {photo_markers}
+          {/* photo_markers */}
           </div>)
       }
     }, this);
@@ -147,7 +147,13 @@ export class ClusterCalendar extends Component {
       }
 
       // this should be its own react component
-      date_grid.push(<DateBlock date={modified_date} />);
+      if (i == -2) {
+        var addClass = "first";
+      } else {
+        var addClass = "";
+      }
+
+      date_grid.push(<DateBlock addClass={addClass} date={modified_date} />);
     }
 
     var CalendarButton = React.createClass({
