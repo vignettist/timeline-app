@@ -55,11 +55,18 @@ export default class Cluster extends Component {
         var location_block = [];
       }
 
-
+      if ('title' in this.props.cluster) {
+        var title = <div className="cluster-title">
+            "{this.props.cluster.title}"
+           </div>;
+      } else {
+        var title = [];
+      }
 
       return (<div className="cluster">
         <div className="cluster-description">
-          <div className="cluster-num-photos">
+          {title}
+          <div className={"cluster-num-photos" + ('title' in this.props.cluster ? " small" : "")} >
             {this.props.cluster.photos.length} photos
           </div>
           {location_block}

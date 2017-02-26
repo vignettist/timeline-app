@@ -306,6 +306,19 @@ Meteor.methods({
 
 	},
 
+	'conversation.setTitle'(cluster_id, title) {
+		check(cluster_id, String);
+		check(title, String);
+
+		try {
+			var cluster_id_obj = new Meteor.Collection.ObjectID(cluster_id);
+			Clusters.update({'_id': cluster_id_obj}, {'$set': {'title': title}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	// specifies the name of a person in an image, and denormalizes data
 	'conversation.associateFace'(name, image, facen, cluster_id) {
 		check(name, Object);
@@ -439,7 +452,7 @@ Meteor.methods({
 			if (nlp7(responseText).terms().data().length < 4 ) {
 				var reply = chooseRandomResponse(["Could you say a little more than that?", "Could you describe that in more detail?"]);
 				return reply;
-				
+
 			} else {
 				var choice = Math.random()*7;
 

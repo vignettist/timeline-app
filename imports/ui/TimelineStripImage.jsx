@@ -50,5 +50,5 @@ TimelineStripMessage.propTypes = {
 	outerClass: PropTypes.string.isRequired,
 	highlighted: PropTypes.bool.isRequired,
 	unhighlighted: PropTypes.string.isRequired,
-	callback: PropTypes.object
+	callback: PropTypes.function
 };
