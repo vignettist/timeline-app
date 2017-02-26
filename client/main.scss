@@ -97,7 +97,7 @@ button {
 				background-color: white;
 				border-radius: 25px;
 				height: 50px;
-				transition: $short-transition;
+				transition: box-shadow $short-transition;
 				text-align: left;
 				overflow: hidden;
 				display: flex;
@@ -142,7 +142,7 @@ button {
 				background-color: white;
 				border-radius: 25px;
 				height: 50px;
-				transition: $short-transition;
+				transition: box-shadow $short-transition;
 				text-align: left;
 				overflow: hidden;
 				display: flex;
@@ -170,7 +170,6 @@ button {
 				width: 170px;
 				text-align: left;
 				position: relative;
-				transition: $short-transition;
 				color: white;
 				box-shadow: $high-shadow;
 
@@ -791,6 +790,7 @@ a {
 			border-radius: 25px;
 			box-shadow: $medium-shadow;
 			background-color: white;
+			transition: box-shadow $short-transition;
 
 			img {
 				box-shadow: $no-shadow;
@@ -868,9 +868,11 @@ a {
 		padding: 10px;
 		font-size: 1em;
 		border-radius: 5px;
-		border: 1px solid black;
+		// border: 1px solid black;
 		height: 40px;
 		display: flex;
+		box-shadow: $short-shadow;
+		transition: box-shadow $short-transition;
 
 		img {
 			height: 28px;
@@ -882,7 +884,8 @@ a {
 	button:hover {
 		background-color: $selected-blue;
 		color: white;
-		border: 1px solid white;
+		// border: 1px solid white;
+		box-shadow: $high-shadow;
 
 		img {
 			filter: invert(100%);
@@ -891,6 +894,7 @@ a {
 
 	button:active {
 		margin-top: 4px;
+		box-shadow: $short-shadow;
 	}
 
 	h1 {
