@@ -36,6 +36,12 @@ body {
 	color: black;
 }
 
+.cluster-root {
+	background-image: url('/creampaper.png');
+	background-repeat: repeat;
+	background-color: red;
+}
+
 *:focus {
 	outline: 0;
 }
@@ -69,6 +75,7 @@ button {
 	.nav {
 		display: flex;
 		width: 50px;
+		margin-left: 25px;
 		flex-wrap: wrap;
 		top: 10px;
 		z-index: 10000;
@@ -86,7 +93,7 @@ button {
 				width: 50px;
 				margin: 5px;
 				z-index: 100;
-				background-color: #ddd;
+				background-color: white;
 				border-radius: 25px;
 				height: 50px;
 				transition: $short-transition;
@@ -96,7 +103,7 @@ button {
 				align-items: center;
 				justify-content: left;
 				font-family: inherit;
-				box-shadow: $short-shadow;
+				box-shadow: $medium-shadow;
 
 				img {
 					width: 90%;
@@ -109,23 +116,29 @@ button {
 
 			button.calendar-button-input:hover {
 				background-color: $selected-blue;
-				box-shadow: $medium-shadow;
+				box-shadow: $high-shadow;
 
 				img {
 					filter: invert(100%);
 				}
 			}
+
+			button.calendar-button-input:active {
+				box-shadow: $short-shadow;
+			}
 		}
 
 		.top, .bottom, {
-			height: 120px;
+			height: 160px;
 		
 
 			button {
 				width: 50px;
 				margin: 5px;
+				margin-top: 20px;
+				margin-bottom: 20px;
 				z-index: 100;
-				background-color: #ddd;
+				background-color: white;
 				border-radius: 25px;
 				height: 50px;
 				transition: $short-transition;
@@ -135,7 +148,7 @@ button {
 				align-items: center;
 				justify-content: left;
 				font-family: inherit;
-				box-shadow: $short-shadow;
+				box-shadow: $medium-shadow;
 
 				img {
 					height: 50px;
@@ -158,11 +171,15 @@ button {
 				position: relative;
 				transition: $short-transition;
 				color: white;
-				box-shadow: $medium-shadow;
+				box-shadow: $high-shadow;
 
 				img {
 					filter: invert(100%);
 				}
+			}
+
+			button:active {
+				box-shadow: $short-shadow;
 			}
 
 			.up {
@@ -190,6 +207,9 @@ button {
 	position: relative;
 	overflow: hidden;
 	width: 100%;
+	margin-left: 110px;
+	background-color: white;
+	box-shadow: 0px 3px 6px rgba(0,0,0,0.8);
 }
 
 .weekday {
@@ -206,7 +226,7 @@ button {
 	align-items: center;
 
 	.label {
-		margin-left: 50px;
+		margin-left: 10px;
 		margin-top: auto;
 		margin-bottom: auto;
 		display: flex;
@@ -248,12 +268,12 @@ button {
 	justify-content: center;
 	position: absolute;
 	border-radius: 0.5em;
-	background-color: #b5d0d0;
+	background-color: #cdd2d4;
 	bottom: 10px;
 	transition: $long-transition;
 	min-width: 5%;
 	width: calc(100% - 250px);
-	left: 200px;
+	left: 160px;
 	text-align: center;
 	min-height: 100px;
 	display: flex;
@@ -278,9 +298,9 @@ button {
 	background-color: #b7d1e1;
 	bottom: 200px;
 	transition: $long-transition;
-	left: 300px;
+	left: 260px;
 
-	box-shadow: $medium-shadow;
+	box-shadow: $short-shadow;
 
 	div {
 	    width: 100%;
@@ -306,7 +326,7 @@ button {
 
 .photo-marker {
 	position: absolute;
-	left: 190px;
+	left: 150px;
 	height: 6px;
 	width: 6px;
 	border-radius: 3px;
