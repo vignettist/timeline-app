@@ -27,40 +27,40 @@ export {makeAndList};
 
 // changes pronouns from first person to second person
 function reversePronouns(text) {
-	text = text.replace(/\bour\b/, "your");
-	text = text.replace(/\bOur\b/, "Your");	
-	text = text.replace(/\bours\b/, "yours");
-	text = text.replace(/\bOurs\b/, "Yours");
-	text = text.replace(/\bus\b/, "you");
-	text = text.replace(/\bUs\b/, "You");
-	text = text.replace(/\bwe\b/, "you");
-	text = text.replace(/\bWe\b/, "You");
-	text = text.replace(/\bourselves\b/, "yourselves");
-	text = text.replace(/\bOurselves\b/, "Yourselves");
-	text = text.replace(/\bI\b/, "you");
-	text = text.replace(/\bi\b/, "you");
-	text = text.replace(/\bme\b/, "you");
-	text = text.replace(/\bMe\b/, "You");
-	text = text.replace(/\bmy\b/, "your");
-	text = text.replace(/\bMy\b/, "Your");
-	text = text.replace(/\bmine\b/, "yours");
-	text = text.replace(/\bMine\b/, "Yours");
-	text = text.replace(/\bmyself\b/, "yourself");
-	text = text.replace(/\bMyself\b/, "Yourself");
-	text = text.replace(/\bam\b/, "are");
-	text = text.replace(/\bAm\b/, "Are");
-	text = text.replace(/\bwas\b/, "were");
-	text = text.replace(/\bWas\b/, "Were");
+	text = text.replace(/\bour\b/g, "your");
+	text = text.replace(/\bOur\b/g, "Your");	
+	text = text.replace(/\bours\b/g, "yours");
+	text = text.replace(/\bOurs\b/g, "Yours");
+	text = text.replace(/\bus\b/g, "you");
+	text = text.replace(/\bUs\b/g, "You");
+	text = text.replace(/\bwe\b/g, "you");
+	text = text.replace(/\bWe\b/g, "You");
+	text = text.replace(/\bourselves\b/g, "yourselves");
+	text = text.replace(/\bOurselves\b/g, "Yourselves");
+	text = text.replace(/\bI\b/g, "you");
+	text = text.replace(/\bi\b/g, "you");
+	text = text.replace(/\bme\b/g, "you");
+	text = text.replace(/\bMe\b/g, "You");
+	text = text.replace(/\bmy\b/g, "your");
+	text = text.replace(/\bMy\b/g, "Your");
+	text = text.replace(/\bmine\b/g, "yours");
+	text = text.replace(/\bMine\b/g, "Yours");
+	text = text.replace(/\bmyself\b/g, "yourself");
+	text = text.replace(/\bMyself\b/g, "Yourself");
+	text = text.replace(/\bam\b/g, "are");
+	text = text.replace(/\bAm\b/g, "Are");
+	text = text.replace(/\bwas\b/g, "were");
+	text = text.replace(/\bWas\b/g, "Were");
 	return text;
 }
 
 export {reversePronouns};
 
 function definiteArticles(text) {
-	text = text.replace(/\ba\b/, "the");
-	text = text.replace(/\bA\b/, "The");
-	text = text.replace(/\ban\b/, "the");
-	text = text.replace(/\bAn\b/, "The");
+	text = text.replace(/\ba\b/g, "the");
+	text = text.replace(/\bA\b/g, "The");
+	text = text.replace(/\ban\b/g, "the");
+	text = text.replace(/\bAn\b/g, "The");
 	return text;
 }
 
