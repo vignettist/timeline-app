@@ -99,5 +99,5 @@ export default class TimelineStrip extends Component {
 TimelineStrip.propTypes = {
 	photos: PropTypes.array.isRequired,
 	highlighted: PropTypes.array.isRequired,
-	callback: PropTypes.function
+	callback: PropTypes.func.isRequired
 };
