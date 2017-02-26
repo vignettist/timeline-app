@@ -731,7 +731,7 @@ a {
 			width: 100%;
 			z-index: 10;
 			left: 0%;
-			box-shadow: $no-shadow;
+			box-shadow: $short-shadow;
 		}
 	}
 
@@ -766,6 +766,13 @@ a {
 			margin-left: -0.5em;
 			box-shadow: $high-shadow;
 		}
+
+		img.unhighlighted {
+			width: 100%;
+			z-index: 10;
+			margin-left: 0px;
+			box-shadow: $short-shadow;
+		}
 	}
 
 	.timeline-strip-right:hover {
@@ -780,7 +787,7 @@ a {
 			width: 100%;
 			z-index: 10;
 			left: 0%;
-			box-shadow: $no-shadow;
+			box-shadow: $short-shadow;
 		}
 	}
 
@@ -821,13 +828,12 @@ a {
 		}
 
 		button:active {
-			transition: $short-transition;
 			border: 1px solid white;
 			box-shadow: $medium-shadow;
 		}
 	}
 
-	.unhighlighted:hover {
+	.unhighlighted {
 		.rating-controls {
 			button {
 				opacity: 0;
@@ -839,7 +845,7 @@ a {
 		.rating-controls {
 			display: flex;
 			opacity: 1;
-			transition: $long-transition;
+			// transition: $long-transition;
 		}
 	}
 
