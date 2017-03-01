@@ -41,7 +41,7 @@ export default class Controls extends Component {
         	var initial_title =  this.props.cluster.title;
         } else {
         	var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
-        	var initial_title = corrected_time.format('MMMM Do YYYY')
+        	var initial_title = corrected_time.format('MMMM Do YYYY');
         }
         this.state = {
           html: initial_title
@@ -56,6 +56,10 @@ export default class Controls extends Component {
 	reset() {
 		Meteor.call('conversation.resetHistory', this.props.cluster._id);
 	}
+
+    toCompose() {
+        FlowRouter.go('/compose/' + this.props.cluster._id);
+    }
 
 	handleChange(event) {
 	    this.setState({html: event.target.value});
@@ -74,7 +78,7 @@ export default class Controls extends Component {
 			<div className="cluster-conversation-controls">
         		<button className="back-button" onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
         		<ContentEditable html={this.state.html} onChange={this.handleChange.bind(this)} />
-        		<button className="compose-button"><img src="/icons/Quill With Ink-100.png" /><div>Start Composing</div></button>
+        		<button className="compose-button" onClick={this.toCompose.bind(this)}><img src="/icons/Quill With Ink-100.png" /><div>Start Composing</div></button>
         		{debug}
         	</div>
         );

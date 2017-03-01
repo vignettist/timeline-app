@@ -193,7 +193,7 @@ export class ClusterConversation extends Component {
       return (
           <div className="cluster-conversation-wrapper">
             <div className="cluster-conversation-header">
-              <Controls debug={true} cluster={this.props.cluster} state={split_state.state}/>
+              <Controls debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state}/>
             </div>
 
             <div className="cluster-conversation-lower">

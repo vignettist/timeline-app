@@ -1,5 +1,6 @@
 import { Mongo } from 'meteor/mongo';
- 
+import { createStory } from './stories.js';
+
 export const Photos = new Mongo.Collection('images');
 export const LogicalImages = new Mongo.Collection('logical_images');
 export const Stories = new Mongo.Collection('stories');
@@ -8,6 +9,29 @@ export const People = new Mongo.Collection('people');
 export const Places = new Mongo.Collection('places');
 //TODO split these into separate files
 
+function compareImage(a,b) {
+	if (('rating' in a) && ('rating' in b)) {
+		return (a.rating - b.rating);
+	} else if ('rating' in a) {
+		return 1;
+	} else if ('rating' in b) {
+		return -1;
+	} else {
+		return (a.social_interest - b.social_interest);
+	}
+}
+
+function byDate(a,b) {
+	return (b.datetime.utc_timestamp - a.datetime.utc_timestamp);
+}
+
+function unusedNarrative(p) {
+	if ('used' in p) {
+		return p.used === 'n';
+	} else {
+		return true;
+	}
+}
 
 function euclideanDistance(vec1, vec2) {
 	if (vec1.length != vec2.length) {
@@ -198,5 +222,21 @@ if (Meteor.isServer) {
 		}
 
 		return Places.find({$or: id_or_statement});
-	})
+	});
+
+	Meteor.publish('single_cluster_story', function singleClusterStory(clusterId) {
+		console.log('single_cluster_story subscribe method');
+		let story = Stories.find({'cluster_id': clusterId}).fetch();
+		console.log(story);
+
+		if (story.length === 0) {
+			// if there's no story document yet, we need to create one
+			createStory(clusterId._str);
+			return Stories.find({'cluster_id': clusterId});
+
+		} else {
+			// TODO: we should use this opportunity to update the story
+			return Stories.find({'cluster_id': clusterId});
+		}
+	});
 }
