@@ -1,5 +1,5 @@
 import { Mongo } from 'meteor/mongo';
-import { createStory } from './stories.js';
+import { createStory, updateStory } from './stories.js';
 
 export const Photos = new Mongo.Collection('images');
 export const LogicalImages = new Mongo.Collection('logical_images');
@@ -235,7 +235,7 @@ if (Meteor.isServer) {
 			return Stories.find({'cluster_id': clusterId});
 
 		} else {
-			// TODO: we should use this opportunity to update the story
+			updateStory(clusterId._str);
 			return Stories.find({'cluster_id': clusterId});
 		}
 	});

@@ -69,10 +69,38 @@ function byDate(a,b) {
 // 	}
 // }
 
+function updateStory(clusterId) {
+	console.log('checking story prior to updating');
+
+	let cluster_id_obj = new Meteor.Collection.ObjectID(clusterId);
+	let story = Stories.find({'cluster_id': cluster_id_obj}).fetch();
+
+	if (story.length == 0) {
+		createStory(clusterId);
+		return false;
+	} else {
+		story = story[0];
+	}
+
+	let conversation = Conversations.find({'cluster_id': cluster_id_obj}).fetch();
+
+	if (conversation.length > 0) {
+		var conversationLength = conversation[0].history.length;
+	} else {
+		var conversationLength = 0;
+	}
+
+	if (conversationLength != story.conversationLengthAtLastBuild) {
+		// okay, we probably need to update the story
+		console.log('conversation length mismatch, attempting update');
+	}
+}
+
+export {updateStory};
+
 function createStory(clusterId) {
 	console.log('creating new story');
 	let cluster_id_obj = new Meteor.Collection.ObjectID(clusterId);
-	let story = Stories.find({'cluster_id': cluster_id_obj}).fetch();
 
 	// narrative can be in cluster
 	let cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
