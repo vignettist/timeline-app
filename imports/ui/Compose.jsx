@@ -58,7 +58,8 @@ export class Compose extends Component {
 				if (story[i].type === 'heading') {
 					composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_heading_" + i}
 													  html={story[i].data}
-													  onChange={this.updateText.bind(this, i)} />);
+													  onChange={this.updateText.bind(this, i)}
+													  isTitle={i==0}/>);
 				} else if (story[i].type === 'paragraph') {
 					composeContent.push(<StoryParagraph ref={"story_" + this.props.story[0]._id + "_paragraph_" + i}
 														html={story[i].data} 
