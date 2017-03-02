@@ -61,13 +61,13 @@ function byDate(a,b) {
 	return (a.datetime.utc_timestamp - b.datetime.utc_timestamp);
 }
 
-// function unusedNarrative(p) {
-// 	if ('used' in p) {
-// 		return p.used === 'n';
-// 	} else {
-// 		return true;
-// 	}
-// }
+function unusedNarrative(p) {
+	if ('used' in p) {
+		return !p.used;
+	} else {
+		return true;
+	}
+}
 
 function updateStory(clusterId) {
 	console.log('checking story prior to updating');
@@ -93,10 +93,147 @@ function updateStory(clusterId) {
 	if (conversationLength != story.conversationLengthAtLastBuild) {
 		// okay, we probably need to update the story
 		console.log('conversation length mismatch, attempting update');
+		let story_content = story.content;
+
+		// get unused cluster narrative elements
+		let gotcluster = getUnusedClusterNarrative(clusterId);
+		let cluster = gotcluster.cluster;
+		let cluster_narrative = gotcluster.narrative;
+
+		if (cluster_narrative.length > 0) {
+			console.log('new cluster narrative content');
+			// if there are really new cluster narrative elements
+			// determine where to stick the new cluster narrative elements
+			let insert_point = 0;
+			let found_image = true;
+			while(insert_point < story.content.length) {
+				if ((story_content[insert_point].type === 'image') && !(found_image)) {
+					found_image = true;
+				} else if ((story_content[insert_point].type == 'image') && (found_image)) {
+					break;
+				}
+
+				insert_point++;
+			}
+
+			var paragraphs = '';
+
+			for (var i = 0; i < cluster_narrative.length; i++) {
+				paragraphs += ('<p>' + cluster_narrative[i].answer + '</p>');
+			}
+
+			story_content.splice(insert_point+1, 0, {type: 'paragraph', data: paragraphs});
+		}
+
+		// now find unused image narrative elements
+		var images = getImagesFromCluster(cluster);
+		
+		// find images with narrative content
+		var images_with_narrative_content = images.filter(function(p) {
+			if ('narrative' in p) {
+				for (var i = 0; i < p.narrative.length; i++) {
+					if ('used' in p.narrative[i]) {
+						if (!p.narrative[i].used) {
+							return true;
+						}
+					}
+				}
+			}
+
+			return false;
+		});
+
+		if (images_with_narrative_content.length > 0) {
+			console.log('new image narrative content');
+			// if there are images with new narrative content
+			images_with_narrative_content = images_with_narrative_content.sort(byDate);
+
+			for (var i = 0; i < images_with_narrative_content.length; i++) {
+				// is the image already in the story?
+
+				for (var j = 0; j < story_content.length; j++) {
+					if (story_content[j].type === 'image') {
+						if (story_content[j].data.image_id._str === images_with_narrative_content[i]._id._str) {
+							break;
+						}
+					}
+				}
+
+				console.log('image found at: ' + j);
+
+				if (j === story_content.length) {
+					console.log('image not found');
+					// image not found, find the place to insert it
+
+					// start k at 2 to skip the title and setting photo
+					for (var k = 2; k < story_content.length; k++) {
+						if (story_content[k].type === 'image') {
+							if (story_content[k].data.datetime.utc_timestamp > images_with_narrative_content[i].datetime.utc_timestamp) {
+								break;
+							}
+						}
+					}
+
+					story_content.splice(k, 0, {type: 'image', data: {image_id: images_with_narrative_content[i]._id, datetime: images_with_narrative_content[i].datetime, resized_uris: images_with_narrative_content[i].resized_uris}})
+
+					var insert_point = k+1;
+				} else {
+					if (((j+1) < story_content.length) && (story_content[j+1].type === 'paragraph')) {
+						// new text should go after last paragraph
+						var insert_point = j+2;
+					} else {
+						var insert_point = j+1;
+					}
+				}
+
+				var image_narrative = images_with_narrative_content[i].narrative.filter(unusedNarrative);
+				var paragraphs = '';
+
+				for (var i = 0; i < image_narrative.length; i++) {
+					paragraphs += ('<p>' + image_narrative[i].answer + '</p>');
+				}
+
+				story_content.splice(insert_point, 0, {type: 'paragraph', data: paragraphs});
+			}
+		}
+
+		Stories.update({'cluster_id': cluster_id_obj}, {'$set': {'content': story_content}});
+
+		// and, mark all of the narrative elements as used again
+		markNarrativeUsed(clusterId);
 	}
 }
 
 export {updateStory};
+
+function getUnusedClusterNarrative(clusterId) {
+	let cluster_id_obj = new Meteor.Collection.ObjectID(clusterId);
+	let cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
+	if ('narrative' in cluster) {
+		var cluster_narrative = cluster.narrative;
+	} else {
+		var cluster_narrative = [];
+	}
+
+	cluster_narrative = cluster_narrative.filter(function(n) {
+		if ('used' in n) {
+			return !n.used;
+		} else {
+			return true;
+		}
+	});
+
+	return {cluster: cluster, narrative: cluster_narrative};
+}
+
+function getImagesFromCluster(cluster) {
+	let image_id_or_statement = cluster.photos.map(function(p) {
+		return {'_id': p};
+	});
+	var images =  LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1, 'rating': 1, 'datetime': 1, 'role': 1, 'resized_uris': 1, 'interest_score': 1}}).fetch();
+	images = images.sort(byDate);
+	return images;
+}
 
 function createStory(clusterId) {
 	console.log('creating new story');
@@ -111,11 +248,7 @@ function createStory(clusterId) {
 	}
 
 	// or narrative can be images
-	let image_id_or_statement = cluster.photos.map(function(p) {
-		return {'_id': p};
-	});
-	var images =  LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1, 'rating': 1, 'datetime': 1, 'role': 1, 'resized_uris': 1, 'interest_score': 1}}).fetch();
-	images = images.sort(byDate);
+	var images = getImagesFromCluster(cluster);
 
 	var story_content = [];
 
@@ -183,9 +316,9 @@ function createStory(clusterId) {
 
 	//    - follow that with cluster narrative info
 	if (cluster_narrative.length > 0) {
-		var paragraphs = [];
+		var paragraphs = '';
 		for (var i = 0; i < cluster_narrative.length; i++) {
-			paragraphs.push(cluster_narrative[i].answer);
+			paragraphs += ('<p>' + cluster_narrative[i].answer + '</p>');
 		}
 		story_content.push({type: 'paragraph', data: paragraphs});
 	}
@@ -256,25 +389,23 @@ function createStory(clusterId) {
 
 	}
 
-	// add "conversation at last build"
-	let conversation = Conversations.find({"cluster_id": cluster_id_obj}).fetch();
-
-	if (conversation.length > 0) {
-		var conversationLength = conversation[0].history.length;
-	} else {
-		console.log("no conversations?");
-		var conversationLength = 0;
-	}
-
 	// insert the new story!
-	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content, 'conversationLengthAtLastBuild': conversationLength});
+	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content});
 
+	// and update the old narrative elements
+	markNarrativeUsed(clusterId);
+}
+
+export {createStory};
+
+function markNarrativeUsed(clusterId) {
 	// mark all cluster narrative elements as used
+	let cluster_id_obj = new Meteor.Collection.ObjectID(clusterId);
 	cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
 	if ('narrative' in cluster) {
 		var markedClusterNarrative = cluster.narrative;
 
-		for (var i = 0; i < cluster_narrative.length; i++) {
+		for (var i = 0; i < cluster.narrative.length; i++) {
 			markedClusterNarrative[i]['used'] = true;
 		}
 
@@ -282,6 +413,9 @@ function createStory(clusterId) {
 	}
 
 	// for logical images, update each individually
+	let image_id_or_statement = cluster.photos.map(function(p) {
+		return {'_id': p};
+	});
 	images = LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1}}).fetch();
 	for (var i = 0; i < images.length; i++) {
 		if ('narrative' in images[i]) {
@@ -294,9 +428,19 @@ function createStory(clusterId) {
 			LogicalImages.update({'_id': images[i]._id}, {'$set': {'narrative': newNarrative}});
 		}
 	}
-}
 
-export {createStory};
+	// add "conversation at last build"
+	let conversation = Conversations.find({"cluster_id": cluster_id_obj}).fetch();
+
+	if (conversation.length > 0) {
+		var conversationLength = conversation[0].history.length;
+	} else {
+		console.log("no conversations?");
+		var conversationLength = 0;
+	}
+
+	Stories.update({'cluster_id': cluster_id_obj}, {'$set': {'conversationLengthAtLastBuild': conversationLength}});
+}
 
 Meteor.methods({
 	'story.insertHeader'(story_id, position) {
