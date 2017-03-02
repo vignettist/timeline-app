@@ -88,7 +88,7 @@ export class Compose extends Component {
 		} else {
 			return <div className="compose-wrapper">
 					<div className="compose-story">
-					<div className="heading"><h1>Generating story...</h1></div>
+					<div className="heading loading"><h1>Generating story...</h1></div>
 					</div>
 					</div>
 		}

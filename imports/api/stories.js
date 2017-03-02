@@ -228,10 +228,21 @@ function createStory(clusterId) {
 
 	}
 
-	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content});
+	// add "conversation at last build"
+	let conversation = Conversations.find({"cluster_id": cluster_id_obj}).fetch();
+
+	if (conversation.length > 0) {
+		var conversationLength = conversation[0].history.length;
+	} else {
+		console.log("no conversations?");
+		var conversationLength = 0;
+	}
+
+	// insert the new story!
+	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content, 'conversationLengthAtLastBuild': conversationLength});
 
 	// mark all cluster narrative elements as used
-	let cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
+	cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
 	if ('narrative' in cluster) {
 		var markedClusterNarrative = cluster.narrative;
 
@@ -243,8 +254,7 @@ function createStory(clusterId) {
 	}
 
 	// for logical images, update each individually
-	var images = LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1}}).fetch();
-
+	images = LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1}}).fetch();
 	for (var i = 0; i < images.length; i++) {
 		if ('narrative' in images[i]) {
 			var newNarrative = images[i].narrative;
