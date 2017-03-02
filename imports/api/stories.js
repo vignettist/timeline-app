@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
-import { Clusters, People, Stories, LogicalImages } from './photos.js';
+import { Clusters, Stories, LogicalImages } from './photos.js';
 import { Conversations } from './conversation.js';
 
 function compareImage(a,b) {
@@ -88,16 +88,6 @@ function createStory(clusterId) {
 	});
 	var images =  LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1, 'rating': 1, 'datetime': 1, 'role': 1, 'resized_uris': 1, 'interest_score': 1}}).fetch();
 	images = images.sort(byDate);
-
-	// or narrative can be in people
-	if ('people' in cluster) {
-		let person_id_or_statement = cluster.people.map(function(p) {
-			return {'_id': p.person_id};
-		});
-		let people = People.find({$or: person_id_or_statement}).fetch();
-	} else {
-		let people = [];
-	}
 
 	var story_content = [];
 
@@ -239,6 +229,33 @@ function createStory(clusterId) {
 	}
 
 	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content});
+
+	// mark all cluster narrative elements as used
+	let cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
+	if ('narrative' in cluster) {
+		var markedClusterNarrative = cluster.narrative;
+
+		for (var i = 0; i < cluster_narrative.length; i++) {
+			markedClusterNarrative[i]['used'] = true;
+		}
+
+		Clusters.update({'_id': cluster_id_obj}, {'$set': {'narrative': markedClusterNarrative}});
+	}
+
+	// for logical images, update each individually
+	var images = LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1}}).fetch();
+
+	for (var i = 0; i < images.length; i++) {
+		if ('narrative' in images[i]) {
+			var newNarrative = images[i].narrative;
+
+			for (var j = 0; j < newNarrative.length; j++) {
+				newNarrative[j]['used'] = true;
+			}
+
+			LogicalImages.update({'_id': images[i]._id}, {'$set': {'narrative': newNarrative}});
+		}
+	}
 }
 
 export {createStory};
