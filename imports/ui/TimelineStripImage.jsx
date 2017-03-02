@@ -30,16 +30,22 @@ export default class TimelineStripMessage extends Component {
 	}
 
 	render() {
+		if (this.props.displayRating) {
+			var rating =  <div className="rating-controls">
+			       <button onClick={this.thumbsUp.bind(this)}><img src="/icons/thumbup.png" /></button>
+			       <button onClick={this.thumbsDown.bind(this)}><img src="/icons/thumbdown.png" /></button>
+			   </div>;
+		} else {
+			var rating = [];
+		}
+
 		return  <div className={this.props.outerClass + " " + (this.props.highlighted ? '' : this.props.unhighlighted)}>
 			    <img id={this.props.photo._id._str} 
 			   		 onClick={this.handleCallback.bind(this)}
 			   		 className={this.props.highlighted ? 'highlighted story-image' : this.props.unhighlighted}
 			   		 src={"http://localhost:3022/" + this.props.photo.resized_uris[640]} />
 
-		       <div className="rating-controls">
-			       <button onClick={this.thumbsUp.bind(this)}><img src="/icons/thumbup.png" /></button>
-			       <button onClick={this.thumbsDown.bind(this)}><img src="/icons/thumbdown.png" /></button>
-			   </div>
+		      	{rating}
 
 		       </div>
 	}
@@ -50,5 +56,6 @@ TimelineStripMessage.propTypes = {
 	outerClass: PropTypes.string.isRequired,
 	highlighted: PropTypes.bool.isRequired,
 	unhighlighted: PropTypes.string.isRequired,
-	callback: PropTypes.func.isRequired
+	callback: PropTypes.func.isRequired,
+	displayRating: PropTypes.bool.isRequired
 };

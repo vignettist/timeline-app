@@ -27,6 +27,24 @@ export default class TimelineStrip extends Component {
 
 	render() {
 		if (this.props.photos.length > 0) {
+			if ('displayRejects' in this.props) {
+				var displayRejects = this.props.displayRejects;
+			} else {
+				var displayRejects = true;
+			}
+
+			if ('displayRating' in this.props) {
+				var displayRating = this.props.displayRating;
+			} else {
+				var displayRating = true;
+			}
+
+			if ('closeCallback' in this.props) {
+				var displayCloseButton = true;
+			} else {
+				var displayCloseButton = false;
+			}
+
 			var unhighlighted_default = (this.props.highlighted.length > 0) ? 'unhighlighted story-image' : 'story-image';
 
 			var first_highlighted = true;
@@ -45,9 +63,9 @@ export default class TimelineStrip extends Component {
 
 				if (rating == 2) {
 					if (images_in_row.length == 0) {
-						images_in_row.push(<TimelineStripImage ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-left" highlighted={(this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1)} unhighlighted={unhighlighted_default} callback={this.props.callback} />);
+						images_in_row.push(<TimelineStripImage displayRating={displayRating} ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-left" highlighted={(this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1)} unhighlighted={unhighlighted_default} callback={this.props.callback} />);
 					} else if (images_in_row.length == 1) {
-						images_in_row.push(<TimelineStripImage ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-right" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback} />);
+						images_in_row.push(<TimelineStripImage displayRating={displayRating} ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-right" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback} />);
 					}
 
 					if (images_in_row.length == 2) {
@@ -56,13 +74,13 @@ export default class TimelineStrip extends Component {
 					}
 				} else if (rating == 3) {
 					rows.push(<div className="timeline-strip-row">
-							  <TimelineStripImage ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-full" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback}/>
+							  <TimelineStripImage displayRating={displayRating} ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-full" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback}/>
 					          </div>);
 				} else if (rating == 1) {
 					if (images_in_rejects_row.length == 0) {
-						images_in_rejects_row.push(<TimelineStripImage ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-left" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback}/>);
+						images_in_rejects_row.push(<TimelineStripImage displayRating={displayRating} ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-left" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback}/>);
 					} else if (images_in_rejects_row.length == 1) {
-						images_in_rejects_row.push(<TimelineStripImage ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-right" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback}/>);
+						images_in_rejects_row.push(<TimelineStripImage displayRating={displayRating} ref={this.props.photos[i]._id._str} photo={this.props.photos[i]} outerClass="timeline-strip-right" highlighted={this.props.highlighted.indexOf(this.props.photos[i]._id._str) > -1} unhighlighted={unhighlighted_default} callback={this.props.callback}/>);
 					}
 
 					if (images_in_rejects_row.length == 2) {
@@ -86,12 +104,26 @@ export default class TimelineStrip extends Component {
 			var rejects = [];
 		}
 
+		if (displayRejects) {
+			var reject_rows = [<div className="divider">Set aside images</div>, rejects];
+		} else {
+			var reject_rows = [];
+		}
+
+		if (displayCloseButton) {
+			var close_button = [<div className="close-button"><button onClick={this.props.closeCallback}><img src="/icons/X.png" /></button></div>];
+		} else {
+			var close_button = [];
+		}
+
 		return(
+			<div>
 			<div className="timeline-strip">
         		{rows}
-        		<div className="divider">Set aside images</div>
-        		{rejects}
+        		{reject_rows}
         	</div>
+        	        		{close_button}
+</div>
         );
 	}
 }
@@ -99,5 +131,8 @@ export default class TimelineStrip extends Component {
 TimelineStrip.propTypes = {
 	photos: PropTypes.array.isRequired,
 	highlighted: PropTypes.array.isRequired,
-	callback: PropTypes.func.isRequired
+	callback: PropTypes.func.isRequired,
+	displayRating: PropTypes.bool,
+	displayRejects: PropTypes.bool,
+	closeCallback: PropTypes.func
 };

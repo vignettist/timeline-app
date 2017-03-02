@@ -106,7 +106,7 @@ FlowRouter.route('/compose/:clusterid', {
 		console.log('subscribing compose view');
 		this.register('cluster', Meteor.subscribe('cluster', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('conversation_from_cluster', Meteor.subscribe('conversation_from_cluster', new Meteor.Collection.ObjectID(params.clusterid)));
-		// this.register('single_cluster_photos', Meteor.subscribe('single_cluster_photos', new Meteor.Collection.ObjectID(params.clusterid)));
+		this.register('single_cluster_photos', Meteor.subscribe('single_cluster_photos', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('single_cluster_places', Meteor.subscribe('single_cluster_places', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('single_cluster_story', Meteor.subscribe('single_cluster_story', new Meteor.Collection.ObjectID(params.clusterid)));
 	},

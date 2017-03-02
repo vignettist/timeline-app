@@ -242,3 +242,52 @@ function createStory(clusterId) {
 }
 
 export {createStory};
+
+Meteor.methods({
+	'story.insertHeader'(story_id, position) {
+		check(story_id, String);
+		check(position, Number);
+
+		try {
+			console.log('inserting header into story');
+			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'heading', 'data': 'New header'}], '$position': position}}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'story.insertParagraph'(story_id, position) {
+		check(story_id, String);
+		check(position, Number);
+
+		try {
+			console.log('inserting paragraph into story');
+			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'paragraph', 'data': ['New paragraph']}], '$position': position}}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'story.insertImage'(story_id, image_id, position) {
+		check(story_id, String);
+		check(position, Number);
+
+		try {
+			console.log('inserting image into story');
+			var image_id_obj = new Meteor.Collection.ObjectID(image_id);
+			var image = LogicalImages.find({'_id': image_id_obj}, {fields: {'datetime': 1, 'resized_uris': 1}}).fetch()[0];
+
+			var new_image = {};
+			new_image['image_id'] = image_id;
+			new_image['resized_uris'] = image.resized_uris;
+			new_image['datetime'] = image.datetime;
+
+			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'image', 'data': new_image}], '$position': position}}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	}
+})

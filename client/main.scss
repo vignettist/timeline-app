@@ -987,6 +987,54 @@ a {
 // compose view
 
 .compose-wrapper {
+	.timeline-strip {
+		position: fixed;
+		height: calc(100% - 4em);
+		width: 300px;
+		overflow: scroll;
+		left: calc((100% - 950px)/2);
+
+		top: 24px;
+		margin-bottom: 2em;
+
+		background-color: white;
+		box-shadow: $short-shadow;
+		border-radius: 1em;
+	}
+}
+
+.close-button {
+	width: 50px;
+	height: 50px;
+	position: fixed;
+	top: 16px;
+	left: calc((100% - 950px)/2 + 266px);
+	right: 0px;
+	background-color: white;
+	border-radius: 25px;
+	box-shadow: $short-shadow;
+	transition: box-shadow $long-transition;
+
+	img {
+		width: 100%;
+	}
+}
+
+.close-button:hover {
+	box-shadow: $medium-shadow;
+	background-color: $selected-blue;
+
+	img {
+		filter: invert(100%);
+	}
+}
+
+.close-button:active {
+	box-shadow: $short-shadow;
+	top: 20px;
+}
+
+.compose-story {
 	width: 800px;
 	margin-left: auto;
 	margin-right: auto;
@@ -1043,24 +1091,6 @@ a {
 		margin-bottom: 0.5em;
 	}
 
-	.divider {
-		position: relative;
-	}
-
-	.divider .add {
-		display: none;
-		width: 50px;
-		height: 50px;
-		transition: 0.3s;
-		background-color: white;
-		box-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-		border-radius: 25px;
-	}
-
-	.divider .add img {
-		width: 100%;
-	}
-
 	.divider:hover .add {
 		display: block;
 		position: absolute;
@@ -1068,15 +1098,79 @@ a {
 		top: -6px;
 	}
 
-	.divider .add:hover {
-		background-color: #f4f4f4;
-		border-radius: 37px;
-		width: 74px;
-		height: 74px;
-		left: 88px;
-		top: -18px;
-		transition: 0.3s;
-		box-shadow: 10px 10px 20px rgba(0,0,0,0.8);
+	.divider {
+		position: relative;
+	
+		.add {
+			display: none;
+			width: 50px;
+			height: 50px;
+			transition: $long-transition;
+			background-color: white;
+			box-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+			border-radius: 25px;
+
+			img {
+				height: 100%;
+			}
+		}
+
+		.add:hover {
+			background-color: #f4f4f4;
+			border-radius: 30px;
+			width: 60px;
+			height: 60px;
+			left: 95px;
+			top: -11px;
+			box-shadow: 10px 10px 20px rgba(0,0,0,0.8);
+		}
+	}
+
+	.divider.active {
+		width: 220px;
+
+		.add {
+			width: 220px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: #f4f4f4;
+			border-radius: 30px;
+			height: 60px;
+			left: 95px;
+			top: -11px;
+			box-shadow: 10px 10px 20px rgba(0,0,0,0.8);
+
+			button {
+				height: 50px;
+				min-width: 50px;
+				margin-left: 5px;
+				margin-right: 5px;
+				border-radius: 30px;
+				background-color: white;
+				box-shadow: $short-shadow;
+				transition: box-shadow $short-transition;
+			}
+
+			button:hover {
+				box-shadow: $medium-shadow;
+				background-color: $selected-blue;
+
+				img {
+					filter: invert(100%);
+				}
+			}
+
+			button:active {
+				box-shadow: $short-shadow;
+				margin-top: 4px;
+			}
+
+			img {
+				height: 35px;
+				width: 35px;				
+			}
+		}
 	}
 
 	.compose-image {
@@ -1088,6 +1182,18 @@ a {
 			margin-right: auto;
 			margin-top: 0.5em;
 			margin-bottom: 0.5em;
+		}
+	}
+}
+
+.compose-story.picker-active {
+	width: 600px;
+	margin-left: calc((100% - 950px)/2 + 350px);
+	margin-right: calc((100% - 950px)/2);
+
+	.compose-image {
+		img {
+			max-width: 550px;
 		}
 	}
 }
