@@ -1055,6 +1055,10 @@ a {
 		background-color: #f4f4f4;
 	}
 
+	div {
+		position: relative;
+	}
+
 	p {
 		width: 550px;
 		margin-left: auto;
@@ -1084,6 +1088,8 @@ a {
 		width: 550px;
 		margin-left: auto;
 		margin-right: auto;
+		padding-left: 125px;
+		padding-right: 125px;
 	}
 
 	p {
@@ -1109,6 +1115,7 @@ a {
 			background-color: white;
 			box-shadow: 3px 3px 6px rgba(0,0,0,0.8);
 			border-radius: 25px;
+			z-index: 11;
 
 			img {
 				height: 100%;
@@ -1184,6 +1191,43 @@ a {
 			margin-bottom: 0.5em;
 		}
 	}
+
+	.delete-button {
+		display: none;
+		position: absolute;
+		top: 10px;
+		right: 35px;
+		width: 50px;
+		height: 50px;
+		border-radius: 25px;
+		background-color: white;
+		box-shadow: $short-shadow;
+		transition: box-shadow $short-transition top $short-transition;
+
+		img {
+			width: 100%;
+			margin: 0;
+		}
+	}
+
+	.delete-button:hover {
+		box-shadow: $medium-shadow;
+		background-color: $selected-blue;
+
+		img {
+			filter: invert(100%);
+		}
+	}
+
+	.delete-button:active {
+		box-shadow: $short-shadow;
+		top: 14px;
+	}
+
+	div:hover .delete-button {
+		display: inline;
+	}
+
 }
 
 .compose-story.picker-active {

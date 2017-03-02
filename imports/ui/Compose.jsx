@@ -5,6 +5,9 @@ import {Conversations} from '../api/conversation.js';
 import AddButton from './AddButton.jsx';
 // import {Stories} from '../api/stories.js';
 import TimelineStrip from './TimelineStrip.jsx';
+import StoryParagraph from './StoryParagraph.jsx';
+import StoryHeading from './StoryHeading.jsx';
+import StoryImage from './StoryImage.jsx';
 
 export class Compose extends Component {
 	constructor(props) {
@@ -16,10 +19,6 @@ export class Compose extends Component {
     }
 
 	insertNewContent(position, contentType) {
-		console.log("inserting new content");
-		console.log(contentType);
-		console.log(position);
-
 		if (contentType === 'add-header') {
 			Meteor.call('story.insertHeader', this.props.story[0]._id, position+1);
 			this.setState({'selectingImage': false});
@@ -32,12 +31,21 @@ export class Compose extends Component {
 	}
 
 	photoCallback(photo) {
-		console.log(photo);
 		Meteor.call('story.insertImage', this.props.story[0]._id, photo, this.state.newImagePosition);
+		this.setState({'selectingImage': false});
 	}
 
 	cancelPhotoInsert() {
 		this.setState({'selectingImage': false});
+	}
+
+	updateText(position, event) {
+		Meteor.call('story.updateText', this.props.story[0]._id, position, event.target.value);
+	}
+
+	deleteImage(position) {
+		// delete the image by updating text with ""
+		Meteor.call('story.updateText', this.props.story[0]._id, position, "");
 	}
 
 	render() {
@@ -48,16 +56,18 @@ export class Compose extends Component {
 
 			for (var i = 0; i < story.length; i++) {
 				if (story[i].type === 'heading') {
-					composeContent.push(<div className="heading"><h1>{story[i].data}</h1></div>);
+					composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_heading_" + i}
+													  html={story[i].data}
+													  onChange={this.updateText.bind(this, i)} />);
 				} else if (story[i].type === 'paragraph') {
-					var renderedParagraphs = [];
-
-					for (var j = 0; j < story[i].data.length; j++) {
-						renderedParagraphs.push(<p>{story[i].data[j]}</p>);
-					}
-					composeContent.push(<div className="content">{renderedParagraphs}</div>);
+					composeContent.push(<StoryParagraph ref={"story_" + this.props.story[0]._id + "_paragraph_" + i}
+														html={story[i].data} 
+														onChange={this.updateText.bind(this, i)} />);
+					
 				} else if (story[i].type === 'image') {
-					composeContent.push(<div className="compose-image"><img src={"http://localhost:3022/" + story[i].data.resized_uris[1280]} /></div>);
+					composeContent.push(<StoryImage ref={"story_" + this.props.story[0]._id + "_image_" + i} 
+													uri={"http://localhost:3022/" + story[i].data.resized_uris[1280]}
+													callback={this.deleteImage.bind(this, i)} />);
 				}
 
 				composeContent.push(<AddButton key={"add_button_" + i + this.props.story[0]._id} callback={this.insertNewContent.bind(this, i)} />);
@@ -76,7 +86,11 @@ export class Compose extends Component {
 						</div>
 					</div>
 		} else {
-			return <div>...</div>
+			return <div className="compose-wrapper">
+					<div className="compose-story">
+					<div className="heading"><h1>Generating story...</h1></div>
+					</div>
+					</div>
 		}
 	}
 }

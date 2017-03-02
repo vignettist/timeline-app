@@ -177,9 +177,9 @@ function createStory(clusterId) {
 		for (var i = 0; i < images_with_narrative_content.length; i++) {
 			story_content.push({type: 'image', data: {image_id: images_with_narrative_content[i]._id, datetime: images_with_narrative_content[i].datetime, resized_uris: images_with_narrative_content[i].resized_uris}});
 			if ('narrative' in images_with_narrative_content[i]) {
-				var paragraphs = [];
+				var paragraphs = '';
 				for (var j = 0; j < images_with_narrative_content[i].narrative.length; j++) {
-					paragraphs.push(images_with_narrative_content[i].narrative[j].answer);
+					paragraphs += ('<p>' + images_with_narrative_content[i].narrative[j].answer + '</p>');
 				}
 				story_content.push({type: 'paragraph', data: paragraphs});
 			}
@@ -249,7 +249,6 @@ Meteor.methods({
 		check(position, Number);
 
 		try {
-			console.log('inserting header into story');
 			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'heading', 'data': 'New header'}], '$position': position}}});
 		} catch(e) {
 			console.log(e);
@@ -262,8 +261,30 @@ Meteor.methods({
 		check(position, Number);
 
 		try {
-			console.log('inserting paragraph into story');
-			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'paragraph', 'data': ['New paragraph']}], '$position': position}}});
+			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'paragraph', 'data': ['<p>New paragraph</p>']}], '$position': position}}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'story.updateText'(story_id, position, new_paragraph) {
+		check(story_id, String);
+		check(position, Number);
+		check(new_paragraph, String);
+
+		try {
+			currentStory = Stories.find({'_id': story_id}).fetch()[0];
+
+			var newContent = currentStory.content;
+
+			if (new_paragraph === '') {
+				newContent.splice(position, 1);
+			} else { 
+				newContent[position].data = new_paragraph;
+			}
+
+			Stories.update({'_id': story_id}, {'$set': {'content': newContent}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -275,7 +296,6 @@ Meteor.methods({
 		check(position, Number);
 
 		try {
-			console.log('inserting image into story');
 			var image_id_obj = new Meteor.Collection.ObjectID(image_id);
 			var image = LogicalImages.find({'_id': image_id_obj}, {fields: {'datetime': 1, 'resized_uris': 1}}).fetch()[0];
 

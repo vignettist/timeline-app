@@ -54,6 +54,12 @@ function recognize_confirmation(text) {
 	return listInString(yes_terms, text);
 }
 
+// TODO
+// return whether or not the text consistently solely of a noun phrase
+function isNounPhrase(responseText) {
+
+}
+
 function getNouns(responseText) {
 	// * get parse tree result
 	var result = HTTP.call("POST", "http://localhost:3050/parse",

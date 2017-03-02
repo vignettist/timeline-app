@@ -118,12 +118,12 @@ export default class TimelineStrip extends Component {
 
 		return(
 			<div>
-			<div className="timeline-strip">
-        		{rows}
-        		{reject_rows}
-        	</div>
-        	        		{close_button}
-</div>
+				<div className="timeline-strip">
+	        		{rows}
+	        		{reject_rows}
+	        	</div>
+	        	{close_button}
+			</div>
         );
 	}
 }
