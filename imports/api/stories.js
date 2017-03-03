@@ -304,8 +304,10 @@ function createStory(clusterId) {
 		}
 
 		if ('narrative' in p) {
-			if (p._id._str != intro_photo_id) {
-				return true;
+			if (p.narrative.length > 0) {
+				if (p._id._str != intro_photo_id) {
+					return true;
+				}
 			}
 		}
 

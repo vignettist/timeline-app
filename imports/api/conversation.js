@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
-import { People, LogicalImages, Clusters, Places } from './photos.js';
+import { People, LogicalImages, Clusters, Places, Stories } from './photos.js';
 import { chooseRandomResponse, makeList, reversePronouns, definiteArticles } from './nlp_helper.js';
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
@@ -183,9 +183,31 @@ Meteor.methods({
 		}
 	},
 
+	// this actually resets not only the conversation history but also the story information too.
 	'conversation.resetHistory'(clusterId) {
 		try {
+			console.log('resetting history');
+			console.log(clusterId);
+
+			// remove conversation history
 			Conversations.update({'cluster_id': clusterId}, {$set: {'history': [], 'state': 'uninitialized'}});
+
+			// remove story
+			Stories.remove({'cluster_id': clusterId});
+
+			// remove cluster narrative
+			Clusters.update({'_id': clusterId}, {'$unset': {'narrative': ""}});
+			cluster = Clusters.find({'_id': clusterId}).fetch()[0];
+
+			// remove image narratives
+			let image_id_or_statement = cluster.photos.map(function(p) {
+				return {'_id': p};
+			});
+			images = LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1}}).fetch();
+			for (var i = 0; i < images.length; i++) {
+				LogicalImages.update({'_id': images[i]._id}, {'$unset': {'narrative': "", "rating": ""}});
+			}
+
 		} catch(e) {
 			console.log(e);
 			return false;
