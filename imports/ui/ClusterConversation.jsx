@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import ReactDOM from 'react-dom';
-import {Clusters, LogicalImages, Places} from '../api/photos.js';
+import {Clusters, LogicalImages, Places, Stories} from '../api/photos.js';
 import {Conversations} from '../api/conversation.js';
 import TextMessage from './Conversation/TextMessage.jsx';
 import TextInputMessage from './Conversation/TextInputMessage.jsx';
@@ -193,7 +193,7 @@ export class ClusterConversation extends Component {
       return (
           <div className="cluster-conversation-wrapper">
             <div className="cluster-conversation-header">
-              <Controls debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state}/>
+              <Controls debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
             </div>
 
             <div className="cluster-conversation-lower">
@@ -226,7 +226,8 @@ ClusterConversation.propTypes = {
   conversation: PropTypes.object.isRequired,
   cluster: PropTypes.object.isRequired,
   photos: PropTypes.object.isRequired,
-  places: PropTypes.array.isRequired
+  places: PropTypes.array.isRequired,
+  story: PropTypes.array.isRequired
 };
 
 export default createContainer(() => {
@@ -234,7 +235,8 @@ export default createContainer(() => {
     conversation: Conversations.find({}).fetch()[0],
     cluster: Clusters.find({}).fetch()[0],
     photos: LogicalImages.find({}).fetch(),
-    places: Places.find({}).fetch()
+    places: Places.find({}).fetch(),
+    story: Stories.find({}).fetch()
   };
 
 }, ClusterConversation);

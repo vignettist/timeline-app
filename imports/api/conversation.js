@@ -233,18 +233,6 @@ Meteor.methods({
 
 	// },
 
-	'conversation.addNarrativeToPerson'(person_id, narrative) {
-		check(narrative, Object);
-		check(person_id, String);
-
-		try {
-			People.update({"_id": person_id}, {"$push": {"narrative": narrative}});
-		} catch(e) {
-			console.log(e);
-			return false;
-		}
-	},
-
 	'conversation.addNarrativeToCluster'(cluster_id, narrative) {
 		check(narrative, Object);
 		check(cluster_id, String);
@@ -263,6 +251,9 @@ Meteor.methods({
 		check(image, String);
 
 		try {
+			// try to figure out if question and answer can be combined here
+
+
 			var image_id = new Meteor.Collection.ObjectID(image);
 			LogicalImages.update({"_id": image_id}, {"$push": {"narrative": narrative}});
 		} catch(e) {

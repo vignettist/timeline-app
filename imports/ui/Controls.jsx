@@ -74,11 +74,17 @@ export default class Controls extends Component {
 			var debug = [];
 		}
 
+        if (this.props.storyStarted) {
+            var compose_verb = 'Continue';
+        } else {
+            var compose_verb = 'Start';
+        }
+
 		return(
 			<div className="cluster-conversation-controls">
         		<button className="back-button" onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
         		<ContentEditable html={this.state.html} onChange={this.handleChange.bind(this)} />
-        		<button className="compose-button" onClick={this.toCompose.bind(this)}><img src="/icons/Quill With Ink-100.png" /><div>Start Composing</div></button>
+        		<button className="compose-button" onClick={this.toCompose.bind(this)}><img src="/icons/Quill With Ink-100.png" /><div>{compose_verb} Writing</div></button>
         		{debug}
         	</div>
         );
@@ -88,5 +94,6 @@ export default class Controls extends Component {
 Controls.propTypes = {
 	debug: PropTypes.bool.isRequired,
 	cluster: PropTypes.object.isRequired,
-	state: PropTypes.string
+	state: PropTypes.string,
+    storyStarted: PropTypes.bool.isRequired
 };

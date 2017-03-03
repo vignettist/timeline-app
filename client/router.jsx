@@ -92,6 +92,7 @@ FlowRouter.route('/conversation/:clusterid', {
 		this.register('conversation_from_cluster', Meteor.subscribe('conversation_from_cluster', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('single_cluster_photos', Meteor.subscribe('single_cluster_photos', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('single_cluster_places', Meteor.subscribe('single_cluster_places', new Meteor.Collection.ObjectID(params.clusterid)));
+		this.register('single_cluster_story_no_changes', Meteor.subscribe('single_cluster_story_no_changes', new Meteor.Collection.ObjectID(params.clusterid)));
 	},
 
 	action: function(params) {

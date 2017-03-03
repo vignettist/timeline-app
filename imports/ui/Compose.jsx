@@ -48,6 +48,10 @@ export class Compose extends Component {
 		Meteor.call('story.updateText', this.props.story[0]._id, position, "");
 	}
 
+	back() {
+		FlowRouter.go('/conversation/' + this.props.cluster[0]._id._str);
+	}
+
 	render() {
 		var composeContent = [];
 
@@ -81,6 +85,7 @@ export class Compose extends Component {
 			}
 
 			return  <div className="compose-wrapper">
+						<button className={"back-button" + (this.state.selectingImage ? " picker-active" : "")} onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
 						{strip}
 						<div className={"compose-story" + (this.state.selectingImage ? " picker-active" : "")}>
 						{composeContent}

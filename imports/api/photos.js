@@ -239,4 +239,8 @@ if (Meteor.isServer) {
 			return Stories.find({'cluster_id': clusterId});
 		}
 	});
+
+	Meteor.publish('single_cluster_story_no_changes', function singleClusterStoryNoChanges(clusterId) {
+		return Stories.find({'cluster_id': clusterId});
+	});
 }
