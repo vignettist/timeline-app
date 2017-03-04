@@ -100,7 +100,6 @@ export class ClusterConversation extends Component {
     }
 
   render() {
-    console.log(this.props);
     if (typeof this.props.conversation !== 'undefined') {
 
 

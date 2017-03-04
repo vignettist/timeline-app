@@ -2,6 +2,8 @@ import { chooseRandomResponse, makeList, makeAndList, reversePronouns, definiteA
 
 export var StateMachine = {};
 
+var nlp7 = require('compromise');
+
 // HELPER FUNCTIONS
 
 function splitParameters(state) {
@@ -33,6 +35,19 @@ function combineParameters(params) {
 
 export { combineParameters };
 export { splitParameters };
+
+function getLastQuestion(history) {
+	var question = '';
+
+	for (var i = history.length - 1; i >= 0; i--) {
+		if (history[i].from === 'app') {
+			question = history[i].content;
+			break;
+		}
+	}
+
+	return question;
+}
 
 // new conversations always start in the uninitialized state
 StateMachine['uninitialized'] = {
@@ -92,7 +107,8 @@ StateMachine['grand_central'] = {
 				}
 			});
 
-			if (photos_in_place.length > 4) {
+			if (photos_in_place.length > 2) {
+				console.log(p);
 				return !('name' in p);
 			} else {
 				return false;
@@ -102,13 +118,14 @@ StateMachine['grand_central'] = {
 		var named_places = places.filter(function(p) {
 			var photos_in_place = props.photos.filter(function(photo) {
 				if ('place' in photo) {
-					return photo.place.place_id === p._id._str;
+					return photo.place.place_id._str === p._id._str;
 				} else {
 					return false;
 				}
 			});
 
-			if (photos_in_place.length > 4) {
+			if (photos_in_place.length > 2) {
+				console.log(p);
 				return ('name' in p);
 			} else {
 				return false;
@@ -136,10 +153,24 @@ StateMachine['grand_central'] = {
 				var nameList = recognized_people.map(function(p){ return p.name.firstName }).reduce(makeAndList);
 				var content = "It looks like you were with " + nameList + ".";
 				var newState = "most_interesting_setup";
-			} else if (places.length > 0) {
-				// TODO fix this
-				var content = "It looks like you started at ";
-				var newState = "most_interesting_setup";
+			} else if (named_places.length > 0) {
+				// TODO fix this: should only trigger if first named place is near the beginning of the cluster
+				var content = "The photos that start this day were taken at " + reversePronouns(named_places[0].name) + ". Did you do anything else before you went here?";
+				var newState = "ask_before";
+			} else {
+				// get a word for the current time of day
+				var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
+
+				if (start_time.hour() < 12) {
+					var timeOfDay = "morning";
+				} else if (start_time.hour() < 17) {
+					var timeOfDay = "afternoon";
+				} else {
+					var timeOfDay = "evening";
+				}
+
+				var content = "What were you doing this " + timeOfDay + "?";
+				var newState = "setting_setup";
 			}
 		}
 
@@ -330,13 +361,13 @@ StateMachine['determining_place'] = {
 
 		Meteor.call('conversation.nounPhrases', text, findLongestPhrase.bind(parameters));
 	}
-}
+};
 
 // STATES FOR IDENTIFYING INTERESTING PHOTOS
 
 StateMachine['most_interesting_setup'] = {
 	autoTransition: function mostInterestingAutoTransition(transitionCallback, props, parameters) {
-        transitionCallback({output: {from: 'app', content: "Which image from this cluster do you find most interesting? You can select from the photos displayed on the right."}, newState: 'get_interesting_photo?input=photo'});
+        transitionCallback({output: {from: 'app', content: "Which image from this experience do you find most interesting? You can select from the photos displayed on the right."}, newState: 'get_interesting_photo?input=photo'});
 	}
 };
 
@@ -346,37 +377,67 @@ StateMachine['get_interesting_photo'] = {
 
 		transitionCallback({output: {from: 'app', content: "That's a good one. Can you tell me about the photo? What do you like about it?"}, newState: 'gathering_image_information?image=' + text});
 	}
-}
+};
 
-// STATE FOR GATHERING GENERIC CLUSTER INFORMATION
+// STATE FOR GATAHERING BEGINNING OF THE CLUSTER INFORMATION
 
-StateMachine['gathering_clustering_information'] = {
+StateMachine['ask_before'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
-		console.log('gathering_clustering_information');
+		console.log('ask_before');
 
-		function followUp(err, response) {
-			if (err) {
-				alert(err);
-			} else {
-				var newState = 'gathering_clustering_information';
-				var output = response;
-				transitionCallback({output: {from: 'app', content: response}, newState: newState});
+		var question = getLastQuestion(props.conversation.history);
+		var choice = Math.random()*3;
+
+		if (choice < 1) {
+			function followUp(err, response) {
+				if (err) {
+					alert(err);
+				} else {
+					if ('count' in this) {
+						this.count++;
+					} else {
+						this.count = 1;
+					}
+
+					transitionCallback({output: {from: 'app', content: response}, newState: "ask_before?" + combineParameters(this)});
+				}
 			}
+
+			Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
+			Meteor.call('conversation.tellMeMore', text, followUp.bind(parameters));
+		} else if (choice < 2) {
+			var response = chooseRandomResponse(["What did you do next?", "What happened next?", "What did you do after that?"]);
+			var newState = "what_next";
+
+			Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
+			transitionCallback({output: {from: 'app', content: response}, newState: newState});
+		} else {
+			var response = chooseRandomResponse(["What were your goals for the day?", "What did you want to do later?", "What were your plans for the day?"]);
+			var newState = "goals";
+
+			Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
+			transitionCallback({output: {from: 'app', content: response}, newState: newState});
 		}
-
-		var question = '';
-
-		for (var i = props.conversation.history.length - 1; i >= 0; i--) {
-			if (props.conversation.history[i].from === 'app') {
-				question = props.conversation.history[i].content;
-				break;
-			}
-		}
-
-		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
-		Meteor.call('conversation.followUp', text, followUp);
 	}
-}
+};
+
+StateMachine['goals'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
+		var computerReply = chooseRandomResponse(["Cool.", "Righteous.", "Noble."])
+		transitionCallback({output: {from: 'app', content: computerReply}, newState: 'most_interesting_setup'});
+	}
+};
+
+StateMachine['what_next'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		var question = getLastQuestion(props.conversation.history);
+		var computerReply = chooseRandomResponse(["I'd love to see a photo of that. Do you have one?", "Do you have a photo of that?", "What photo best shows that moment?", "I want to see a picture!"]);
+		// send question and answer as parameters, because the last response should be associated with an image, and not with the cluster.
+		transitionCallback({output: {from: 'app', content: computerReply}, newState: 'gathering_image_information?input=photo,lastAnswer=' + text + ',lastQuestion=' + question});
+	} 
+};
 
 // STATE FOR GATHERING GENERIC IMAGE INFORMATION
 
@@ -384,6 +445,12 @@ StateMachine['gathering_image_information'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		console.log('gathering_image_information');
 		console.log(parameters.image);
+
+		if ('lastAnswer' in parameters) {
+			Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: parameters.lastQuestion, answer: parameters.lastAnswer});
+			delete parameters.lastQuestion;
+			delete parameters.lastAnswer;
+		}
 
 		function imageFollowUp(err, response) {
 			if (err) {
