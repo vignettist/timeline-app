@@ -54,6 +54,22 @@ function recognize_confirmation(text) {
 	return listInString(yes_terms, text);
 }
 
+function recognize_nos(text) {
+	no_terms = ["no",
+				"uh-uh",
+				"nix",
+				"nope",
+				"nay",
+				"nah",
+				"no way",
+				"negative",
+				"not",
+				"not really",
+				"hardly"];
+
+	return listInString(no_terms, text);
+}
+
 // TODO
 // return whether or not the text consistently solely of a noun phrase
 function isNounPhrase(responseText) {
@@ -351,7 +367,7 @@ Meteor.methods({
 			var image_id = new Meteor.Collection.ObjectID(image);
 			photo = LogicalImages.find({"_id": image_id}).fetch()[0];
 
-			if (name != "") {
+			if (name.firstName != "") {
 				//  find person in database with 'name'
 				var possible_people = People.find({"name": {"$regex": name.firstName, "$options": "i"}}).fetch();
 
@@ -447,6 +463,32 @@ Meteor.methods({
 if (Meteor.isServer) {
 Meteor.methods({
 
+	'conversation.yesNoDescription'(responseText) {
+		check(responseText, String);
+		this.unblock();
+
+		try {
+			if (nlp7(responseText).terms().data().length < 5) {
+				var yes = recognize_confirmation(responseText);
+				var no = recognize_nos(responseText);
+
+				if (yes && !no) {
+					return 'yes';
+				} else if (no && !yes) {
+					return 'no';
+				} else {
+					return 'maybe';
+				}
+			} else {
+				return 'description';
+			}
+
+		} catch (e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	'conversation.confirm'(responseText) {
 		check(responseText, String);
 		this.unblock();
@@ -526,7 +568,14 @@ Meteor.methods({
 
 		try {
 			var nouns = getNouns(responseText);
-			var longest_nouns = nouns.sort(function(a, b) { return a.length < b.length });
+			var longest_nouns = nouns.sort(function(a, b) { 
+				if (a.length === b.length) {
+					// make it stable/choose the LAST noun if the length is the same
+					return nouns.indexOf(a) > nouns.indexOf(b);
+				} else {
+					return a.length < b.length 
+				}});
+
 			var longest_noun = longest_nouns[0];
 
 			var longest_noun = definiteArticles(reversePronouns(longest_noun));

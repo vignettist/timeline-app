@@ -27,7 +27,9 @@ function combineParameters(params) {
   var combined_params = '';
 
   for (var k in params) {
-    combined_params += k + '=' + params[k] + ',';
+  	if ((k != 'input') && (k != "")) {
+    	combined_params += k + '=' + params[k] + ',';
+    }
   }
 
   return combined_params;
@@ -47,6 +49,30 @@ function getLastQuestion(history) {
 	}
 
 	return question;
+}
+
+function byDate(a,b) {
+	return (a.datetime.utc_timestamp - b.datetime.utc_timestamp);
+}
+
+function getDateOfPlace(place, photos) {
+	var images_in_place = photos.filter(function(p) {
+		if ('place' in p) {
+	        return p.place.place_id._str === place._id._str;
+	    } else {
+	    	return false;
+	    }
+	});
+
+	images_in_place = images_in_place.sort(byDate);
+
+	return images_in_place[0].datetime;
+}
+
+function sortPlaces(a, b) {
+	date_a = getDateOfPlace(a, this);
+	date_b = getDateOfPlace(b, this);
+	return (date_a.utc_timestamp - date_b.utc_timestamp);
 }
 
 // new conversations always start in the uninitialized state
@@ -88,6 +114,10 @@ StateMachine['grand_central'] = {
 								recognized_people.push({image: props.photos[i]._id._str, face: j, name: props.photos[i].openfaces[j].name});
 								console.log('face has been identified already: ' + props.photos[i].openfaces[j].name);
 							} else {
+								// attempt to recognize person by comparison to person database
+
+
+
 								unrecognized_people.push({image: props.photos[i]._id._str, face: j});
 							}
 
@@ -96,7 +126,7 @@ StateMachine['grand_central'] = {
 			}
 		}
 
-		var places = props.places;
+		var places = props.places.sort(sortPlaces.bind(props.photos));
 
 		var unnamed_places = places.filter(function(p) {
 			var photos_in_place = props.photos.filter(function(photo) {
@@ -133,6 +163,7 @@ StateMachine['grand_central'] = {
 		});
 
 		if (unrecognized_people.length > 0) {
+			// unidentified person (MAX 3)
 			var newState = 'person_in_photo?image=' + unrecognized_people[0].image + ',face=' + unrecognized_people[0].face;
 
 			if (parameters.first === 'y') {
@@ -142,21 +173,19 @@ StateMachine['grand_central'] = {
 			}
 
 		} else if (unnamed_places.length > 0) {
+			// unidentified place (MAX 3)
 			var newState = 'place_in_cluster?place=' + unnamed_places[0]._id._str;
 			if (parameters.first === 'n') {
 				var content = "There's a few more places I don't know.";
 			} else {
 				var content = "I'm going to ask about some of the places that you stopped to take photos.";
 			}
+
 		} else {
-			if (recognized_people.length > 0) {
-				var nameList = recognized_people.map(function(p){ return p.name.firstName }).reduce(makeAndList);
-				var content = "It looks like you were with " + nameList + ".";
-				var newState = "most_interesting_setup";
-			} else if (named_places.length > 0) {
+			if (named_places.length > 0) {
 				// TODO fix this: should only trigger if first named place is near the beginning of the cluster
 				var content = "The photos that start this day were taken at " + reversePronouns(named_places[0].name) + ". Did you do anything else before you went here?";
-				var newState = "ask_before";
+				var newState = "evaluate_before?place_id=" + named_places[0]._id + ",place_name=" + named_places[0].name;
 			} else {
 				// get a word for the current time of day
 				var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
@@ -292,7 +321,7 @@ StateMachine['are_there_people'] = {
 					content = 'Oh, sorry about that.';
 					newState = 'grand_central';
 
-					Meteor.call('conversation.associateFace', "", parameters.image, parameters.face, props.cluster._id._str);
+					Meteor.call('conversation.associateFace', {firstName: ""}, parameters.image, parameters.face, props.cluster._id._str);
 				}
 
 				transitionCallback({output: {from: 'app', content: content}, newState: newState});
@@ -381,14 +410,59 @@ StateMachine['get_interesting_photo'] = {
 
 // STATE FOR GATAHERING BEGINNING OF THE CLUSTER INFORMATION
 
+StateMachine['evaluate_before'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('evaluate_before');
+		var question = getLastQuestion(props.conversation.history);
+
+		function handleEvaluateBefore(err, response) {
+			if (err) {
+				alert(err);
+			} else {
+				if (response == 'yes') {
+					nextState = 'ask_before';
+					output = 'Cool, what did you do?';
+				} else if (response == 'no') {
+					nextState = 'setting_setup?' + combineParameters(parameters);
+					output = 'Okay, what were you doing at ' + reversePronouns(parameters.place_name) + "?";
+				} else {
+					console.log(props);
+					Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text});
+					nextState = 'what_next';
+					output = 'Cool, what did you do next?';
+				}
+
+				console.log(nextState);
+				console.log(output);
+				transitionCallback({output: {from: 'app', content: output}, newState: nextState + "?" + combineParameters(parameters)});
+			}
+		}
+
+		Meteor.call('conversation.yesNoDescription', text, handleEvaluateBefore);
+	}
+}
+
+StateMachine['setting_setup'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('setting_setup');
+
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text});
+
+		transitionCallback({output: {from: 'app', content: 'What photo shows the beginning of this day?'}, newState: 'what_next_photo?input=photo,role=setting,' + combineParameters(parameters)});
+	}
+}
+
 StateMachine['ask_before'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		console.log('ask_before');
 
 		var question = getLastQuestion(props.conversation.history);
-		var choice = Math.random()*3;
+		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
 
-		if (choice < 1) {
+		var count = ('count' in parameters) ? parseInt(parameters.count) : 0;
+
+		if (count == 0) {
 			function followUp(err, response) {
 				if (err) {
 					alert(err);
@@ -399,23 +473,17 @@ StateMachine['ask_before'] = {
 						this.count = 1;
 					}
 
+					console.log(this);
+					console.log(combineParameters(this));
 					transitionCallback({output: {from: 'app', content: response}, newState: "ask_before?" + combineParameters(this)});
 				}
 			}
 
-			Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
 			Meteor.call('conversation.tellMeMore', text, followUp.bind(parameters));
-		} else if (choice < 2) {
-			var response = chooseRandomResponse(["What did you do next?", "What happened next?", "What did you do after that?"]);
-			var newState = "what_next";
-
-			Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
-			transitionCallback({output: {from: 'app', content: response}, newState: newState});
 		} else {
 			var response = chooseRandomResponse(["What were your goals for the day?", "What did you want to do later?", "What were your plans for the day?"]);
-			var newState = "goals";
+			var newState = "goals?" + combineParameters(parameters);
 
-			Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
 			transitionCallback({output: {from: 'app', content: response}, newState: newState});
 		}
 	}
@@ -425,55 +493,371 @@ StateMachine['goals'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		var question = getLastQuestion(props.conversation.history);
 		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {'question': question, 'answer': text});
-		var computerReply = chooseRandomResponse(["Cool.", "Righteous.", "Noble."])
-		transitionCallback({output: {from: 'app', content: computerReply}, newState: 'most_interesting_setup'});
+		var computerReply = chooseRandomResponse(["Cool, what did you do next?", "Righteous, what did you do afterwards?"])
+		transitionCallback({output: {from: 'app', content: computerReply}, newState: 'what_next?' + combineParameters(parameters)});
 	}
 };
 
 StateMachine['what_next'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		var question = getLastQuestion(props.conversation.history);
-		var computerReply = chooseRandomResponse(["I'd love to see a photo of that. Do you have one?", "Do you have a photo of that?", "What photo best shows that moment?", "I want to see a picture!"]);
+		var computerReply = chooseRandomResponse(["I'd love to see a photo of that. Can you show me one?", "What photo best shows that moment?", "I want to see a picture!"]);
 		// send question and answer as parameters, because the last response should be associated with an image, and not with the cluster.
-		transitionCallback({output: {from: 'app', content: computerReply}, newState: 'gathering_image_information?input=photo,lastAnswer=' + text + ',lastQuestion=' + question});
+		// hack hack hack
+		var encodedQuestion = question.replace(',', 'CoMmA').replace('?', 'QuEsTiOn');
+		var encodedAnswer = text.replace(',', 'CoMmA').replace('?', 'QuEsTiOn');
+		transitionCallback({output: {from: 'app', content: computerReply}, newState: 'what_next_photo?input=photo,lastAnswer=' + encodedAnswer + ',lastQuestion=' + encodedQuestion + ',' + combineParameters(parameters)});
 	} 
 };
 
-// STATE FOR GATHERING GENERIC IMAGE INFORMATION
-
-StateMachine['gathering_image_information'] = {
+StateMachine['what_next_photo'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
-		console.log('gathering_image_information');
-		console.log(parameters.image);
+		parameters['image'] = text;
 
 		if ('lastAnswer' in parameters) {
-			Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: parameters.lastQuestion, answer: parameters.lastAnswer});
+			var decodedQuestion = parameters.lastQuestion.replace('CoMmA', ',').replace('QuEsTiOn', '?');
+			var decodedAnswer = parameters.lastAnswer.replace('CoMmA', ',').replace('QuEsTiOn', '?');
+			Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: decodedQuestion, answer: decodedAnswer});
 			delete parameters.lastQuestion;
 			delete parameters.lastAnswer;
 		}
+
+		if ('role' in parameters) {
+			console.log('adding role');
+			Meteor.call('conversation.giveImageRole', parameters.image, parameters.role);
+			delete parameters.role;
+		}
+
+		Meteor.call('conversation.rateImage', parameters.image, 3);
+
+		console.log('what_next_photo');
+		console.log(parameters);
+
+		// long term todo -- use image understanding to ask better questions
+		var response = chooseRandomResponse(["What do you like about this photo?", "What were you doing?"]);
+		transitionCallback({output: {from: 'app', content: response}, newState: 'follow_up_image?' + combineParameters(parameters)});
+	}
+}
+
+// STATE FOR GATHERING GENERIC IMAGE INFORMATION
+
+StateMachine['follow_up_image'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('follow up image');
+		console.log(parameters.image);
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
 
 		function imageFollowUp(err, response) {
 			if (err) {
 				alert(err);
 			} else {
-				var newState = 'gathering_image_information?' + combineParameters(this);
-				var output = response;
-
+				var newState = 'forward?' + combineParameters(parameters);
+				if (response === false) {
+					var output = "Tell me more about that.";
+				} else {
+					var output = response;
+				}
 
 				transitionCallback({output: {from: 'app', content: response}, newState: newState});
 			}
 		}
 
-		var question = '';
+		Meteor.call('conversation.tellMeMore', text, imageFollowUp.bind(parameters));
+	}
+}
 
-		for (var i = props.conversation.history.length - 1; i >= 0; i--) {
-			if (props.conversation.history[i].from === 'app') {
-				question = props.conversation.history[i].content;
-				break;
+StateMachine['forward'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('forward');
+
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
+
+		// if last image discussed is near end of event
+		var image_index = props.photos.map(p => p._id._str).indexOf(parameters.image);
+		var images_to_end = props.photos.length - 1 - image_index;
+
+		console.log(props);
+		console.log(image_index);
+		console.log(props.photos.length);
+		console.log(images_to_end);
+
+		if (images_to_end < 4) {
+			var output = 'What photo best shows the conclusion to this experience?';
+			var nextState = 'conclusion_photo?input=photo,' + combineParameters(parameters);
+		} else {
+			var choice = Math.random()*3 + 3;
+
+			if (choice < 1) {
+				// rand 1
+
+				var output = "Show me another photo you think is interesting."
+				var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
+			} else if (choice < 2) {
+				// rand 2
+
+				var new_place = -1;
+				console.log(parameters);
+				if ('place_id' in parameters) {
+					var named_places = props.places.filter(function(p) {
+						return ('name' in p);
+					});
+
+					console.log('forward NAMED PLACES');
+					console.log(named_places);
+
+					var place_index = named_places.sort(sortPlaces.bind(props.photos)).map(p => p._id._str).indexOf(parameters.place_id);
+
+					if (place_index < named_places.length - 1) {
+						new_place = named_places[place_index+1];
+					}
+				}
+
+				console.log(new_place);
+
+				if (new_place != -1) {
+					var output = "Next, you went to " + reversePronouns(new_place.name) + ". Is this the first time you had been there?";
+					parameters.place_id = new_place._id._str;
+					parameters.place_name = new_place.name;
+					var nextState = 'first_time_place?' + combineParameters(parameters);
+				} else {
+					var output = "Where did you go next?";
+					var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
+				}
+			} else {
+				// rand 3
+
+				var peopleIndex = ('peopleIndex' in parameters) ? parseInt(parameters.peopleIndex)+1 : 0;
+				parameters.peopleIndex = 0;
+
+				if (('people' in props.cluster) && (props.cluster.people.length > peopleIndex)) {
+					// TODO: highlight images here
+
+					if (Math.random() < 0.5) {
+						var output = "You were also with " + props.cluster.people[peopleIndex].name.firstName + ". Do you know this person well?";
+						var nextState = "know_well?" + combineParameters(parameters);
+					} else {
+						parameters.count = 0;
+						var output = "It looks like you were with " + props.cluster.people[peopleIndex].name.firstName + ". What brought you together in " + props.cluster.location + "?";
+						var nextState = "ask_about_person?" + combineParameters(parameters);;
+					}
+				} else {
+					var output = "Show me another photo you think is interesting."
+					var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
+				}
 			}
 		}
 
-		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
-		Meteor.call('conversation.followUp', text, imageFollowUp.bind(parameters));
+		transitionCallback({output: {from: 'app', content: output}, newState: nextState});
 	}
 }
+
+StateMachine['know_well'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('know well');
+
+		function knowWell(err, response) {
+			if (err) {
+				alert(err);
+			} else {
+				parameters.count = 0;
+
+				if (response === 'no') {
+
+					var output = 'How did you get to know ' + props.cluster.people[parameters.peopleIndex].name.firstName + ' better through this experience?';
+					var nextState = 'ask_about_person?' + combineParameters(parameters);
+				} else {
+					if (response === 'description') {
+						var question = getLastQuestion(props.conversation.history);
+						Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text, person: props.cluster.people[parameters.peopleIndex].person_id});
+					}
+
+					var output = 'What was it like exploring ' + props.cluster.location + ' with ' + props.cluster.people[parameters.peopleIndex].name.firstName + ' today?';
+					var nextState = 'ask_about_person?' + combineParameters(parameters);
+				}
+
+				transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+			}
+		}
+
+		Meteor.call('conversation.yesNoDescription', text, knowWell);
+	}
+}
+
+StateMachine['ask_about_person'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text, person: props.cluster.people[parameters.peopleIndex].person_id});
+
+		var count = ('count' in parameters) ? parameters.count : 0;
+
+		if (count === 0) {
+			function askAboutPerson(err, response) {
+				if (err) {
+					alert(e);
+					return;
+				}
+
+				parameters.count++;
+				transitionCallback({output: {from: 'app', content: response}, newState: "ask_about_person?" + combineParameters(parameters)});
+			}
+
+			Meteor.call('conversation.tellMeMore', text, askAboutPerson);
+		} else {
+			var pronoun = 'them';
+
+			console.log(props);
+
+			if ('gender' in props.cluster.people[parameters.peopleIndex]) {
+				if (props.cluster.people[parameters.peopleIndex].gender === 'm') {
+					var pronoun = 'him';
+				} else if (props.cluster.people[parameters.peopleIndex].gender === 'f') {
+					var pronoun = 'her';
+				}
+			}
+
+			transitionCallback({output: {from: 'app', content: "What's your favorite photo of " + pronoun + " from this day?"}, newState: 'what_next_photo?input=photo,' + combineParameters(parameters)})
+		}
+	}
+}
+
+StateMachine['first_time_place'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('first_time_place');
+		var question = getLastQuestion(props.conversation.history);
+
+		function placeFirstTime(err, response) {
+			if (err) {
+				alert(err);
+			} else {
+				if (response != 'no') {
+					Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: "This was my first time at " + parameters.place_name, place: parameters.place_id});
+					var output = "What part of " + reversePronouns(parameters.place_name) + " did you enjoy the most?";
+				} else {
+					var output = "What was most different this time?";
+				}
+
+				parameters.count = 0;
+
+				nextState = "elaborate_place?" + combineParameters(parameters);
+				transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+			}
+		}
+
+		Meteor.call('conversation.yesNoDescription', text, placeFirstTime);
+	}
+}
+
+StateMachine['elaborate_place'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('elaborate_place');
+
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text, place: parameters.place_id});
+
+		var count = ('count' in parameters) ? parseInt(parameters.count) : 0;
+
+		// this is kind of a state within a state, but i'm keeping it like this so that in the future it can be expanded into more open-ended, non-fixed length elaboration
+		if (count === 0) {
+			function placeFollowUp(err, response) {
+				if (err) {
+					alert(err);
+				} else {
+					parameters.count += 1;
+					var newState = 'elaborate_place?' + combineParameters(parameters);
+
+					if (response === false) {
+						var output = "Tell me more about that.";
+					} else {
+						var output = response;
+					}
+
+					transitionCallback({output: {from: 'app', content: response}, newState: newState});
+				}
+			}
+
+			Meteor.call('conversation.tellMeMore', text, placeFollowUp);
+		} else {
+			var output = "What was your favorite photo from " + reversePronouns(parameters.place_name) + "?";
+			var nextState = "what_next_photo?input=photo," + combineParameters(parameters);
+			transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+		}
+	}
+}
+
+StateMachine['conclusion_photo'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('conclusion_photo');
+
+		parameters.image = text;
+		Meteor.call('conversation.rateImage', parameters.image, 3);
+		Meteor.call('conversation.giveImageRole', parameters.image, 'conclusion');
+
+		var output = 'How did you feel in this moment?';
+		var nextState = 'conclusion_photo_followup?' + combineParameters(parameters);
+		transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+	}
+}
+
+StateMachine['conclusion_photo_followup'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		console.log('conclusion_photo_followup');
+
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
+
+		var output = 'Did you accomplish your goals?';
+		var nextState = 'conclusion_goals?' + combineParameters(parameters);
+		transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+	}
+}
+
+StateMachine['conclusion_goals'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		function conclusionGoals(err, response) {
+			if (err) {
+				alert(err);
+				return;
+			}
+
+
+			if (response === 'no') {
+				var output = 'What happened?'
+				var nextState = 'conclusion_goal_miss?' + combineParameters(parameters);
+			} else {
+				var output = "Cool! What will you do next time you're in " + props.cluster.location + "?";
+				var nextState = 'conclusion_conclusion?' + combineParameters(parameters);
+			}
+
+			transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+		}
+
+		Meteor.call('conversation.yesNoDescription', text, conclusionGoals);
+	}
+}
+
+StateMachine['conclusion_goal_miss'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
+
+		var output = 'What will you do next time you are here?';
+		var nextState = 'conclusion_conclusion?' + combineParameters(parameters);
+
+		transitionCallback({output: {from: 'app', content: output}, newState: nextState});
+	}
+}
+
+StateMachine['conclusion_conclusion'] = {
+	stateTransition: function(transitionCallback, text, props, parameters) {
+		var question = getLastQuestion(props.conversation.history);
+		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
+
+		var output = 'Thanks for talking about your day with me. Now, you can collect your thoughts into a full story by clicking "Start Writing" above.';
+		var nextState = '?input=none';
+
+		transitionCallback({output: {from: 'app', content: output}, newState: nextState}); 
+	}
+}
+

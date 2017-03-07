@@ -125,6 +125,8 @@ export class ClusterConversation extends Component {
           } else {
             if (split_state.parameters.input == 'photo') {
               conversation = [<TextMessage idTag="human-side" content="Select a photo &#8594;" />];
+            } else if (split_state.parameters.input == 'none') { 
+              conversation = [];
             } else {
               conversation = [<TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} />, <div className="user-avatar"><img src="/icons/user.png" /></div>];
               user_side = false;
