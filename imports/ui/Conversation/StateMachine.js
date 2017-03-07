@@ -93,7 +93,7 @@ StateMachine['uninitialized'] = {
 		}
 
         var content = "Hi! Let's talk about " + intro + " in " + props.cluster.location + " on " + start_time.format('MMMM Do') + ".";
-        transitionCallback({output: {from: 'app', content: content}, newState: 'grand_central?first=y'});
+        transitionCallback({output: {from: 'app', content: content}, newState: 'grand_central?person_count=0,place_count=0'});
 	}
 };
 
@@ -103,6 +103,8 @@ StateMachine['grand_central'] = {
 	autoTransition: function grandCentral(transitionCallback, props, parameters) {
 		// create list of people, and what image they are in
 		Meteor.call('conversation.getUnrecognizedPeople', props.photos, grandCentral);
+		parameters.person_count = parseInt(parameters.person_count);
+		parameters.place_count = parseInt(parameters.place_count);
 		
 		function grandCentral(err, response) {
 			if (err) {
@@ -150,27 +152,42 @@ StateMachine['grand_central'] = {
 				}
 			});
 
-			if (unrecognized_people.length > 0) {
+			if ((unrecognized_people.length > 0) && (parameters.person_count < 3)) {
 				// unidentified person (MAX 3)
-				var newState = 'person_in_photo?image=' + unrecognized_people[0].image + ',face=' + unrecognized_people[0].face;
+				
+				parameters.image = unrecognized_people[0].image;
+				parameters.face = unrecognized_people[0].face;
+
 				if ('name' in unrecognized_people[0]) {
-					newState += ',firstName=' + unrecognized_people[0].name.firstName + ',lastName=' + unrecognized_people[0].name.lastName + ',gender=' + unrecognized_people[0].name.gender;
+					parameters.firstName = unrecognized_people[0].name.firstName;
+					parameters.lastName = unrecognized_people[0].name.lastName;
+					parameters.gender = unrecognized_people[0].name.gender;
 				}
 
-				if (parameters.first === 'y') {
+				if (parameters.person_count === 0) {
 					var content = "Let's start by helping me identify some people you were with.";
 				} else {
 					var content = "There's " + ((unrecognized_people.length === 1) ? 'another person' : 'a few more people') + " I need some help with.";
 				}
 
-			} else if (unnamed_places.length > 0) {
+				parameters.person_count++;
+
+				var newState = 'person_in_photo?' + combineParameters(parameters);
+
+			} else if ((unnamed_places.length > 0) && (parameters.place_count < 3)) {
 				// unidentified place (MAX 3)
-				var newState = 'place_in_cluster?place=' + unnamed_places[0]._id._str;
-				if (parameters.first === 'n') {
+
+				parameters.place = unnamed_places[0]._id._str;
+
+				if (parameters.place_count > 0) {
 					var content = "There's a few more places I don't know.";
 				} else {
 					var content = "I'm going to ask about some of the places that you stopped to take photos.";
 				}
+
+				parameters.place_count++;
+
+				var newState = 'place_in_cluster?' + combineParameters(parameters);
 
 			} else {
 				if (named_places.length > 0) {
@@ -226,7 +243,8 @@ StateMachine['presenting_image'] = {
 	        	var output = 'It looks like ' + parameters.firstName + ' is in the middle of this photo, am I right?';
 	        }
 
-	        var nextState = 'confirming_person?' + combineParameters(parameters) + ',highlighted=' + parameters.image;
+	        parameters.highlighted = parameters.image;
+	        var nextState = 'confirming_person?' + combineParameters(parameters);
 
 	    } else {
 	        if (faceCenter <= width/3) {
@@ -237,7 +255,8 @@ StateMachine['presenting_image'] = {
 	        	var output = 'Who is in the middle of this picture?'
 	        }
 
-	        var nextState = 'determining_name?' + combineParameters(parameters) + ',highlighted=' + parameters.image;
+	        parameters.highlighted = parameters.image;
+	        var nextState = 'determining_name?' + combineParameters(parameters);
         }
 
         transitionCallback({output: {from: 'app', content: output}, newState: nextState});
@@ -262,7 +281,11 @@ StateMachine['determining_name'] = {
               var content = "Oh, so that's " + names[0].firstName + "?";
             }
 
-            var newState = 'confirming_person?image=' + parameters.image + ',face=' + parameters.face + ',firstName=' + names[0].firstName + ',lastName=' + names[0].lastName + ',gender=' + names[0].gender;
+            parameters.firstName = names[0].firstName;
+            parameters.lastName = names[0].lastName;
+            parameters.gender = names[0].gender;
+
+            var newState = 'confirming_person?' + combineParameters(parameters);
           } else if (names.length > 1) {
             var listed_names = names.reduce(function(list, n, i, a) {
               if (i == a.length - 1) {
@@ -272,7 +295,7 @@ StateMachine['determining_name'] = {
               }
             });
             var content = "Wait, is that " + listed_names + "?";
-            var newState = 'determining_name?image=' + parameters.image;
+            var newState = 'determining_name?' + combineParameters(parameters);
           }
 
           transitionCallback({output: {from: 'app', content: content}, newState: newState})
@@ -294,11 +317,16 @@ StateMachine['confirming_person'] = {
 
 				Meteor.call('conversation.associateFace', {firstName: parameters.firstName, lastName: parameters.lastName, gender: parameters.gender}, parameters.image, parameters.face, props.cluster._id._str);
 
-				// content = 'Ok, great! What were you doing with ' + parameters.firstName + ' on that day?';
-				// newState = 'gathering_clustering_information?name=' + parameters.name;
-
 				content = 'Ok, great!';
-				newState = 'grand_central';
+
+				// clear parameters and return to grand central
+				delete parameters.firstName;
+				delete parameters.lastName;
+				delete parameters.gender;
+				delete parameters.image;
+				delete parameters.face;
+				delete parameters.highlighted;
+				newState = 'grand_central?' + combineParameters(parameters);
 			} else {
 
 				// could not confirm name
@@ -326,7 +354,14 @@ StateMachine['are_there_people'] = {
 					newState = 'determining_name?' + combineParameters(parameters);
 				} else {
 					content = 'Oh, sorry about that.';
-					newState = 'grand_central';
+
+					delete parameters.firstName;
+					delete parameters.lastName;
+					delete parameters.gender;
+					delete parameters.image;
+					delete parameters.face;
+					delete parameters.highlighted;
+					newState = 'grand_central?' + combineParameters(parameters);
 
 					Meteor.call('conversation.associateFace', {firstName: ""}, parameters.image, parameters.face, props.cluster._id._str);
 				}
@@ -360,7 +395,9 @@ StateMachine['place_in_cluster'] = {
         	return p._id._str === parameters.place;
         })[0];
 
-        transitionCallback({output: {from: 'app_place', content: {center: place.location.coordinates, size: place.radius}}, newState: 'presenting_place?place=' + parameters.place + ',highlighted=' + highlight_list});
+        parameters.highlighted = highlight_list;
+        var nextState = 'presenting_place?' + combineParameters(parameters);
+        transitionCallback({output: {from: 'app_place', content: {center: place.location.coordinates, size: place.radius}}, newState: nextState});
   	}	
 };
 
@@ -391,7 +428,9 @@ StateMachine['determining_place'] = {
 
 				var response = chooseRandomResponse(["Ok, I'll mark those as taken at " + displayName + ".", "Great, now I know that photos there are at "+ displayName + ".", "Got it, those are from " + displayName + "."]);
 
-				transitionCallback({output: {from: 'app', content: response}, newState: 'grand_central?first=n'});
+				delete parameters.place;
+				delete parameters.highlighted;
+				transitionCallback({output: {from: 'app', content: response}, newState: 'grand_central?' + combineParameters(parameters)});
 			}
 		}
 
