@@ -43,6 +43,8 @@ function euclideanDistance(vec1, vec2) {
 	return sum;
 }
 
+export {euclideanDistance};
+
 if (Meteor.isServer) {
 	// let start = new Date('2014-12-20T00:01:00Z');
 	// let end = new Date('2015-01-06T00:01:00Z');

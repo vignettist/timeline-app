@@ -102,108 +102,100 @@ StateMachine['uninitialized'] = {
 StateMachine['grand_central'] = {
 	autoTransition: function grandCentral(transitionCallback, props, parameters) {
 		// create list of people, and what image they are in
-		var unrecognized_people = [];
-		var recognized_people = [];
+		Meteor.call('conversation.getUnrecognizedPeople', props.photos, grandCentral);
+		
+		function grandCentral(err, response) {
+			if (err) {
+				alert(err);
+				return;
+			}
 
-		for (var i = 0; i < props.photos.length; i++) {
-			if (props.photos[i].openfaces.length > 0) {
-				for (var j = 0; j < props.photos[i].openfaces.length; j++) {
-					if (props.photos[i].openfaces[j].size > 10000) {
-					
-							if ('name' in props.photos[i].openfaces[j]) {
-								recognized_people.push({image: props.photos[i]._id._str, face: j, name: props.photos[i].openfaces[j].name});
-								console.log('face has been identified already: ' + props.photos[i].openfaces[j].name);
-							} else {
-								// attempt to recognize person by comparison to person database
+			var unrecognized_people = response.unrecognized;
+			var recognized_people = response.recognized;
+			console.log(unrecognized_people);
+			console.log(recognized_people);
+			console.log('grand central');
 
+			var places = props.places.sort(sortPlaces.bind(props.photos));
 
-
-								unrecognized_people.push({image: props.photos[i]._id._str, face: j});
-							}
-
+			var unnamed_places = places.filter(function(p) {
+				var photos_in_place = props.photos.filter(function(photo) {
+					if ('place' in photo) {
+						return photo.place.place_id._str === p._id._str;
+					} else {
+						return false;
 					}
-				}
-			}
-		}
+				});
 
-		var places = props.places.sort(sortPlaces.bind(props.photos));
-
-		var unnamed_places = places.filter(function(p) {
-			var photos_in_place = props.photos.filter(function(photo) {
-				if ('place' in photo) {
-					return photo.place.place_id._str === p._id._str;
+				if (photos_in_place.length > 2) {
+					return !('name' in p);
 				} else {
 					return false;
 				}
 			});
 
-			if (photos_in_place.length > 2) {
-				console.log(p);
-				return !('name' in p);
-			} else {
-				return false;
-			}
-		});
+			var named_places = places.filter(function(p) {
+				var photos_in_place = props.photos.filter(function(photo) {
+					if ('place' in photo) {
+						return photo.place.place_id._str === p._id._str;
+					} else {
+						return false;
+					}
+				});
 
-		var named_places = places.filter(function(p) {
-			var photos_in_place = props.photos.filter(function(photo) {
-				if ('place' in photo) {
-					return photo.place.place_id._str === p._id._str;
+				if (photos_in_place.length > 2) {
+					return ('name' in p);
 				} else {
 					return false;
 				}
 			});
 
-			if (photos_in_place.length > 2) {
-				console.log(p);
-				return ('name' in p);
-			} else {
-				return false;
-			}
-		});
-
-		if (unrecognized_people.length > 0) {
-			// unidentified person (MAX 3)
-			var newState = 'person_in_photo?image=' + unrecognized_people[0].image + ',face=' + unrecognized_people[0].face;
-
-			if (parameters.first === 'y') {
-				var content = "Let's start by helping me identify some people you were with.";
-			} else {
-				var content = "There's " + ((unrecognized_people.length === 1) ? 'another person' : 'a few more people') + " I need some help with.";
-			}
-
-		} else if (unnamed_places.length > 0) {
-			// unidentified place (MAX 3)
-			var newState = 'place_in_cluster?place=' + unnamed_places[0]._id._str;
-			if (parameters.first === 'n') {
-				var content = "There's a few more places I don't know.";
-			} else {
-				var content = "I'm going to ask about some of the places that you stopped to take photos.";
-			}
-
-		} else {
-			if (named_places.length > 0) {
-				// TODO fix this: should only trigger if first named place is near the beginning of the cluster
-				var content = "The photos that start this day were taken at " + reversePronouns(named_places[0].name) + ". Did you do anything else before you went here?";
-				var newState = "evaluate_before?place_id=" + named_places[0]._id + ",place_name=" + named_places[0].name;
-			} else {
-				// get a word for the current time of day
-				var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
-
-				if (start_time.hour() < 12) {
-					var timeOfDay = "morning";
-				} else if (start_time.hour() < 17) {
-					var timeOfDay = "afternoon";
-				} else {
-					var timeOfDay = "evening";
+			if (unrecognized_people.length > 0) {
+				// unidentified person (MAX 3)
+				var newState = 'person_in_photo?image=' + unrecognized_people[0].image + ',face=' + unrecognized_people[0].face;
+				if ('name' in unrecognized_people[0]) {
+					newState += ',firstName=' + unrecognized_people[0].name.firstName + ',lastName=' + unrecognized_people[0].name.lastName + ',gender=' + unrecognized_people[0].name.gender;
 				}
 
-				var content = "What were you doing this " + timeOfDay + "?";
-				var newState = "setting_setup";
-			}
-		}
+				if (parameters.first === 'y') {
+					var content = "Let's start by helping me identify some people you were with.";
+				} else {
+					var content = "There's " + ((unrecognized_people.length === 1) ? 'another person' : 'a few more people') + " I need some help with.";
+				}
 
-		transitionCallback({output: {from: 'app', content: content}, newState: newState});
+			} else if (unnamed_places.length > 0) {
+				// unidentified place (MAX 3)
+				var newState = 'place_in_cluster?place=' + unnamed_places[0]._id._str;
+				if (parameters.first === 'n') {
+					var content = "There's a few more places I don't know.";
+				} else {
+					var content = "I'm going to ask about some of the places that you stopped to take photos.";
+				}
+
+			} else {
+				if (named_places.length > 0) {
+					// TODO fix this: should only trigger if first named place is near the beginning of the cluster
+					var content = "The photos that start this day were taken at " + reversePronouns(named_places[0].name) + ". Did you do anything else before you went here?";
+					var newState = "evaluate_before?place_id=" + named_places[0]._id + ",place_name=" + named_places[0].name;
+				} else {
+					// get a word for the current time of day
+					var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
+
+					if (start_time.hour() < 12) {
+						var timeOfDay = "morning";
+					} else if (start_time.hour() < 17) {
+						var timeOfDay = "afternoon";
+					} else {
+						var timeOfDay = "evening";
+					}
+
+					var content = "What were you doing this " + timeOfDay + "?";
+					var newState = "setting_setup";
+				}
+			}
+
+			transitionCallback({output: {from: 'app', content: content}, newState: newState});
+		}
 	}
 };
 
@@ -223,17 +215,32 @@ StateMachine['presenting_image'] = {
         }, parameters)[0];
 
 		var faceCenter = image.openfaces[parameters.face].rect[0] + image.openfaces[parameters.face].rect[2]/2;
-        var width = 1280*image.size[0]/image.size[1];
+        var width = 1280;
 
-        if (faceCenter <= width/3) {
-        	var output = 'Who is that, on the left?';
-        } else if (faceCenter >= 2*width/3) {
-        	var output = 'Who is on the right?';
-        } else {
-        	var output = 'Who is in the middle of this picture?'
+        if ('firstName' in parameters) {
+        	if (faceCenter <= width/3) {
+	        	var output = 'I think that ' + parameters.firstName + ' is on the left of this picture, is that right?';
+	        } else if (faceCenter >= 2*width/3) {
+	        	var output = 'I think that ' + parameters.firstName + ' is on the right here, is that correct?';
+	        } else {
+	        	var output = 'It looks like ' + parameters.firstName + ' is in the middle of this photo, am I right?';
+	        }
+
+	        var nextState = 'confirming_person?' + combineParameters(parameters) + ',highlighted=' + parameters.image;
+
+	    } else {
+	        if (faceCenter <= width/3) {
+	        	var output = 'Who is that, on the left?';
+	        } else if (faceCenter >= 2*width/3) {
+	        	var output = 'Who is on the right?';
+	        } else {
+	        	var output = 'Who is in the middle of this picture?'
+	        }
+
+	        var nextState = 'determining_name?' + combineParameters(parameters) + ',highlighted=' + parameters.image;
         }
 
-        transitionCallback({output: {from: 'app', content: output}, newState: 'determining_name?' + combineParameters(parameters) + ',highlighted=' + parameters.image});
+        transitionCallback({output: {from: 'app', content: output}, newState: nextState});
 	}
 };
 

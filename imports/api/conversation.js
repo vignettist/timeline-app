@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
-import { People, LogicalImages, Clusters, Places, Stories } from './photos.js';
+import { People, LogicalImages, Clusters, Places, Stories, euclideanDistance } from './photos.js';
 import { chooseRandomResponse, makeList, reversePronouns, definiteArticles } from './nlp_helper.js';
 export const Conversations = new Mongo.Collection('conversations');
 // People = new Mongo.Collection('people');
@@ -178,19 +178,75 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
+	'conversation.getUnrecognizedPeople'(photos) {
+		check(photos, Array);
+
+		try {
+			var people = People.find({}).fetch();
+			var unrecognized_people = [];
+			var recognized_people = [];
+
+			for (var i = 0; i < photos.length; i++) {
+				if (photos[i].openfaces.length > 0) {
+					for (var j = 0; j < photos[i].openfaces.length; j++) {
+						if (photos[i].openfaces[j].size > 10000) {
+						
+								if ('name' in photos[i].openfaces[j]) {
+									recognized_people.push({image: photos[i]._id._str, face: j, name: photos[i].openfaces[j].name});
+									console.log('face has been identified already: ' + photos[i].openfaces[j].name);
+								} else {
+									// attempt to recognize person by comparison to person database
+
+									if (people.length > 1) {
+										var ranked_people = [];
+
+										for (var k = 0; k < people.length; k++ ) {
+											var d = euclideanDistance(people[k].mean_rep, photos[i].openfaces[j].rep);
+
+											ranked_people.push({distance:d, person: people[k]});
+										}
+
+										ranked_people = ranked_people.sort(function(a, b) {
+											return a.distance - b.distance;
+										});
+
+										console.log(ranked_people);
+
+										if ((ranked_people[0].distance < 0.6) && ((ranked_people[1].distance - ranked_people[0].distance) > 0.2)) {
+											unrecognized_people.push({image: photos[i]._id._str, face: j, name: ranked_people[0].person.name});
+										} else {
+											unrecognized_people.push({image: photos[i]._id._str, face: j});
+										}
+									} else {
+										unrecognized_people.push({image: photos[i]._id._str, face: j});
+									}
+
+									console.log(unrecognized_people);
+								}
+
+						}
+					}
+				}
+			}
+
+			return {recognized: recognized_people, unrecognized: unrecognized_people};
+
+		} catch (e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	// add a new part of the conversation log to the database
 	'conversation.addHistory'(clusterId, output, newState) {
 		check(output.from, String);
 		check(newState, String);
 
 		try {
-			console.log(clusterId);
 			var current_conversation = Conversations.find({'cluster_id': clusterId}).fetch()[0];
 			var current_history = current_conversation.history;
 			output['old_state'] = current_conversation.state;
 			current_history.push(output);
-
-			console.log([{'_id': current_conversation._id}, {$set: {'history': current_history, 'state': newState}}])
 
 			Conversations.update({'_id': current_conversation._id}, {$set: {'history': current_history, 'state': newState}});
 		} catch (e) {
@@ -369,17 +425,17 @@ Meteor.methods({
 
 			if (name.firstName != "") {
 				//  find person in database with 'name'
-				var possible_people = People.find({"name": {"$regex": name.firstName, "$options": "i"}}).fetch();
+				var possible_people = People.find({"name.firstName": {"$regex": name.firstName, "$options": "i"}}).fetch();
 
 				if (possible_people.length > 1) {
-					var possible_people = People.find({"name": {"$regex": name.firstName + " " + name.lastName, "$options": "i"}}).fetch();
+					var possible_people = People.find({"name.firstName": {"$regex": name.firstName + " " + name.lastName, "$options": "i"}}).fetch();
 				}
 
 				if (possible_people.length == 0) {
 					//  add new face representation
 					//  compute new mean representation
 					//  add image to image list
-					People.insert({"name": name.firstName + " " + name.lastName,
+					People.insert({"name": name,
 								   "gender": name.gender, 
 								   "images": [photo._id],
 								   "reps": [photo.openfaces[facen].rep],
@@ -426,7 +482,7 @@ Meteor.methods({
 					console.log("ERROR: UNHANDLED CASE MULTIPLE NAME MATCHES");
 				}
 
-				var person = People.find({"name": {"$regex": name.firstName, "$options": "i"}}).fetch()[0];
+				var person = People.find({"name.firstName": {"$regex": name.firstName, "$options": "i"}}).fetch()[0];
 
 				// update image to contain 'name', person id
 				if ('identified_faces' in photo) {
