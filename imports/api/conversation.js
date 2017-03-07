@@ -497,7 +497,19 @@ Meteor.methods({
 				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": photo.openfaces}});
 
 				var cluster_id = new Meteor.Collection.ObjectID(cluster_id);
-				Clusters.update({"_id": cluster_id}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
+				var cluster = Clusters.find({"_id": cluster_id}, {"people": 1}).fetch()[0];
+
+				if ('people' in cluster) {
+					var people_in_clusters = cluster.people.map(p => p.person_id);
+
+					if (people_in_clusters.indexOf(person._id) < 0) {
+						Clusters.update({"_id": cluster_id}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
+					}
+				} else {
+					Clusters.update({"_id": cluster_id}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
+				}
+
+				
 
 			} else {
 				// name is blank, so this isn't a face. remove it from the image

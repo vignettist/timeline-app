@@ -633,7 +633,7 @@ StateMachine['forward'] = {
 			var output = 'What photo best shows the conclusion to this experience?';
 			var nextState = 'conclusion_photo?input=photo,' + combineParameters(parameters);
 		} else {
-			var choice = Math.random()*3 + 3;
+			var choice = Math.random()*3;
 
 			if (choice < 1) {
 				// rand 1
@@ -666,6 +666,22 @@ StateMachine['forward'] = {
 					var output = "Next, you went to " + reversePronouns(new_place.name) + ". Is this the first time you had been there?";
 					parameters.place_id = new_place._id._str;
 					parameters.place_name = new_place.name;
+
+					var images_in_place = props.photos.filter(function(p) {
+			        	if ('place' in p) {
+			                return p.place.place_id._str === parameters.place_id;
+			            } else {
+			            	return false;
+			            }
+			        }, parameters);
+
+			        var highlight_list = images_in_place.reduce(function(a, b) {
+			          return a + ';' + b._id._str;
+			        }, '');
+
+			        highlight_list = highlight_list.slice(1, highlight_list.length);
+			        parameters.highlighted = highlight_list;
+
 					var nextState = 'first_time_place?' + combineParameters(parameters);
 				} else {
 					var output = "Where did you go next?";
@@ -675,7 +691,7 @@ StateMachine['forward'] = {
 				// rand 3
 
 				var peopleIndex = ('peopleIndex' in parameters) ? parseInt(parameters.peopleIndex)+1 : 0;
-				parameters.peopleIndex = 0;
+				parameters.peopleIndex = peopleIndex;
 
 				if (('people' in props.cluster) && (props.cluster.people.length > peopleIndex)) {
 					// TODO: highlight images here
@@ -825,6 +841,8 @@ StateMachine['elaborate_place'] = {
 
 			Meteor.call('conversation.tellMeMore', text, placeFollowUp);
 		} else {
+			delete parameters.highlighted;
+
 			var output = "What was your favorite photo from " + reversePronouns(parameters.place_name) + "?";
 			var nextState = "what_next_photo?input=photo," + combineParameters(parameters);
 			transitionCallback({output: {from: 'app', content: output}, newState: nextState});
