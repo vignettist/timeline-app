@@ -101,6 +101,50 @@ function updateStory(clusterId) {
 		let cluster = gotcluster.cluster;
 		let cluster_narrative = gotcluster.narrative;
 
+		// now find unused image narrative elements
+		var images = getImagesFromCluster(cluster);
+		
+		// find images with narrative content
+		var images_with_narrative_content = images.filter(function(p) {
+			if ('narrative' in p) {
+				for (var i = 0; i < p.narrative.length; i++) {
+					if ('used' in p.narrative[i]) {
+						if (!p.narrative[i].used) {
+							return true;
+						}
+					}
+				}
+			}
+
+			return false;
+		});
+
+		images_with_narrative_content = images_with_narrative_content.sort(byDate);
+
+		var old_images_with_narrative_content = images.filter(function(p) {
+			if ('rating' in p) {
+				if (p.rating === 3) {
+					return true;
+				}
+			}
+
+			if ('narrative' in p) {
+				if (p.narrative.length > 0) {
+					if (p._id._str != intro_photo_id) {
+						return true;
+					}
+				}
+			}
+
+			if ('setting' in p) {
+				return true;
+			}
+
+			return false;
+		});
+
+		old_images_with_narrative_content = old_images_with_narrative_content.sort(byDate);
+
 		if (cluster_narrative.length > 0) {
 			console.log('new cluster narrative content');
 			// if there are really new cluster narrative elements
@@ -120,29 +164,77 @@ function updateStory(clusterId) {
 			var paragraphs = '';
 
 			for (var i = 0; i < cluster_narrative.length; i++) {
-				paragraphs += ('<p>' + cluster_narrative[i].answer + '</p>');
+				if ('person' in cluster_narrative[i]) {
+					// this narrative element has a person tag, so we should put it with a photo of that person
+					// priority to narrative content images;
+
+					for (var j = 0; j < old_images_with_narrative_content.length; j++) {
+						for (var k = 0; ((k < 10000) && (k < old_images_with_narrative_content[j].openfaces.length)); k++) {
+							if (old_images_with_narrative_content[j].openfaces[k].person_id === cluster_narrative[i].person) {
+								old_images_with_narrative_content[j].narrative = [cluster_narrative[i]];
+								images_with_narrative_content.push(old_images_with_narrative_content[j]);
+								// break the loop
+								j = 10000;
+								k = 10000;
+							}
+						}
+					}
+
+					if (j < 10000) {
+						// didn't find it in narrative content images
+
+						for (var j = 0; j < images.length; j++) {
+							for (var k = 0; ((k < 10000) && (k < images[j].openfaces.length)); k++) { 
+								if (images[j].openfaces[k].person_id === cluster_narrative[i].person) {
+									images[j].narrative = [cluster_narrative[i]];
+									images_with_narrative_content.push(images[j]);
+									// break the loop
+									j = 10000;
+									k = 10000;
+								}
+							}
+						}
+					}
+
+					if (j < 10000) {
+						console.log('something went wrong');
+					}
+				} else if ('place' in cluster_narrative[i]) {
+					// this narrative element has a person tag, so we should put it with a photo of that person
+					// priority to narrative content images;
+
+					for (var j = 0; j < old_images_with_narrative_content.length; j++) {
+						if (('place' in old_images_with_narrative_content[j]) && (old_images_with_narrative_content[j].place.place_id === cluster_narrative[i].place)) {
+							old_images_with_narrative_content[j].narrative = [cluster_narrative[i]];
+							images_with_narrative_content.push(old_images_with_narrative_content[j]);
+							// break the loop
+							j = 10000;
+						}
+					}
+
+					if (j < 10000) {
+						// didn't find it in narrative content images
+
+						for (var j = 0; j < images.length; j++) {
+							if (('place' in images[j]) && (images[j].place.place_id === cluster_narrative[i].place)) {
+								images[j].narrative = [cluster_narrative[i]];
+								images_with_narrative_content.push(images[j]);
+								// break the loop
+								j = 10000;
+							}
+						}
+					}
+
+					if (j < 10000) {
+						console.log('something went wrong');
+					}
+				} else {
+					paragraphs += ('<p><em>' + cluster_narrative[i].question + "</em> " + cluster_narrative[i].answer + '</p>');
+				}
 			}
 
 			story_content.splice(insert_point+1, 0, {type: 'paragraph', data: paragraphs});
 		}
-
-		// now find unused image narrative elements
-		var images = getImagesFromCluster(cluster);
-		
-		// find images with narrative content
-		var images_with_narrative_content = images.filter(function(p) {
-			if ('narrative' in p) {
-				for (var i = 0; i < p.narrative.length; i++) {
-					if ('used' in p.narrative[i]) {
-						if (!p.narrative[i].used) {
-							return true;
-						}
-					}
-				}
-			}
-
-			return false;
-		});
 
 		if (images_with_narrative_content.length > 0) {
 			console.log('new image narrative content');
@@ -191,7 +283,7 @@ function updateStory(clusterId) {
 				var paragraphs = '';
 
 				for (var i = 0; i < image_narrative.length; i++) {
-					paragraphs += ('<p>' + image_narrative[i].answer + '</p>');
+					paragraphs += ('<p><em>' + image_narrative[i].question + "</em> " + image_narrative[i].answer + '</p>');
 				}
 
 				story_content.splice(insert_point, 0, {type: 'paragraph', data: paragraphs});
@@ -231,7 +323,7 @@ function getImagesFromCluster(cluster) {
 	let image_id_or_statement = cluster.photos.map(function(p) {
 		return {'_id': p};
 	});
-	var images =  LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1, 'rating': 1, 'datetime': 1, 'role': 1, 'resized_uris': 1, 'interest_score': 1}}).fetch();
+	var images =  LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1, 'rating': 1, 'datetime': 1, 'role': 1, 'resized_uris': 1, 'interest_score': 1, 'openfaces': 1, 'place': 1}}).fetch();
 	images = images.sort(byDate);
 	return images;
 }
@@ -250,6 +342,7 @@ function createStory(clusterId) {
 
 	// or narrative can be images
 	var images = getImagesFromCluster(cluster);
+	images = images.sort(byDate);
 
 	var story_content = [];
 
@@ -312,19 +405,99 @@ function createStory(clusterId) {
 			}
 		}
 
+		if ('setting' in p) {
+			return true;
+		}
+
 		return false;
 	});
 
 	images_with_narrative_content = images_with_narrative_content.sort(byDate);
+	console.log(images_with_narrative_content);
 
 	//    - follow that with cluster narrative info
 	if (cluster_narrative.length > 0) {
 		var paragraphs = '';
 		for (var i = 0; i < cluster_narrative.length; i++) {
-			paragraphs += ('<p>' + cluster_narrative[i].answer + '</p>');
+
+			if ('person' in cluster_narrative[i]) {
+				// this narrative element has a person tag, so we should put it with a photo of that person
+				// priority to narrative content images;
+
+				for (var j = 0; j < images_with_narrative_content.length; j++) {
+					for (var k = 0; ((k < 10000) && (k < images_with_narrative_content[j].openfaces.length)); k++) {
+						if (images_with_narrative_content[j].openfaces[k].person_id === cluster_narrative[i].person) {
+							if ('narrative' in images_with_narrative_content[j]) {
+								images_with_narrative_content[j].narrative.push(cluster_narrative[i]);
+							} else {
+								images_with_narrative_content[j].narrative = [cluster_narrative[i]];
+							}
+							// break the loop
+							j = 10000;
+							k = 10000;
+						}
+					}
+				}
+
+				if (j < 10000) {
+					// didn't find it in narrative content images
+
+					for (var j = 0; j < images.length; j++) {
+						for (var k = 0; ((k < 10000) && (k < images[j].openfaces.length)); k++) { 
+							if (images[j].openfaces[k].person_id === cluster_narrative[i].person) {
+								images[j].narrative = [cluster_narrative[i]];
+								images_with_narrative_content.push(images[j]);
+								// break the loop
+								j = 10000;
+								k = 10000;
+							}
+						}
+					}
+				}
+
+				if (j < 10000) {
+					console.log('something went wrong');
+				}
+			} else if ('place' in cluster_narrative[i]) {
+				// this narrative element has a person tag, so we should put it with a photo of that person
+				// priority to narrative content images;
+
+				for (var j = 0; j < images_with_narrative_content.length; j++) {
+					if (('place' in images_with_narrative_content[j]) && (images_with_narrative_content[j].place.place_id === cluster_narrative[i].place)) {
+						if ('narrative' in images_with_narrative_content[j]) {
+							images_with_narrative_content[j].narrative.push(cluster_narrative[i]);
+						} else {
+							images_with_narrative_content[j].narrative = [cluster_narrative[i]];
+						}
+						// break the loop
+						j = 10000;
+					}
+				}
+
+				if (j < 10000) {
+					// didn't find it in narrative content images
+
+					for (var j = 0; j < images.length; j++) {
+						if (('place' in images[j]) && (images[j].place.place_id === cluster_narrative[i].place)) {
+							images[j].narrative = [cluster_narrative[i]];
+							images_with_narrative_content.push(images[j]);
+							// break the loop
+							j = 10000;
+						}
+					}
+				}
+
+				if (j < 10000) {
+					console.log('something went wrong');
+				}
+			} else {
+				paragraphs += ('<p><em>' + cluster_narrative[i].question + "</em> " + cluster_narrative[i].answer + '</p>');
+			}
 		}
 		story_content.push({type: 'paragraph', data: paragraphs});
 	}
+
+	images_with_narrative_content = images_with_narrative_content.sort(byDate);
 
 	//    - have regular images after that, including every image with narrative content and with a rating of 3
 	if (images_with_narrative_content.length > 0) {
@@ -333,7 +506,7 @@ function createStory(clusterId) {
 			if ('narrative' in images_with_narrative_content[i]) {
 				var paragraphs = '';
 				for (var j = 0; j < images_with_narrative_content[i].narrative.length; j++) {
-					paragraphs += ('<p>' + images_with_narrative_content[i].narrative[j].answer + '</p>');
+					paragraphs += ('<p><em>' + images_with_narrative_content[i].narrative[j].question + "</em> " + images_with_narrative_content[i].narrative[j].answer + '</p>');
 				}
 				story_content.push({type: 'paragraph', data: paragraphs});
 			}
