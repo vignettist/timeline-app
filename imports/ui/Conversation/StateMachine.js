@@ -192,7 +192,7 @@ StateMachine['grand_central'] = {
 			} else {
 				if (named_places.length > 0) {
 					// TODO fix this: should only trigger if first named place is near the beginning of the cluster
-					var content = "The photos that start this day were taken at " + reversePronouns(named_places[0].name) + ". Did you do anything else before you went here?";
+					var content = "The photos that start this experience were taken at " + reversePronouns(named_places[0].name) + ". Did you do anything else before you went here?";
 					var newState = "evaluate_before?place_id=" + named_places[0]._id + ",place_name=" + named_places[0].name;
 				} else {
 					// get a word for the current time of day
@@ -495,7 +495,7 @@ StateMachine['setting_setup'] = {
 		var question = getLastQuestion(props.conversation.history);
 		Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text});
 
-		transitionCallback({output: {from: 'app', content: 'What photo shows the beginning of this day?'}, newState: 'what_next_photo?input=photo,role=setting,' + combineParameters(parameters)});
+		transitionCallback({output: {from: 'app', content: 'What photo shows the beginning of this experience?'}, newState: 'what_next_photo?input=photo,role=setting,' + combineParameters(parameters)});
 	}
 }
 
@@ -527,7 +527,17 @@ StateMachine['ask_before'] = {
 
 			Meteor.call('conversation.tellMeMore', text, followUp.bind(parameters));
 		} else {
-			var response = chooseRandomResponse(["What were your goals for the day?", "What did you want to do later?", "What were your plans for the day?"]);
+			var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
+
+			if (start_time.hour() < 12) {
+				var timeOfDay = "morning";
+			} else if (start_time.hour() < 17) {
+				var timeOfDay = "afternoon";
+			} else {
+				var timeOfDay = "evening";
+			}
+
+			var response = chooseRandomResponse(["What were your goals for the " + timeOfDay + "?", "What did you want to do later?", "What were your plans for the " + timeOfDay + "?"]);
 			var newState = "goals?" + combineParameters(parameters);
 
 			transitionCallback({output: {from: 'app', content: response}, newState: newState});
@@ -735,7 +745,7 @@ StateMachine['know_well'] = {
 						Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text, person: props.cluster.people[parameters.peopleIndex].person_id});
 					}
 
-					var output = 'What was it like exploring ' + props.cluster.location + ' with ' + props.cluster.people[parameters.peopleIndex].name.firstName + ' today?';
+					var output = 'What was it like exploring ' + props.cluster.location + ' with ' + props.cluster.people[parameters.peopleIndex].name.firstName + '?';
 					var nextState = 'ask_about_person?' + combineParameters(parameters);
 				}
 
@@ -779,7 +789,7 @@ StateMachine['ask_about_person'] = {
 				}
 			}
 
-			transitionCallback({output: {from: 'app', content: "What's your favorite photo of " + pronoun + " from this day?"}, newState: 'what_next_photo?input=photo,' + combineParameters(parameters)})
+			transitionCallback({output: {from: 'app', content: "What's your favorite photo of " + pronoun + " from this experience?"}, newState: 'what_next_photo?input=photo,' + combineParameters(parameters)})
 		}
 	}
 }
@@ -918,7 +928,7 @@ StateMachine['conclusion_conclusion'] = {
 		var question = getLastQuestion(props.conversation.history);
 		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
 
-		var output = 'Thanks for talking about your day with me. Now, you can collect your thoughts into a full story by clicking "Start Writing" above.';
+		var output = 'Thanks for talking about your experience with me. Now, you can collect your thoughts into a full story by clicking "Start Writing" above.';
 		var nextState = '?input=none';
 
 		transitionCallback({output: {from: 'app', content: output}, newState: nextState}); 
