@@ -348,13 +348,13 @@ function createStory(clusterId) {
 
 	// we need to	
 	//    - have a title
-	if ('title' in cluster) {
-		story_content.push({type: 'heading', data: cluster.title});
-	} else {
-		var corrected_time = moment(cluster.start_time.utc_timestamp).utcOffset(cluster.start_time.tz_offset/60);
-		var initial_title = corrected_time.format('MMMM Do YYYY');
-		story_content.push({type: 'heading', data: initial_title});
-	}
+	// if ('title' in cluster) {
+	// 	story_content.push({type: 'heading', data: cluster.title});
+	// } else {
+	// 	var corrected_time = moment(cluster.start_time.utc_timestamp).utcOffset(cluster.start_time.tz_offset/60);
+	// 	var initial_title = corrected_time.format('MMMM Do YYYY');
+	// 	story_content.push({type: 'heading', data: initial_title});
+	// }
 
 	//    - have a setting photo (w/o narrative content?)
 	let setting_photos = images.filter(function(p) {

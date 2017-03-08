@@ -43,6 +43,10 @@ export class Compose extends Component {
 		Meteor.call('story.updateText', this.props.story[0]._id, position, event.target.value);
 	}
 
+	updateTitle(event) {
+	    Meteor.call('conversation.setTitle', this.props.cluster[0]._id._str, event.target.value);
+	}
+
 	deleteImage(position) {
 		// delete the image by updating text with ""
 		Meteor.call('story.updateText', this.props.story[0]._id, position, "");
@@ -58,12 +62,20 @@ export class Compose extends Component {
 		if (this.props.story.length > 0) {
 			var story = this.props.story[0].content;
 
+			var corrected_time = moment(this.props.cluster[0].start_time.utc_timestamp).utcOffset(this.props.cluster[0].start_time.tz_offset/60);
+			var initial_title = corrected_time.format('MMMM Do YYYY');
+			composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_title"}
+										      html={('title' in this.props.cluster[0]) ? this.props.cluster[0].title : initial_title }
+											  onChange={this.updateTitle.bind(this)}
+											  isTitle={true} />);
+
 			for (var i = 0; i < story.length; i++) {
 				if (story[i].type === 'heading') {
 					composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_heading_" + i}
 													  html={story[i].data}
 													  onChange={this.updateText.bind(this, i)}
-													  isTitle={i==0}/>);
+													  isTitle={false}/>);
+
 				} else if (story[i].type === 'paragraph') {
 					composeContent.push(<StoryParagraph ref={"story_" + this.props.story[0]._id + "_paragraph_" + i}
 														html={story[i].data} 
