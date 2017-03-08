@@ -72,27 +72,149 @@ export class ClusterCalendar extends Component {
     FlowRouter.go('/conversation/' + e._id._str);
   }
 
-  render() {
+  getHeightAndTop(e) {
     var start_date = this.props.date;
+
+    var local_start = new moment(e.start_time.utc_timestamp).utcOffset(e.start_time.tz_offset/60);
+    var local_end = new moment(e.end_time.utc_timestamp).utcOffset(e.end_time.tz_offset/60);
+
+    var local_display_start = start_date.clone().utcOffset(e.start_time.tz_offset/60);
+
+    var cluster_height = local_end.unix() - local_start.unix();
+    cluster_height /= (60*60*24*5);
+    cluster_height *= 100;
+
+    // have to manually correct for time zones
+    var top = local_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + e.start_time.tz_offset;
+    top /= (60*60*24);
+
+    top *= 20;
+
+    var zindex = (400 - (new moment(e.start_time.utc_timestamp).dayOfYear()))*24 - new moment(e.start_time.utc_timestamp).hour();
+
+    return {height: cluster_height, top: top, zindex: zindex};
+  }
+
+  dragTop(cluster, event) {
+    var mousePos = event.clientY;
+
+    var ght = this.getHeightAndTop(cluster);
+    var parent_height = this.clusters.clientHeight;
+    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_top = parent_height * ght.top/100 - 10;
+
+    if ((mousePos < initial_top) && (mousePos > 0)) {
+      this[cluster._id._str].style.top = mousePos.toString() + "px";
+      this[cluster._id._str].style.height = ((initial_top - mousePos) + initial_height).toString() + "px"; 
+      this[cluster._id._str].style.zIndex = 100000;
+    }
+  }
+
+  dragTopStart(cluster, event) {
+    var img = document.createElement("img");
+    img.src = "/transparent.png";
+    event.dataTransfer.setDragImage(img, 0, 0);
+  }
+
+  dragTopEnd(cluster, event) {
+    var finalMousePos = event.clientY;
+    var ght = this.getHeightAndTop(cluster);
+    var parent_height = this.clusters.clientHeight;
+    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_top = parent_height * ght.top/100 - 10;
+
+    var clusters_to_merge = [];
+
+    for (var i = 0; i < this.props.clusters.length; i++) {
+      var comparison_ght = this.getHeightAndTop(this.props.clusters[i]);
+
+      var comparison_height = parent_height * comparison_ght.height/100 + 13;
+      var comparison_top = parent_height * comparison_ght.top/100 - 10;
+      var comparison_value = comparison_height/2 + comparison_top;
+
+      if ((comparison_value < initial_top) && (comparison_value > finalMousePos)) {
+        clusters_to_merge.push(this.props.clusters[i]._id._str);
+      }
+    }
+
+    if (clusters_to_merge.length > 0) {
+      clusters_to_merge.push(cluster._id._str);
+      Meteor.call('clusters.mergeClusters', clusters_to_merge);
+    }
+    
+    var original_style = {height: "calc(" + ght.height.toString() + "% + 13px)", top: "calc(" + ght.top.toString() + "% - 10px)", zIndex: ght.zindex};
+
+    this[cluster._id._str].style.height = original_style.height;
+    this[cluster._id._str].style.top = original_style.top;
+    this[cluster._id._str].style.zIndex = original_style.zIndex;
+  }
+
+  dragBottom(cluster, event) {
+    var mousePos = event.clientY;
+
+    var ght = this.getHeightAndTop(cluster);
+    var parent_height = this.clusters.clientHeight;
+    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
+
+    if ((mousePos > initial_bottom) && (mousePos < parent_height)) {
+      // this[cluster._id._str].style.top = mousePos.toString() + "px";
+      this[cluster._id._str].style.height = ((mousePos - initial_bottom) + initial_height).toString() + "px"; 
+      this[cluster._id._str].style.zIndex = 100000;
+    }
+  }
+
+  dragBottomStart(cluster, event) {
+    var img = document.createElement("img");
+    img.src = "/transparent.png";
+    event.dataTransfer.setDragImage(img, 0, 0);
+  }
+
+  dragBottomEnd(cluster, event) {
+    console.log("dragBottomEnd");
+
+    var finalMousePos = event.clientY;
+    var ght = this.getHeightAndTop(cluster);
+    var parent_height = this.clusters.clientHeight;
+    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
+
+    var clusters_to_merge = [];
+
+    for (var i = 0; i < this.props.clusters.length; i++) {
+      var comparison_ght = this.getHeightAndTop(this.props.clusters[i]);
+
+      var comparison_height = parent_height * comparison_ght.height/100 + 13;
+      var comparison_top = parent_height * comparison_ght.top/100 - 10;
+      var comparison_value = comparison_height/2 + comparison_top;
+
+      if ((comparison_value > initial_bottom) && (comparison_value < finalMousePos)) {
+        clusters_to_merge.push(this.props.clusters[i]._id._str);
+      }
+    }
+
+    if (clusters_to_merge.length > 0) {
+      clusters_to_merge.push(cluster._id._str);
+      Meteor.call('clusters.mergeClusters', clusters_to_merge);
+    }
+    
+    var original_style = {height: "calc(" + ght.height.toString() + "% + 13px)", top: "calc(" + ght.top.toString() + "% - 10px)", zIndex: ght.zindex};
+
+    this[cluster._id._str].style.height = original_style.height;
+    this[cluster._id._str].style.top = original_style.top;
+    this[cluster._id._str].style.zIndex = original_style.zIndex;
+  }
+
+  render() {
+    console.log("re-rendering");
     var cluster_photos = this.props.photos;
 
     var timespans = this.props.clusters.map(function(e) {
-      var local_start = new moment(e.start_time.utc_timestamp).utcOffset(e.start_time.tz_offset/60);
-      var local_end = new moment(e.end_time.utc_timestamp).utcOffset(e.end_time.tz_offset/60);
-
-      var local_display_start = start_date.clone().utcOffset(e.start_time.tz_offset/60);
-
-      var cluster_height = local_end.unix() - local_start.unix();
-      cluster_height /= (60*60*24*5);
-      cluster_height *= 100;
-
-      // have to manually correct for time zones
-      var top = local_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + e.start_time.tz_offset;
-      top /= (60*60*24);
-
-      top *= 20;
-
-      var zindex = (400 - (new moment(e.start_time.utc_timestamp).dayOfYear()))*24 - new moment(e.start_time.utc_timestamp).hour();
+      var ght = this.getHeightAndTop(e);
+      var cluster_height = ght.height;
+      var top = ght.top;
+      var zindex = ght.zindex;
+      
       
       if (cluster_height > 0) {
         var event_styles = {height: "calc(" + cluster_height.toString() + "% + 13px)", top: "calc(" + top.toString() + "% - 10px)", zIndex: zindex};
@@ -118,12 +240,15 @@ export class ClusterCalendar extends Component {
 
       // }, this);
 
+      console.log(event_styles)
       if (e.photos.length > 1) {
         // This should be its own react component
         return (
           <div key={e._id._str}>
-          <div className="event" style={event_styles} onClick={() => this.goToCluster(e)}>
+          <div className="event" style={event_styles} onClick={() => this.goToCluster(e)} ref={(input) => { this[e._id._str] = input; }}>
             <Cluster cluster={e} photos={photos_in_event} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
+            <div className="cluster-top-dragger" draggable="true" onDrag={this.dragTop.bind(this, e)} onDragStart={this.dragTopStart.bind(this, e)} onDragEnd={this.dragTopEnd.bind(this, e)} ></div>
+            <div className="cluster-bottom-dragger" draggable="true" onDrag={this.dragBottom.bind(this, e)} onDragStart={this.dragBottomStart.bind(this, e)} onDragEnd={this.dragBottomEnd.bind(this, e)}></div>
           </div>
           {/* photo_markers */}
           </div>);
@@ -200,7 +325,7 @@ export class ClusterCalendar extends Component {
               </button>
             </div>
           </div>
-          <div className="weekdays">
+          <div className="weekdays" ref={(input) => this.clusters = input}>
             <div className="grid">{date_grid}</div>
             <div key="clusters">{timespans}</div>
           </div>

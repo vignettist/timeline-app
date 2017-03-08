@@ -403,6 +403,34 @@ a {
 	}
 }
 
+.event {
+	.cluster-top-dragger {
+		z-index: 10000000;
+		height: 25px;
+	    width: 100%;
+	    position: absolute;
+	    top: 0;
+	    cursor: ns-resize;
+	}
+
+	.cluster-top-dragger:hover {
+    	background-color: rgba(0,0,0,0.1);
+    }
+
+	.cluster-bottom-dragger {
+		z-index: 1000000;
+	    height: 25px;
+	    width: 100%;
+	    position: absolute;
+	    bottom: 0;
+	    cursor: ns-resize;
+	}
+
+	.cluster-bottom-dragger:hover {
+    	background-color: rgba(0,0,0,0.1);
+    }
+}
+
 .cluster-description {
 	width: 200px;
 	padding-right: 1em;

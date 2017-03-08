@@ -2,7 +2,8 @@ import { Mongo } from 'meteor/mongo';
 import { HTTP } from 'meteor/http';
 import { check } from 'meteor/check';
 import { Clusters, Stories, LogicalImages } from './photos.js';
-import { Conversations } from './conversation.js';
+import { Conversations, flatten } from './conversation.js';
+import { makeAndList } from './nlp_helper.js';
 
 function compareImage(a,b) {
 	if ('rating' in a) {
@@ -506,6 +507,98 @@ Meteor.methods({
 			new_image['datetime'] = image.datetime;
 
 			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'image', 'data': new_image}], '$position': position}}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'clusters.mergeClusters'(clusters_to_merge) {
+		check(clusters_to_merge, Array);
+
+		try {
+			console.log('mergeClusters');
+			var newCluster = {};
+
+			var cluster_or_statement = [];
+			for (var i = 0; i < clusters_to_merge.length; i++) {
+				var cluster_id = new Meteor.Collection.ObjectID(clusters_to_merge[i]);
+				cluster_or_statement.push({'_id': cluster_id});
+			}
+
+			var toMerge = Clusters.find({'$or': cluster_or_statement}).fetch();
+
+			var sortedClusters = toMerge.sort(function(a, b) {
+				return a.start_time.utc_timestamp - b.start_time.utc_timestamp;
+			});
+
+			newCluster.start_time = sortedClusters[0].start_time;
+			newCluster.start_location = sortedClusters[0].start_location;
+			newCluster.end_time = sortedClusters[sortedClusters.length-1].end_time;
+			newCluster.end_location = sortedClusters[sortedClusters.length-1].end_location;
+
+			newCluster.locations = sortedClusters[0].locations;
+			for (var i = 1; i < sortedClusters.length; i++) {
+				newCluster.locations.coordinates = newCluster.locations.coordinates.concat(sortedClusters[i].locations.coordinates);
+			}
+
+			newCluster.times = [];
+			newCluster.photos = [];
+			newCluster.faces = [];
+			for (var i = 0; i < sortedClusters.length; i++) {
+				newCluster.times = newCluster.times.concat(sortedClusters[i].times);
+				newCluster.photos = newCluster.photos.concat(sortedClusters[i].photos);
+				newCluster.faces = newCluster.faces.concat(sortedClusters[i].faces);
+			}
+
+			newCluster.people = [];
+			newCluster.places = [];
+			for (var i = 0; i < sortedClusters.length; i++) {
+				if ('people' in sortedClusters[i]) {
+					for (var j = 0; j < sortedClusters[i].people.length; j++) {
+						if (newCluster.people.map(p => p.person_id).indexOf(sortedClusters[i].people[j].person_id) < 0) {
+							newCluster.people.push(sortedClusters[i].people[j]);
+						}
+					}
+				}
+
+				if ('places' in sortedClusters[i]) {
+					for (var j = 0; j < sortedClusters[i].places.length; j++) {
+						if (newCluster.places.map(p => p.place_id).indexOf(sortedClusters[i].places[j].place_id) < 0) {
+							newCluster.places.push(sortedClusters[i].places[j]);
+						}
+					}
+				}
+			}
+
+			var locations = [];
+			for (var i = 0; i < sortedClusters.length; i++) {
+				if (locations.indexOf(sortedClusters[i].location) < 0) {
+					for (var j = 0; j < locations.length; j++) {
+						var found = false;
+						if (locations[j].indexOf(sortedClusters[i].location) >= 0) {
+							var found = true;
+						}
+					}
+
+					if (!found) {
+						locations.push(sortedClusters[i].location);
+					}
+				}
+			}
+
+			locations = flatten(locations); // because some of these are lists
+			newCluster.location = locations.reduce(makeAndList);
+			newCluster._id = new Meteor.Collection.ObjectID();
+
+			// TODO: call a python script to regenerate the common location value and the cluster boundaries/centroid
+
+			console.log("generated new cluster");
+			console.log(newCluster);
+
+			Clusters.remove({'$or': cluster_or_statement});
+			Clusters.insert(newCluster);
+
 		} catch(e) {
 			console.log(e);
 			return false;

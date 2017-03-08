@@ -147,6 +147,8 @@ function flatten(arr) {
 	}, []);
 }
 
+export {flatten};
+
 String.prototype.toTitleCase = function(){
   var smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
 
