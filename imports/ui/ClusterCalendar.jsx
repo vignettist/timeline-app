@@ -100,7 +100,7 @@ export class ClusterCalendar extends Component {
 
     var ght = this.getHeightAndTop(cluster);
     var parent_height = this.clusters.clientHeight;
-    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_top = parent_height * ght.top/100 - 10;
 
     if ((mousePos < initial_top) && (mousePos > 0)) {
@@ -120,7 +120,7 @@ export class ClusterCalendar extends Component {
     var finalMousePos = event.clientY;
     var ght = this.getHeightAndTop(cluster);
     var parent_height = this.clusters.clientHeight;
-    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_top = parent_height * ght.top/100 - 10;
 
     var clusters_to_merge = [];
@@ -154,7 +154,7 @@ export class ClusterCalendar extends Component {
 
     var ght = this.getHeightAndTop(cluster);
     var parent_height = this.clusters.clientHeight;
-    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
 
     if ((mousePos > initial_bottom) && (mousePos < parent_height)) {
@@ -176,7 +176,7 @@ export class ClusterCalendar extends Component {
     var finalMousePos = event.clientY;
     var ght = this.getHeightAndTop(cluster);
     var parent_height = this.clusters.clientHeight;
-    var initial_height = parent_height * ght.height/100 + 13;
+    var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
 
     var clusters_to_merge = [];

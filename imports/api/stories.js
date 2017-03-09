@@ -764,13 +764,19 @@ Meteor.methods({
 			newCluster.location = locations.reduce(makeAndList);
 			newCluster._id = new Meteor.Collection.ObjectID();
 
-			// TODO: call a python script to regenerate the common location value and the cluster boundaries/centroid
-
 			console.log("generated new cluster");
 			console.log(newCluster);
 
 			Clusters.remove({'$or': cluster_or_statement});
 			Clusters.insert(newCluster);
+
+			this.unblock();
+			try {
+				var result = HTTP.call("PUT", "http://localhost:3122/update/" + newCluster._id._str);
+				console.log(result);
+			} catch (e) {
+				console.log(e);
+			}
 
 		} catch(e) {
 			console.log(e);
