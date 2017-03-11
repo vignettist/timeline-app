@@ -8,6 +8,7 @@ import TimelineStrip from './TimelineStrip.jsx';
 import StoryParagraph from './StoryParagraph.jsx';
 import StoryHeading from './StoryHeading.jsx';
 import StoryImage from './StoryImage.jsx';
+import StoryMap from './StoryMap.jsx';
 
 export class Compose extends Component {
 	constructor(props) {
@@ -20,13 +21,16 @@ export class Compose extends Component {
 
 	insertNewContent(position, contentType) {
 		if (contentType === 'add-header') {
-			Meteor.call('story.insertHeader', this.props.story[0]._id, position+1);
+			Meteor.call('story.insertHeader', this.props.story[0]._id, position);
 			this.setState({'selectingImage': false});
 		} else if (contentType === 'add-text') {
-			Meteor.call('story.insertParagraph', this.props.story[0]._id, position+1);
+			Meteor.call('story.insertParagraph', this.props.story[0]._id, position);
 			this.setState({'selectingImage': false});
 		} else if (contentType === 'add-image') {
-			this.setState({'selectingImage': true, 'newImagePosition': position+1});
+			this.setState({'selectingImage': true, 'newImagePosition': position});
+		} else if (contentType === "add-map") {
+			Meteor.call('story.insertMap', this.props.story[0]._id, position);
+			this.setState({'selectingImage': false});
 		}
 	}
 
@@ -70,6 +74,8 @@ export class Compose extends Component {
 											  isTitle={true} />);
 
 			for (var i = 0; i < story.length; i++) {
+				composeContent.push(<AddButton key={"add_button_" + i + this.props.story[0]._id} callback={this.insertNewContent.bind(this, i)} />);
+
 				if (story[i].type === 'heading') {
 					composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_heading_" + i}
 													  html={story[i].data}
@@ -85,10 +91,15 @@ export class Compose extends Component {
 					composeContent.push(<StoryImage ref={"story_" + this.props.story[0]._id + "_image_" + i} 
 													uri={"http://localhost:3022/" + story[i].data.resized_uris[1280]}
 													callback={this.deleteImage.bind(this, i)} />);
+				} else if (story[i].type === 'map') {
+					composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
+												  cluster={this.props.cluster[0]}
+												  photos={this.props.photos}
+												  callback={this.deleteImage.bind(this, i)} />);
 				}
-
-				composeContent.push(<AddButton key={"add_button_" + i + this.props.story[0]._id} callback={this.insertNewContent.bind(this, i)} />);
 			}
+
+			composeContent.push(<AddButton key={"add_button_" + i + this.props.story[0]._id} callback={this.insertNewContent.bind(this, i+1)} />);
 
 			if (this.state.selectingImage) {
 				var strip = <TimelineStrip closeCallback={this.cancelPhotoInsert.bind(this)} displayRejects={false} displayRating={false} photos={this.props.photos} highlighted={[]} callback={this.photoCallback.bind(this)} />;

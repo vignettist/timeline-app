@@ -1209,7 +1209,7 @@ a {
 		width: 220px;
 
 		.add {
-			width: 220px;
+			width: 270px;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
@@ -1252,10 +1252,15 @@ a {
 		}
 	}
 
+	.compose-map {
+		width: 800px;
+		height: 450px;
+	}
+
 	.compose-image {
 		img {
 			display: block;
-			max-width: 750px;
+			max-width: 800px;
 			max-height: 600px;
 			margin-left: auto;
 			margin-right: auto;

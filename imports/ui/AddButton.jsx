@@ -31,6 +31,9 @@ export default class AddButton extends Component {
 						<button className="add-image" onClick={this.handleCallback.bind(this)}>
 							<img className="add-image" src="/icons/Picture-100.png" />
 						</button>
+						<button className="add-map" onClick={this.handleCallback.bind(this)}>
+							<img className="add-map" src="/icons/map.png" />
+						</button>
 						<button className="add-header" onClick={this.handleCallback.bind(this)}>
 							<img className="add-header" src="/icons/Header 1-100.png" />
 						</button>

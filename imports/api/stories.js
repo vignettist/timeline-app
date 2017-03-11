@@ -619,6 +619,18 @@ function markNarrativeUsed(clusterId) {
 }
 
 Meteor.methods({
+	'story.insertMap'(story_id, position) {
+		check(story_id, String);
+		check(position, Number);
+
+		try {
+			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'map'}], '$position': position}}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	'story.insertHeader'(story_id, position) {
 		check(story_id, String);
 		check(position, Number);
