@@ -51,6 +51,12 @@ export class Compose extends Component {
 	    Meteor.call('conversation.setTitle', this.props.cluster[0]._id._str, event.target.value);
 	}
 
+	updateMapBounds(position, bounds) {
+		console.log(position);
+		console.log(bounds);
+		//TODO: add a server API function to update the bounds of the map and make changes sticky
+	}
+
 	deleteImage(position) {
 		// delete the image by updating text with ""
 		Meteor.call('story.updateText', this.props.story[0]._id, position, "");
@@ -95,7 +101,8 @@ export class Compose extends Component {
 					composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
 												  cluster={this.props.cluster[0]}
 												  photos={this.props.photos}
-												  callback={this.deleteImage.bind(this, i)} />);
+												  deleteCallback={this.deleteImage.bind(this, i)} 
+												  callback={this.updateMapBounds.bind(this, i)} />);
 				}
 			}
 

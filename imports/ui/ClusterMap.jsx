@@ -148,7 +148,7 @@ export default class ClusterMap extends Component {
     }
 
     return (
-          <Map key={this.props.cluster._id + "_map"} bounds={bounds}>
+          <Map key={this.props.cluster._id + "_map"} bounds={bounds} ref={(map) => {this.map = map}} onDragEnd={('callback' in this.props) ? this.props.callback : []}>
             <TileLayer
               key = {this.props.cluster._id._str + "_tilelayer"}
               url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
@@ -173,6 +173,7 @@ ClusterMap.propTypes = {
   width: PropTypes.number,
   height: PropTypes.number,
   bounds: PropTypes.array,
-  additionalMarker: PropTypes.object
+  additionalMarker: PropTypes.object,
+  callback: PropTypes.func
 };
 
