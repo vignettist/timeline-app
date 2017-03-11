@@ -354,6 +354,7 @@ StateMachine['are_there_people'] = {
 					newState = 'determining_name?' + combineParameters(parameters);
 				} else {
 					content = 'Oh, sorry about that.';
+					Meteor.call('conversation.associateFace', {firstName: ""}, parameters.image, parameters.face, props.cluster._id._str);
 
 					delete parameters.firstName;
 					delete parameters.lastName;
@@ -363,7 +364,6 @@ StateMachine['are_there_people'] = {
 					delete parameters.highlighted;
 					newState = 'grand_central?' + combineParameters(parameters);
 
-					Meteor.call('conversation.associateFace', {firstName: ""}, parameters.image, parameters.face, props.cluster._id._str);
 				}
 
 				transitionCallback({output: {from: 'app', content: content}, newState: newState});
@@ -525,7 +525,11 @@ StateMachine['ask_before'] = {
 				}
 			}
 
-			Meteor.call('conversation.tellMeMore', text, followUp.bind(parameters));
+			if (Math.random() < 0.5) {
+				Meteor.call('conversation.tellMeMore', text, followUp.bind(parameters));
+			} else {
+				Meteor.call('conversation.askWhy', text, followUp.bind(parameters));
+			}
 		} else {
 			var start_time = moment(props.cluster.start_time.utc_timestamp).utcOffset(props.cluster.start_time.tz_offset/60);
 
@@ -737,6 +741,7 @@ StateMachine['know_well'] = {
 
 				if (response === 'no') {
 
+					parameters.count = 0;
 					var output = 'How did you get to know ' + props.cluster.people[parameters.peopleIndex].name.firstName + ' better through this experience?';
 					var nextState = 'ask_about_person?' + combineParameters(parameters);
 				} else {
@@ -745,6 +750,7 @@ StateMachine['know_well'] = {
 						Meteor.call('conversation.addNarrativeToCluster', props.cluster._id._str, {question: question, answer: text, person: props.cluster.people[parameters.peopleIndex].person_id});
 					}
 
+					parameters.count = 0;
 					var output = 'What was it like exploring ' + props.cluster.location + ' with ' + props.cluster.people[parameters.peopleIndex].name.firstName + '?';
 					var nextState = 'ask_about_person?' + combineParameters(parameters);
 				}
@@ -775,7 +781,11 @@ StateMachine['ask_about_person'] = {
 				transitionCallback({output: {from: 'app', content: response}, newState: "ask_about_person?" + combineParameters(parameters)});
 			}
 
-			Meteor.call('conversation.tellMeMore', text, askAboutPerson);
+			if (Math.random() < 0.5) {
+				Meteor.call('conversation.tellMeMore', text, askAboutPerson);
+			} else {
+				Meteor.call('conversation.askWhy', text, askAboutPerson);
+			}
 		} else {
 			var pronoun = 'them';
 
@@ -849,7 +859,11 @@ StateMachine['elaborate_place'] = {
 				}
 			}
 
-			Meteor.call('conversation.tellMeMore', text, placeFollowUp);
+			if (Math.random() < 0.5) {
+				Meteor.call('conversation.tellMeMore', text, placeFollowUp);
+			} else {
+				Meteor.call('conversation.askWhy', text, placeFollowUp);
+			}
 		} else {
 			delete parameters.highlighted;
 
