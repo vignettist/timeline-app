@@ -655,6 +655,24 @@ Meteor.methods({
 		}
 	},
 
+	'story.updateMapBounds'(story_id, position, new_bounds) {
+		check(story_id, String);
+		check(position, Number);
+		check(new_bounds, Array);
+
+		try {
+			currentStory = Stories.find({'_id': story_id}).fetch()[0];
+
+			var newContent = currentStory.content;
+			newContent[position].bounds = new_bounds;
+			Stories.update({'_id': story_id}, {'$set': {'content': newContent}});
+
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	'story.updateText'(story_id, position, new_paragraph) {
 		check(story_id, String);
 		check(position, Number);

@@ -52,9 +52,8 @@ export class Compose extends Component {
 	}
 
 	updateMapBounds(position, bounds) {
-		console.log(position);
-		console.log(bounds);
-		//TODO: add a server API function to update the bounds of the map and make changes sticky
+		// this can be finicky with regards to resetting bounds
+		Meteor.call('story.updateMapBounds', this.props.story[0]._id, position, bounds);
 	}
 
 	deleteImage(position) {
@@ -98,11 +97,20 @@ export class Compose extends Component {
 													uri={"http://localhost:3022/" + story[i].data.resized_uris[1280]}
 													callback={this.deleteImage.bind(this, i)} />);
 				} else if (story[i].type === 'map') {
-					composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
+					if ('bounds' in story[i]) {
+						composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
+												  cluster={this.props.cluster[0]}
+												  photos={this.props.photos}
+												  deleteCallback={this.deleteImage.bind(this, i)} 
+												  callback={this.updateMapBounds.bind(this, i)} 
+												  bounds={story[i].bounds} />);
+					} else {
+						composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
 												  cluster={this.props.cluster[0]}
 												  photos={this.props.photos}
 												  deleteCallback={this.deleteImage.bind(this, i)} 
 												  callback={this.updateMapBounds.bind(this, i)} />);
+					}
 				}
 			}
 

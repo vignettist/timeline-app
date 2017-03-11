@@ -147,8 +147,11 @@ export default class ClusterMap extends Component {
       var bounds = [[min_latitude, min_longitude], [max_latitude, max_longitude]]
     }
 
-    return (
-          <Map key={this.props.cluster._id + "_map"} bounds={bounds} ref={(map) => {this.map = map}} onDragEnd={('callback' in this.props) ? this.props.callback : []}>
+    // there has to be a better way to do this
+    // TODO HACK
+    if ('callback' in this.props) {
+      return (
+          <Map key={this.props.cluster._id + "_map"} bounds={bounds} ref={(map) => {this.map = map}} onMoveEnd={this.props.callback} >
             <TileLayer
               key = {this.props.cluster._id._str + "_tilelayer"}
               url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
@@ -159,7 +162,24 @@ export default class ClusterMap extends Component {
             {cluster_path}
             {('additionalMarker' in this.props) ? this.props.additionalMarker : []}
           </Map>
-        );       
+        );    
+    } else {
+      return (
+          <Map key={this.props.cluster._id + "_map"} bounds={bounds} ref={(map) => {this.map = map}}>
+            <TileLayer
+              key = {this.props.cluster._id._str + "_tilelayer"}
+              url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+              subdomains='abcd'
+            />
+           
+            {image_markers}
+            {cluster_path}
+            {('additionalMarker' in this.props) ? this.props.additionalMarker : []}
+          </Map>
+        );    
+    }
+
+       
    
   }
 }
