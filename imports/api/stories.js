@@ -756,6 +756,7 @@ Meteor.methods({
 
 			newCluster.people = [];
 			newCluster.places = [];
+			newCluster.distance = 0;
 			for (var i = 0; i < sortedClusters.length; i++) {
 				if ('people' in sortedClusters[i]) {
 					for (var j = 0; j < sortedClusters[i].people.length; j++) {
@@ -771,6 +772,10 @@ Meteor.methods({
 							newCluster.places.push(sortedClusters[i].places[j]);
 						}
 					}
+				}
+
+				if ('distance' in sortedClusters[i]) {
+					newCluster.distance += sortedClusters[i].distance;
 				}
 			}
 

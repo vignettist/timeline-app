@@ -67,7 +67,8 @@ export default class Cluster extends Component {
         <div className="cluster-description">
           {title}
           <div className={"cluster-num-photos" + ('title' in this.props.cluster ? " small" : "")} >
-            {this.props.cluster.photos.length} photos
+            {this.props.cluster.photos.length} photos<br />
+            {Math.round(this.props.cluster.distance)} kilometers
           </div>
           {location_block}
         </div>

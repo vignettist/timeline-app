@@ -619,7 +619,7 @@ StateMachine['follow_up_image'] = {
 					var output = response;
 				}
 
-				transitionCallback({output: {from: 'app', content: response}, newState: newState});
+				transitionCallback({output: {from: 'app', content: output}, newState: newState});
 			}
 		}
 
