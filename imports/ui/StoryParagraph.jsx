@@ -12,6 +12,18 @@ export default class StoryParagraph extends Component {
             dangerouslySetInnerHTML={{__html: this.props.html}}></div>;
     }
 
+    componentDidMount() {
+        if (this.props.selected) {
+            this.divWrapper.focus();
+            var range = document.createRange();
+            var sel = window.getSelection();
+            range.setStart(this.divWrapper.childNodes[0], 0);
+            range.setEnd(this.divWrapper.childNodes[0], 1);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+
     shouldComponentUpdate(nextProps) {
         return (nextProps.html !== this.divWrapper.innerHTML);
     }
@@ -33,5 +45,6 @@ export default class StoryParagraph extends Component {
 
 StoryParagraph.propTypes = {
 	html: PropTypes.string.isRequired,
-	onChange: PropTypes.func.isRequired
+	onChange: PropTypes.func.isRequired,
+    selected: PropTypes.bool
 };

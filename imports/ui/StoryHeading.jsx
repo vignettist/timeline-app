@@ -6,6 +6,17 @@ export default class StoryHeading extends Component {
 
     componentDidMount() {
         this.initialHTML = this.props.html;
+
+
+        if (this.props.selected) {
+            this.divWrapper.focus();
+            var range = document.createRange();
+            var sel = window.getSelection();
+            range.setStart(this.divWrapper.childNodes[0], 0);
+            range.setEnd(this.divWrapper.childNodes[0], this.divWrapper.childNodes[0].length);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
     }
 
 	render() {
@@ -21,6 +32,8 @@ export default class StoryHeading extends Component {
     shouldComponentUpdate(nextProps) {
         return (nextProps.html !== this.divWrapper.innerHTML);
     }
+
+
 
     emitChange() {
     	var html = this.divWrapper.innerHTML;

@@ -16,16 +16,17 @@ export class Compose extends Component {
 
         this.state = {
           selectingImage: false,
+          newInsertion: -1
         };
     }
 
 	insertNewContent(position, contentType) {
 		if (contentType === 'add-header') {
 			Meteor.call('story.insertHeader', this.props.story[0]._id, position);
-			this.setState({'selectingImage': false});
+			this.setState({'selectingImage': false, 'newInsertion': position});
 		} else if (contentType === 'add-text') {
 			Meteor.call('story.insertParagraph', this.props.story[0]._id, position);
-			this.setState({'selectingImage': false});
+			this.setState({'selectingImage': false, 'newInsertion': position});
 		} else if (contentType === 'add-image') {
 			this.setState({'selectingImage': true, 'newImagePosition': position});
 		} else if (contentType === "add-map") {
@@ -68,6 +69,8 @@ export class Compose extends Component {
 	render() {
 		var composeContent = [];
 
+		console.log(this.state.newInsertion);
+
 		if (this.props.story.length > 0) {
 			var story = this.props.story[0].content;
 
@@ -85,12 +88,14 @@ export class Compose extends Component {
 					composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_heading_" + i}
 													  html={story[i].data}
 													  onChange={this.updateText.bind(this, i)}
-													  isTitle={false}/>);
+													  isTitle={false}
+													  selected={i == this.state.newInsertion}/>);
 
 				} else if (story[i].type === 'paragraph') {
 					composeContent.push(<StoryParagraph ref={"story_" + this.props.story[0]._id + "_paragraph_" + i}
 														html={story[i].data} 
-														onChange={this.updateText.bind(this, i)} />);
+														onChange={this.updateText.bind(this, i)} 
+														selected={i == this.state.newInsertion}/>);
 					
 				} else if (story[i].type === 'image') {
 					composeContent.push(<StoryImage ref={"story_" + this.props.story[0]._id + "_image_" + i} 

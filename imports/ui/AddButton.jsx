@@ -19,6 +19,7 @@ export default class AddButton extends Component {
 
     handleCallback(event) {
     	this.props.callback(event.target.className);
+    	this.inactive();
     }
 
 	render() {

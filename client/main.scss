@@ -295,6 +295,12 @@ button {
 	.leaflet-control-zoom {
 		display: none;
 	}
+
+	.cluster {
+		.cluster-map {
+			left: 0px;
+		}
+	}
 }
 
 .event-singleton {
@@ -447,20 +453,20 @@ a {
 	justify-content: center;
 
 	.cluster-num-photos {
-		font-size: 1.25em;
+		font-size: 1em;
 	}
 
 	.cluster-title {
-		font-size: 1.25em;
+		font-size: 1.2em;
 		font-weight: bold;
 	}
 
 	.small {
-		font-size: 1.2em;
+		font-size: 1em;
 	}
 
 	.cluster-location {
-		font-size: 1.2em;
+		font-size: 1em;
 	}
 }
 
