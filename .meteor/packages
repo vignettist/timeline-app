@@ -34,3 +34,5 @@ monbro:mongodb-mapreduce-aggregation
 aldeed:simple-schema
 http
 check
+accounts-password
+accounts-ui-unstyled

@@ -28,6 +28,11 @@ export default class Controls extends Component {
 	    Meteor.call('conversation.setTitle', this.props.cluster._id._str, event.target.value);
 	}
 
+    splitCluster() {
+        Meteor.call('clusters.split', this.props.cluster._id._str);
+        this.back();
+    }
+
 	render() {
 		if (this.props.debug) {
 			var debug = [<div>{this.props.state}</div>, <button className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>];
@@ -51,7 +56,8 @@ export default class Controls extends Component {
                               html={('title' in this.props.cluster) ? this.props.cluster.title : initial_title }
                               onChange={this.handleChange.bind(this)}
                               isTitle={true} />
-        		<button className="compose-button" onClick={this.toCompose.bind(this)}><img src="/icons/Quill With Ink-100.png" /><div>{compose_verb} Writing</div></button>
+                <button className="compose-button" onClick={this.toCompose.bind(this)}><img src="/icons/Quill With Ink-100.png" /><div>{compose_verb} Writing</div></button>
+                <button className="split-button" onClick={this.splitCluster.bind(this)}><img src="/icons/split.png" /><div>Split Cluster</div></button>
         		{debug}
         	</div>
         );

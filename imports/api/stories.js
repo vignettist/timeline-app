@@ -716,6 +716,27 @@ Meteor.methods({
 		}
 	},
 
+	'clusters.split'(cluster_id) {
+		check(cluster_id, String);
+
+		try {
+			console.log("splitting cluster");
+			console.log(cluster_id);
+
+			this.unblock();
+			try {
+				var result = HTTP.call("PUT", "http://localhost:3122/split/" + cluster_id);
+				console.log(result);
+			} catch (e) {
+				console.log(e);
+			}
+
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	'clusters.mergeClusters'(clusters_to_merge) {
 		check(clusters_to_merge, Array);
 

@@ -6,26 +6,51 @@ import ClusterTimeline from '../imports/ui/ClusterTimeline.jsx';
 import ClusterOverview from '../imports/ui/ClusterOverview.jsx';
 import ClusterConversation from '../imports/ui/ClusterConversation.jsx';
 import Compose from '../imports/ui/Compose.jsx';
+import Login from '../imports/ui/Login.jsx';
 
-FlowRouter.route('/', {
+const login = FlowRouter.group({
+	triggersEnter: [
+		(context, redirect) => {
+			console.log(Meteor.userId());
+			if (Meteor.userId() || Meteor.loggingIn()) {
+				redirect('/clusters/2017-05-10');
+			}
+		}
+	]
+});
+
+const loggedIn = FlowRouter.group({
+    triggersEnter: [
+        (context, redirect) => {
+        	if ((!Meteor.loggingIn()) && (!Meteor.userId())) {
+        		route = FlowRouter.current();
+        		if (!(route.route.name == 'login')) {
+        			redirect('/login');
+        		}
+        	}
+        }
+    ]
+});
+
+loggedIn.route('/', {
   action() {
     FlowRouter.go('/clusters/2015-08-01');
   }
 });
 
-FlowRouter.route('/calendar/', {
+loggedIn.route('/calendar/', {
 	action() {
 		FlowRouter.go('/calendar/2015-01-01');
 	}
 });
 
-FlowRouter.route('/clusters/', {
+loggedIn.route('/clusters/', {
 	action() {
 		FlowRouter.go('/clusters/2015-01-01');
 	}
 });
 
-FlowRouter.route('/image/:imageId/face/:facen', {
+loggedIn.route('/image/:imageId/face/:facen', {
 	name: 'faceDebugView',
 
 	subscriptions: function(params) {
@@ -36,7 +61,7 @@ FlowRouter.route('/image/:imageId/face/:facen', {
     }
 });
 
-FlowRouter.route('/calendar/:date', {
+loggedIn.route('/calendar/:date', {
 	name: 'calendarView',
 
 	subscriptions: function(params) {
@@ -54,7 +79,7 @@ FlowRouter.route('/calendar/:date', {
 	}
 });
 
-FlowRouter.route('/clusters/:date', {
+loggedIn.route('/clusters/:date', {
 	name: 'clusterView',
 
 	subscriptions: function(params) {
@@ -71,7 +96,7 @@ FlowRouter.route('/clusters/:date', {
 	}
 });
 
-FlowRouter.route('/cluster/:clusterid', {
+loggedIn.route('/cluster/:clusterid', {
 	name: 'clusterDebugView',
 
 	subscriptions: function(params) {
@@ -84,7 +109,7 @@ FlowRouter.route('/cluster/:clusterid', {
 	}
 });
 
-FlowRouter.route('/conversation/:clusterid', {
+loggedIn.route('/conversation/:clusterid', {
 	name: 'clusterConversationView',
 
 	subscriptions: function(params) {
@@ -100,7 +125,7 @@ FlowRouter.route('/conversation/:clusterid', {
 	}
 });
 
-FlowRouter.route('/compose/:clusterid', {
+loggedIn.route('/compose/:clusterid', {
 	name: 'clusterComposeView',
 
 	subscriptions: function(params) {
@@ -117,7 +142,7 @@ FlowRouter.route('/compose/:clusterid', {
 	}
 });
 
-FlowRouter.route('/overview', {
+loggedIn.route('/overview', {
 	name: 'clusterOverview',
 
 	subscriptions: function(params) {
@@ -126,5 +151,16 @@ FlowRouter.route('/overview', {
 
 	action: function(params) {
 		mount(ClusterOverview);
+	}
+});
+
+login.route('/login', {
+	name: 'login',
+
+	susbscriptions: function(params) {
+	},
+
+	action: function(params) {
+		mount(Login);
 	}
 });
