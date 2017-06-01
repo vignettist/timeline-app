@@ -333,7 +333,8 @@ function createStory(clusterId) {
 	let cluster_id_obj = new Meteor.Collection.ObjectID(clusterId);
 
 	// narrative can be in cluster
-	let cluster = Clusters.find({'_id': cluster_id_obj}).fetch()[0];
+	console.log(this.userId);
+	let cluster = Clusters.find({'_id': cluster_id_obj, 'user_id': this.userId}).fetch()[0];
 	if ('narrative' in cluster) {
 		var cluster_narrative = cluster.narrative;
 	} else {
@@ -566,10 +567,10 @@ function createStory(clusterId) {
 	}
 
 	// insert the new story!
-	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content});
+	Stories.insert({'cluster_id': cluster_id_obj, 'content': story_content, 'user_id': this.userId});
 
 	// and update the old narrative elements
-	markNarrativeUsed(clusterId);
+	markNarrativeUsed.bind(this)(clusterId);
 }
 
 export {createStory};
@@ -585,7 +586,7 @@ function markNarrativeUsed(clusterId) {
 			markedClusterNarrative[i]['used'] = true;
 		}
 
-		Clusters.update({'_id': cluster_id_obj}, {'$set': {'narrative': markedClusterNarrative}});
+		Clusters.update({'_id': cluster_id_obj, 'user_id': this.userId}, {'$set': {'narrative': markedClusterNarrative}});
 	}
 
 	// for logical images, update each individually
@@ -601,7 +602,7 @@ function markNarrativeUsed(clusterId) {
 				newNarrative[j]['used'] = true;
 			}
 
-			LogicalImages.update({'_id': images[i]._id}, {'$set': {'narrative': newNarrative}});
+			LogicalImages.update({'_id': images[i]._id, 'user_id': this.userId}, {'$set': {'narrative': newNarrative}});
 		}
 	}
 
@@ -615,7 +616,7 @@ function markNarrativeUsed(clusterId) {
 		var conversationLength = 0;
 	}
 
-	Stories.update({'cluster_id': cluster_id_obj}, {'$set': {'conversationLengthAtLastBuild': conversationLength}});
+	Stories.update({'cluster_id': cluster_id_obj, 'user_id': this.userId}, {'$set': {'conversationLengthAtLastBuild': conversationLength}});
 }
 
 Meteor.methods({
@@ -624,7 +625,7 @@ Meteor.methods({
 		check(position, Number);
 
 		try {
-			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'map'}], '$position': position}}});
+			Stories.update({'_id': story_id, 'user_id': Meteor.userId()}, {'$push': {'content': {'$each': [{'type': 'map'}], '$position': position}}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -636,7 +637,7 @@ Meteor.methods({
 		check(position, Number);
 
 		try {
-			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'heading', 'data': 'New header'}], '$position': position}}});
+			Stories.update({'_id': story_id, 'user_id': Meteor.userId()}, {'$push': {'content': {'$each': [{'type': 'heading', 'data': 'New header'}], '$position': position}}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -648,7 +649,7 @@ Meteor.methods({
 		check(position, Number);
 
 		try {
-			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'paragraph', 'data': ['<p>New paragraph</p>']}], '$position': position}}});
+			Stories.update({'_id': story_id, 'user_id': Meteor.userId()}, {'$push': {'content': {'$each': [{'type': 'paragraph', 'data': ['<p>New paragraph</p>']}], '$position': position}}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -661,11 +662,11 @@ Meteor.methods({
 		check(new_bounds, Array);
 
 		try {
-			currentStory = Stories.find({'_id': story_id}).fetch()[0];
+			currentStory = Stories.find({'_id': story_id, 'user_id': Meteor.userId()}).fetch()[0];
 
 			var newContent = currentStory.content;
 			newContent[position].bounds = new_bounds;
-			Stories.update({'_id': story_id}, {'$set': {'content': newContent}});
+			Stories.update({'_id': story_id, 'user_id': Meteor.userId()}, {'$set': {'content': newContent}});
 
 		} catch(e) {
 			console.log(e);
@@ -679,7 +680,7 @@ Meteor.methods({
 		check(new_paragraph, String);
 
 		try {
-			currentStory = Stories.find({'_id': story_id}).fetch()[0];
+			currentStory = Stories.find({'_id': story_id, 'user_id': Meteor.userId()}).fetch()[0];
 
 			var newContent = currentStory.content;
 
@@ -689,7 +690,7 @@ Meteor.methods({
 				newContent[position].data = new_paragraph;
 			}
 
-			Stories.update({'_id': story_id}, {'$set': {'content': newContent}});
+			Stories.update({'_id': story_id, 'user_id': Meteor.userId()}, {'$set': {'content': newContent}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -702,14 +703,14 @@ Meteor.methods({
 
 		try {
 			var image_id_obj = new Meteor.Collection.ObjectID(image_id);
-			var image = LogicalImages.find({'_id': image_id_obj}, {fields: {'datetime': 1, 'resized_uris': 1}}).fetch()[0];
+			var image = LogicalImages.find({'_id': image_id_obj, 'user_id': Meteor.userId()}, {fields: {'datetime': 1, 'resized_uris': 1}}).fetch()[0];
 
 			var new_image = {};
 			new_image['image_id'] = image_id;
 			new_image['resized_uris'] = image.resized_uris;
 			new_image['datetime'] = image.datetime;
 
-			Stories.update({'_id': story_id}, {'$push': {'content': {'$each': [{'type': 'image', 'data': new_image}], '$position': position}}});
+			Stories.update({'_id': story_id, 'user_id': Meteor.userId()}, {'$push': {'content': {'$each': [{'type': 'image', 'data': new_image}], '$position': position}}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -725,7 +726,7 @@ Meteor.methods({
 
 			this.unblock();
 			try {
-				var result = HTTP.call("PUT", "http://localhost:3122/split/" + cluster_id);
+				var result = HTTP.call("GET", "http://localhost:3122/split/" + cluster_id);
 				console.log(result);
 			} catch (e) {
 				console.log(e);

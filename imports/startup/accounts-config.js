@@ -11,6 +11,5 @@ Accounts.onLogin(function () {
 });
 
 Accounts.onLogout(function () {
-	console.log('onLogout redirect');
     FlowRouter.go("/login");
 });

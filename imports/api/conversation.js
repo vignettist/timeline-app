@@ -172,7 +172,8 @@ if (Meteor.isServer) {
 	Meteor.publish('conversation_from_cluster', function getConversation(clusterId) {
 		var ndocs = Conversations.find({'cluster_id': clusterId}).fetch().length;
 		if (ndocs == 0) {
-			Conversations.insert({'cluster_id': clusterId, 'state': 'uninitialized', 'history': []});
+			var user = Meteor.users.findOne(this.userId);
+			Conversations.insert({'cluster_id': clusterId, 'user_id': this.userId, 'username': user.username, 'state': 'uninitialized', 'history': []});
 		}
 
 		return Conversations.find({'cluster_id': clusterId});
@@ -250,7 +251,7 @@ Meteor.methods({
 			output['old_state'] = current_conversation.state;
 			current_history.push(output);
 
-			Conversations.update({'_id': current_conversation._id}, {$set: {'history': current_history, 'state': newState}});
+			Conversations.update({'_id': current_conversation._id, 'user_id': Meteor.userId()}, {$set: {'history': current_history, 'state': newState}});
 		} catch (e) {
 			console.log(e);
 			return false;
@@ -264,13 +265,13 @@ Meteor.methods({
 			console.log(clusterId);
 
 			// remove conversation history
-			Conversations.update({'cluster_id': clusterId}, {$set: {'history': [], 'state': 'uninitialized'}});
+			Conversations.update({'cluster_id': clusterId, 'user_id': Meteor.userId()}, {$set: {'history': [], 'state': 'uninitialized'}});
 
 			// remove story
 			Stories.remove({'cluster_id': clusterId});
 
 			// remove cluster narrative
-			Clusters.update({'_id': clusterId}, {'$unset': {'narrative': ""}});
+			Clusters.update({'_id': clusterId, 'user_id': Meteor.userId()}, {'$unset': {'narrative': ""}});
 			cluster = Clusters.find({'_id': clusterId}).fetch()[0];
 
 			// remove image narratives
@@ -279,7 +280,7 @@ Meteor.methods({
 			});
 			images = LogicalImages.find({$or: image_id_or_statement}, {fields: {'narrative': 1}}).fetch();
 			for (var i = 0; i < images.length; i++) {
-				LogicalImages.update({'_id': images[i]._id}, {'$unset': {'narrative': "", "rating": ""}});
+				LogicalImages.update({'_id': images[i]._id, 'user_id': Meteor.userId()}, {'$unset': {'narrative': "", "rating": ""}});
 			}
 
 		} catch(e) {
@@ -335,7 +336,7 @@ Meteor.methods({
 
 		try {
 			var cluster_id_object = new Meteor.Collection.ObjectID(cluster_id);
-			Clusters.update({"_id": cluster_id_object}, {"$push": {"narrative": narrative}});
+			Clusters.update({"_id": cluster_id_object, 'user_id': Meteor.userId()}, {"$push": {"narrative": narrative}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -351,7 +352,7 @@ Meteor.methods({
 
 
 			var image_id = new Meteor.Collection.ObjectID(image);
-			LogicalImages.update({"_id": image_id}, {"$push": {"narrative": narrative}});
+			LogicalImages.update({"_id": image_id, 'user_id': Meteor.userId()}, {"$push": {"narrative": narrative}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -364,7 +365,7 @@ Meteor.methods({
 
 		try {
 			var image_id = new Meteor.Collection.ObjectID(image);
-			LogicalImages.update({"_id": image_id}, {"$set": {"rating": rating}});
+			LogicalImages.update({"_id": image_id, 'user_id': Meteor.userId()}, {"$set": {"rating": rating}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -377,7 +378,7 @@ Meteor.methods({
 
 		try {
 			var image_id = new Meteor.Collection.ObjectID(image);
-			LogicalImages.update({"_id": image_id}, {"$set": {"role": role}});
+			LogicalImages.update({"_id": image_id, 'user_id': Meteor.userId()}, {"$set": {"role": role}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -391,12 +392,24 @@ Meteor.methods({
 
 		try {
 			var place_id_obj = new Meteor.Collection.ObjectID(place_id);
-			Places.update({"_id": place_id_obj}, {"$set": {"name": name}});
+			Places.update({"_id": place_id_obj, 'user_id': Meteor.userId()}, {"$set": {"name": name}});
 		} catch(e) {
 			console.log(e);
 			return false;
 		}
 
+	},
+
+	'conversation.removePlace'(place_id) {
+		check(place_id, String);
+
+		try {
+			var place_id_obj = new Meteor.Collection.ObjectID(place_id);
+			Places.delete({"_id": place_id_obj, 'user_id': Meteor.userId()});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
 	},
 
 	'conversation.setTitle'(cluster_id, title) {
@@ -405,7 +418,7 @@ Meteor.methods({
 
 		try {
 			var cluster_id_obj = new Meteor.Collection.ObjectID(cluster_id);
-			Clusters.update({'_id': cluster_id_obj}, {'$set': {'title': title}});
+			Clusters.update({'_id': cluster_id_obj, 'user_id': Meteor.userId()}, {'$set': {'title': title}});
 		} catch(e) {
 			console.log(e);
 			return false;
@@ -438,6 +451,8 @@ Meteor.methods({
 					//  compute new mean representation
 					//  add image to image list
 					People.insert({"name": name,
+								   "user_id": Meteor.userId(),
+								   "username": Meteor.user().username,
 								   "gender": name.gender, 
 								   "images": [photo._id],
 								   "reps": [photo.openfaces[facen].rep],
@@ -477,7 +492,7 @@ Meteor.methods({
 						mean_rep[i] /= s;
 					}
 
-					People.update({"_id": person._id}, {"$set": {"reps": reps, "images": images, "mean_rep": mean_rep}});
+					People.update({"_id": person._id, 'user_id': Meteor.userId()}, {"$set": {"reps": reps, "images": images, "mean_rep": mean_rep}});
 
 				} else {
 					// TODO fix this
@@ -496,7 +511,7 @@ Meteor.methods({
 				photo.openfaces[facen]['name'] =  name;
 				photo.openfaces[facen]['person_id'] = person['_id'];
 
-				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": photo.openfaces}});
+				LogicalImages.update({"_id": photo._id, 'user_id': Meteor.userId()}, {"$set": {"openfaces": photo.openfaces}});
 
 				var cluster_id = new Meteor.Collection.ObjectID(cluster_id);
 				var cluster = Clusters.find({"_id": cluster_id}, {"people": 1}).fetch()[0];
@@ -505,10 +520,10 @@ Meteor.methods({
 					var people_in_clusters = cluster.people.map(p => p.person_id);
 
 					if (people_in_clusters.indexOf(person._id) < 0) {
-						Clusters.update({"_id": cluster_id}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
+						Clusters.update({"_id": cluster_id, 'user_id': Meteor.userId()}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
 					}
 				} else {
-					Clusters.update({"_id": cluster_id}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
+					Clusters.update({"_id": cluster_id, 'user_id': Meteor.userId()}, {"$push": {"people": {'name': name, 'person_id': person['_id']}}});
 				}
 
 				
@@ -519,7 +534,7 @@ Meteor.methods({
 				var openfaces = photo.openfaces;
 				openfaces.splice(facen, 1);
 
-				LogicalImages.update({"_id": photo._id}, {"$set": {"openfaces": openfaces}});
+				LogicalImages.update({"_id": photo._id, "user_id": Meteor.userId()}, {"$set": {"openfaces": openfaces}});
 			}
 
 		} catch (e) {

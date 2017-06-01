@@ -11,7 +11,6 @@ import Login from '../imports/ui/Login.jsx';
 const login = FlowRouter.group({
 	triggersEnter: [
 		(context, redirect) => {
-			console.log(Meteor.userId());
 			if (Meteor.userId() || Meteor.loggingIn()) {
 				redirect('/clusters/2017-05-10');
 			}
@@ -157,7 +156,9 @@ loggedIn.route('/overview', {
 login.route('/login', {
 	name: 'login',
 
-	susbscriptions: function(params) {
+	subscriptions: function(params) {
+		console.log('subscribing login view');
+		this.register('all_users', Meteor.subscribe('all_users'));
 	},
 
 	action: function(params) {

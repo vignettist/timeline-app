@@ -420,17 +420,28 @@ StateMachine['determining_place'] = {
 				});
 
 				var name = sorted_nouns[0];
-				// update the place database with the name
-				Meteor.call('conversation.namePlace', name, this.place);
 
-				// the place might have pronouns in it, (e.g. "our hotel") so we should reverse those before generating display output
-				var displayName = reversePronouns(name);
+				if (name) {
+					// update the place database with the name
+					Meteor.call('conversation.namePlace', name, this.place);
 
-				var response = chooseRandomResponse(["Ok, I'll mark those as taken at " + displayName + ".", "Great, now I know that photos there are at "+ displayName + ".", "Got it, those are from " + displayName + "."]);
+					// the place might have pronouns in it, (e.g. "our hotel") so we should reverse those before generating display output
+					var displayName = reversePronouns(name);
 
-				delete parameters.place;
-				delete parameters.highlighted;
-				transitionCallback({output: {from: 'app', content: response}, newState: 'grand_central?' + combineParameters(parameters)});
+					var response = chooseRandomResponse(["Ok, I'll mark those as taken at " + displayName + ".", "Great, now I know that photos there are at "+ displayName + ".", "Got it, those are from " + displayName + "."]);
+
+					delete parameters.place;
+					delete parameters.highlighted;
+					transitionCallback({output: {from: 'app', content: response}, newState: 'grand_central?' + combineParameters(parameters)});
+				} else {
+					Meteor.call('conversation.removePlace', this.place);
+
+					var response = "I'll remove this place from your map.";
+
+					delete parameters.place;
+					delete parameters.highlighted;
+					transitionCallback({output: {from: 'app', content: response}, newState: 'grand_central?' + combineParameters(parameters)});
+				}
 			}
 		}
 
