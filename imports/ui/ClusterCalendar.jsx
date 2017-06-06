@@ -16,7 +16,6 @@ export class ClusterCalendar extends Component {
     super(props);
 
     this.state = {
-      initialScrollPosition: window.innerHeight*0.4
     };
   }
 
@@ -49,23 +48,19 @@ export class ClusterCalendar extends Component {
     console.log(scrollTop);
 
     if (scrollTop < window.innerHeight * 0.25) {
-      this.setState({initialScrollPosition: scrollTop + window.innerHeight*0.2});
+      window.scrollTo(0, scrollTop + 0.2 * window.innerHeight);
       this.previous();
     }
 
     if (scrollTop > window.innerHeight * .55) {
-      this.setState({initialScrollPosition: scrollTop - window.innerHeight*0.2});
+      window.scrollTo(0, scrollTop - 0.2 * window.innerHeight);
       this.next();
     }
   }
 
   componentDidMount() {
     window.addEventListener('scroll', this.handleScroll.bind(this));
-    window.scrollTo(0, this.state.initialScrollPosition);
-  }
-
-  componentDidUpdate() {
-    window.scrollTo(0, this.state.initialScrollPosition);
+    window.scrollTo(0, window.innerHeight*0.4);
   }
 
   goToCluster(e) {
