@@ -803,26 +803,25 @@ Meteor.methods({
 
 			var locations = [];
 			for (var i = 0; i < sortedClusters.length; i++) {
-				if (locations.indexOf(sortedClusters[i].location) < 0) {
-					for (var j = 0; j < locations.length; j++) {
-						var found = false;
-						if (locations[j].indexOf(sortedClusters[i].location) >= 0) {
-							var found = true;
+				if (sortedClusters[i].location[0].length > 1) {
+					for (var j = 0; j < sortedClusters[i].location.length; j++) {
+						if (locations.indexOf(sortedClusters[i].location[j]) < 0) {
+							locations.push(sortedClusters[i].location[j]);
 						}
 					}
-
-					if (!found) {
+				} else {
+					if (locations.indexOf(sortedClusters[i].location) < 0) {
 						locations.push(sortedClusters[i].location);
 					}
 				}
 			}
 
-			locations = flatten(locations); // because some of these are lists
-			newCluster.location = locations.reduce(makeAndList);
+			newCluster.location = locations;
 			newCluster._id = new Meteor.Collection.ObjectID();
+			newCluster.username = sortedClusters[0].username;
+			newCluster.user_id = sortedClusters[0].user_id;
 
 			console.log("generated new cluster");
-			console.log(newCluster);
 
 			Clusters.remove({'$or': cluster_or_statement});
 			Clusters.insert(newCluster);
