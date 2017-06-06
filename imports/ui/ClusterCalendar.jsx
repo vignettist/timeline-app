@@ -16,7 +16,7 @@ export class ClusterCalendar extends Component {
     super(props);
 
     this.state = {
-      scrollCounter: 0
+      initialScrollPosition: window.innerHeight*0.4
     };
   }
 
@@ -45,29 +45,27 @@ export class ClusterCalendar extends Component {
   }
 
   handleScroll(event, template) {
-    if ((event.deltaY > 0) && (this.state.scrollCounter < 0)) {
-      this.setState({scrollCounter: 0});
-    }
+    var scrollTop = $(window).scrollTop();
+    console.log(scrollTop);
 
-    if ((event.deltaY < 0) && (this.state.scrollCounter > 0)) {
-      this.setState({scrollCounter: 0});
-    }
-
-    this.setState({scrollCounter: this.state.scrollCounter+event.deltaY});
-
-    if (this.state.scrollCounter > 1500) {
-      this.next();
-      this.setState({scrollCounter: 0});
-    }
-
-    if (this.state.scrollCounter < -1500) {
+    if (scrollTop < window.innerHeight * 0.25) {
+      this.setState({initialScrollPosition: scrollTop + window.innerHeight*0.2});
       this.previous();
-      this.setState({scrollCounter: 0});
+    }
+
+    if (scrollTop > window.innerHeight * .55) {
+      this.setState({initialScrollPosition: scrollTop - window.innerHeight*0.2});
+      this.next();
     }
   }
 
   componentDidMount() {
-    ReactDOM.findDOMNode(this).addEventListener('mousewheel', this.handleScroll.bind(this));
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+    window.scrollTo(0, this.state.initialScrollPosition);
+  }
+
+  componentDidUpdate() {
+    window.scrollTo(0, this.state.initialScrollPosition);
   }
 
   goToCluster(e) {
@@ -87,7 +85,7 @@ export class ClusterCalendar extends Component {
     cluster_height *= 100;
 
     // have to manually correct for time zones
-    var top = local_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + e.start_time.tz_offset;
+    var top = local_start.unix() - local_display_start.clone().subtract(4, 'days').unix() + e.start_time.tz_offset;
     top /= (60*60*24);
 
     top *= 20;
@@ -219,7 +217,7 @@ export class ClusterCalendar extends Component {
       
       
       if (cluster_height > 0) {
-        var event_styles = {height: "calc(" + cluster_height.toString() + "% + 13px)", top: "calc(" + top.toString() + "% - 10px)", zIndex: zindex};
+        var event_styles = {height: "calc(" + cluster_height.toString() + "vh + 13px)", top: "calc(" + top.toString() + "vh - 10px)", zIndex: zindex};
       } else {
         var event_styles = {top: "calc(" + top.toString() + "% - 50px)", zIndex: zindex};
       }
@@ -266,7 +264,7 @@ export class ClusterCalendar extends Component {
 
     var date_grid = [];
 
-    for (var i = -2; i <= 2; i++) {
+    for (var i = -4; i <= 4; i++) {
       if (i < 0) {
         var modified_date = this.props.date.clone().subtract(math.abs(i), 'days');
       } else {
@@ -274,11 +272,11 @@ export class ClusterCalendar extends Component {
       }
 
       // this should be its own react component
-      if (i == -2) {
-        var addClass = "first";
-      } else {
+      // if (i == -2) {
+      //   var addClass = "first";
+      // } else {
         var addClass = "";
-      }
+      // }
 
       date_grid.push(<DateBlock addClass={addClass} date={modified_date} />);
     }
