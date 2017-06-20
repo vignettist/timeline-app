@@ -61,14 +61,12 @@ export class ClusterCalendar extends Component {
   }
 
   componentDidMount() {
-    console.log('adding event listener');
     window.addEventListener('scroll', this.handleScroll);
     window.scrollTo(0, window.innerHeight*0.4);
   }
 
   goToCluster(e) {
-    console.log('going to cluster');
-    var r = window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('scroll', this.handleScroll);
     FlowRouter.go('/conversation/' + e._id._str);
   }
 

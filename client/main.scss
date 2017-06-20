@@ -439,8 +439,17 @@ a {
     }
 }
 
+.cluster-icons {
+	width: 30px;
+	padding-left: 1em;
+
+	img {
+		max-width: 100%;
+	}
+}
+
 .cluster-description {
-	width: 200px;
+	width: 180px;
 	padding-right: 1em;
 	margin-right: 0em;
 	margin-left: 0em;

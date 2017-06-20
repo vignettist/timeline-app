@@ -48,7 +48,16 @@ export default class Cluster extends Component {
         var title = [];
       }
 
+      var cluster_icons = [];
+
+      if ('conversation_id' in this.props.cluster) {
+        cluster_icons.push(<img src="/icons/chat.png" />);
+      }
+
       return (<div className="cluster">
+        <div className="cluster-icons">
+          { cluster_icons }
+        </div>
         <div className="cluster-description">
           {title}
           <div className={"cluster-num-photos" + ('title' in this.props.cluster ? " small" : "")} >
