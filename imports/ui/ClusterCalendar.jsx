@@ -202,7 +202,6 @@ export class ClusterCalendar extends Component {
 
   render() {
     console.log("re-rendering");
-    var cluster_photos = this.props.photos;
 
     var timespans = this.props.clusters.map(function(e) {
       var ght = this.getHeightAndTop(e);
@@ -210,17 +209,11 @@ export class ClusterCalendar extends Component {
       var top = ght.top;
       var zindex = ght.zindex;
       
-      
       if (cluster_height > 0) {
         var event_styles = {height: "calc(" + cluster_height.toString() + "vh + 13px)", top: "calc(" + top.toString() + "vh - 10px)", zIndex: zindex};
       } else {
         var event_styles = {top: "calc(" + top.toString() + "% - 50px)", zIndex: zindex};
       }
-
-      var event_photos = e.photos.map(function(x) { return x._str; });
-      var photos_in_event = cluster_photos.filter(function(p) {
-        return (event_photos.indexOf(p._id._str) >= 0);
-      });
 
       // var photo_markers = e.times.map(function(t, i) {
       //   var marker_start = new moment(t.utc_timestamp).utcOffset(t.tz_offset/60);
@@ -241,7 +234,7 @@ export class ClusterCalendar extends Component {
         return (
           <div key={e._id._str}>
           <div className="event" style={event_styles} onClick={() => this.goToCluster(e)} ref={(input) => { this[e._id._str] = input; }}>
-            <Cluster cluster={e} photos={photos_in_event} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
+            <Cluster cluster={e} photos={e.top_images} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
             <div className="cluster-top-dragger" draggable="true" onDrag={this.dragTop.bind(this, e)} onDragStart={this.dragTopStart.bind(this, e)} onDragEnd={this.dragTopEnd.bind(this, e)} ></div>
             <div className="cluster-bottom-dragger" draggable="true" onDrag={this.dragBottom.bind(this, e)} onDragStart={this.dragBottomStart.bind(this, e)} onDragEnd={this.dragBottomEnd.bind(this, e)}></div>
           </div>
@@ -250,7 +243,7 @@ export class ClusterCalendar extends Component {
       } else {
         return (<div key={e._id._str} >
           <div className="event-singleton" style={event_styles}>
-            <Cluster cluster={e} photos={photos_in_event}/>
+            <Cluster cluster={e} photos={e.top_images}/>
           </div>
           {/* photo_markers */}
           </div>)
@@ -297,7 +290,7 @@ export class ClusterCalendar extends Component {
         <div className="cluster-root">
           <div className="nav">
             <div className="top">
-              {/*<AccountsUIWrapper />*/}
+              <AccountsUIWrapper />
               <button className="up" onClick={this.previousMonth.bind(this)}>
                 <img src="/icons/doubleup.png" />
                 <span className="hide">Previous month</span>
@@ -333,14 +326,14 @@ export class ClusterCalendar extends Component {
  
 ClusterCalendar.propTypes = {
   clusters: PropTypes.array.isRequired,
-  date: PropTypes.object.isRequired,
-  photos: PropTypes.array.isRequired
+  date: PropTypes.object.isRequired
+  // photos: PropTypes.array.isRequired
 };
 
 export default createContainer(() => {
   return {
-    clusters: Clusters.find({}).fetch(),
-    photos: LogicalImages.find({}).fetch()
+    clusters: Clusters.find({}).fetch()
+    // photos: LogicalImages.find({}).fetch()
   };
 
 }, ClusterCalendar);

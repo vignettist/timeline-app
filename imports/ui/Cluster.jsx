@@ -6,28 +6,13 @@ import ClusterMap from './ClusterMap.jsx';
 export default class Cluster extends Component {
 
   render() {
-    if (this.props.cluster.photos.length > 1) {
-
-      var best_images = this.props.photos.sort(function(a,b) {
-        if ('rating' in a) {
-          var a_score = a.interest_score + a.rating - 2;
-        } else {
-          var a_score = a.interest_score;
-        }
-
-        if ('rating' in b) {
-          var b_score = b.interest_score + b.rating - 2;
-        } else {
-          var b_score = b.interest_score;
-        }
-
-        return (a_score < b_score);
-      }).slice(0,3);
+    if (this.props.photos.length > 1) {
 
       var cluster = this.props.cluster;
+      console.log(cluster['_id']);
 
-      var render_images = best_images.map(function(img,i) {
-        return(<img key={cluster._id._str + "_photo_" + i} src={'http://localhost:3022/' + img.resized_uris["320"]} />
+      var render_images = this.props.photos.map(function(img,i) {
+        return(<img key={cluster._id._str + "_photo_" + i} src={'http://localhost:3022/' + Meteor.user().username + '/' + img.resized_uris["320"]} />
           );
       });
 
@@ -82,7 +67,7 @@ export default class Cluster extends Component {
         </div>
         </div>);
     } else {
-      return <div style={{backgroundImage: 'url(http://localhost:3022/' + this.props.photos[0].resized_uris["320"] + ')'}}></div>;
+      return <div style={{backgroundImage: 'url(http://localhost:3022/' + Meteor.user().username + '/' + this.props.photos[0].resized_uris["320"] + ')'}}></div>;
     }
   }
 }
