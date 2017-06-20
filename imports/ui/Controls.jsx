@@ -12,7 +12,8 @@ if(typeof(String.prototype.trim) === "undefined")
 
 export default class Controls extends Component {
 	back() {
-		var date = new moment(this.props.cluster.start_time.utc_timestamp);
+        console.log(this.props.cluster);
+        var date = new moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
 		FlowRouter.go("/clusters/" + date.format("YYYY-MM-DD"));
 	}
 
