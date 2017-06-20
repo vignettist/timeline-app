@@ -43,7 +43,7 @@ export default class TimelineStripMessage extends Component {
 			    <img id={this.props.photo._id._str} 
 			   		 onClick={this.handleCallback.bind(this)}
 			   		 className={this.props.highlighted ? 'highlighted story-image' : this.props.unhighlighted}
-			   		 src={"http://localhost:3022/" + this.props.photo.resized_uris[640]} />
+			   		 src={"http://localhost:3022/" + Meteor.user().username + '/' + this.props.photo.resized_uris[640]} />
 
 		      	{rating}
 

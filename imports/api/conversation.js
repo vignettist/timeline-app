@@ -174,6 +174,9 @@ if (Meteor.isServer) {
 		if (ndocs == 0) {
 			var user = Meteor.users.findOne(this.userId);
 			Conversations.insert({'cluster_id': clusterId, 'user_id': this.userId, 'username': user.username, 'state': 'uninitialized', 'history': []});
+
+			var conversation = Conversations.find({'cluster_id': clusterId}).fetch()[0];
+			Clusters.update({'_id': clusterId}, {'$set': {'conversation_id': conversation['_id']}});
 		}
 
 		return Conversations.find({'cluster_id': clusterId});

@@ -15,6 +15,8 @@ export class ClusterCalendar extends Component {
   constructor(props) {
     super(props);
 
+    this.handleScroll = this.handleScroll.bind(this);
+
     this.state = {
     };
   }
@@ -59,11 +61,14 @@ export class ClusterCalendar extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll.bind(this));
+    console.log('adding event listener');
+    window.addEventListener('scroll', this.handleScroll);
     window.scrollTo(0, window.innerHeight*0.4);
   }
 
   goToCluster(e) {
+    console.log('going to cluster');
+    var r = window.removeEventListener('scroll', this.handleScroll);
     FlowRouter.go('/conversation/' + e._id._str);
   }
 
@@ -215,37 +220,22 @@ export class ClusterCalendar extends Component {
         var event_styles = {top: "calc(" + top.toString() + "% - 50px)", zIndex: zindex};
       }
 
-      // var photo_markers = e.times.map(function(t, i) {
-      //   var marker_start = new moment(t.utc_timestamp).utcOffset(t.tz_offset/60);
-
-      //   var marker_top = marker_start.unix() - local_display_start.clone().subtract(2, 'days').unix() + t.tz_offset;
-      //   marker_top /= (60*60*24);
-      //   marker_top *= 20;
-
-      //   var marker_style = {top: "calc(" + marker_top.toString() + "% - 5px)"};
-
-      //   return <div key={e._id._str + "_marker_" + i.toString()} className="photo-marker" style={marker_style}></div>
-
-      // }, this);
-
       console.log(event_styles)
       if (e.photos.length > 1) {
         // This should be its own react component
         return (
           <div key={e._id._str}>
-          <div className="event" style={event_styles} onClick={() => this.goToCluster(e)} ref={(input) => { this[e._id._str] = input; }}>
+          <div className="event" style={event_styles} onClick={() => this.goToCluster.bind(this)(e)} ref={(input) => { this[e._id._str] = input; }}>
             <Cluster cluster={e} photos={e.top_images} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
             <div className="cluster-top-dragger" draggable="true" onDrag={this.dragTop.bind(this, e)} onDragStart={this.dragTopStart.bind(this, e)} onDragEnd={this.dragTopEnd.bind(this, e)} ></div>
             <div className="cluster-bottom-dragger" draggable="true" onDrag={this.dragBottom.bind(this, e)} onDragStart={this.dragBottomStart.bind(this, e)} onDragEnd={this.dragBottomEnd.bind(this, e)}></div>
           </div>
-          {/* photo_markers */}
           </div>);
       } else {
         return (<div key={e._id._str} >
           <div className="event-singleton" style={event_styles}>
             <Cluster cluster={e} photos={e.top_images}/>
           </div>
-          {/* photo_markers */}
           </div>)
       }
     }, this);
