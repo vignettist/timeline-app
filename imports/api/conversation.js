@@ -174,21 +174,36 @@ if (Meteor.isServer) {
 		if (ndocs == 0) {
 			var user = Meteor.users.findOne(this.userId);
 			Conversations.insert({'cluster_id': clusterId, 'user_id': this.userId, 'username': user.username, 'state': 'uninitialized', 'history': []});
-
-			var conversation = Conversations.find({'cluster_id': clusterId}).fetch()[0];
-			Clusters.update({'_id': clusterId}, {'$set': {'conversation_id': conversation['_id']}});
 		}
 
 		return Conversations.find({'cluster_id': clusterId});
-	})
+	});
+
+	Meteor.publish('add_conversation_link', function addConversationLink(clusterId) {
+		
+	});
 }
 
 Meteor.methods({
+	'conversation.addConversationLink'(clusterId) {
+		check(clusterId, String);
+
+		try {
+			var clusterIdObj = new Meteor.Collection.ObjectID(clusterId);
+			var conversation = Conversations.find({'cluster_id': clusterIdObj}).fetch()[0];
+			Clusters.update({'_id': clusterIdObj}, {'$set': {'conversation_id': conversation['_id']}});
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
 	'conversation.getUnrecognizedPeople'(photos) {
 		check(photos, Array);
 
 		try {
-			var people = People.find({}).fetch();
+			var people = People.find({}).fetch({'user_id': Meteor.userId()});
+
 			var unrecognized_people = [];
 			var recognized_people = [];
 
@@ -199,7 +214,6 @@ Meteor.methods({
 						
 								if ('name' in photos[i].openfaces[j]) {
 									recognized_people.push({image: photos[i]._id._str, face: j, name: photos[i].openfaces[j].name});
-									console.log('face has been identified already: ' + photos[i].openfaces[j].name);
 								} else {
 									// attempt to recognize person by comparison to person database
 
@@ -274,7 +288,7 @@ Meteor.methods({
 			Stories.remove({'cluster_id': clusterId});
 
 			// remove cluster narrative
-			Clusters.update({'_id': clusterId, 'user_id': Meteor.userId()}, {'$unset': {'narrative': ""}});
+			Clusters.update({'_id': clusterId, 'user_id': Meteor.userId()}, {'$unset': {'narrative': "", 'conversation_id': ""}});
 			cluster = Clusters.find({'_id': clusterId}).fetch()[0];
 
 			// remove image narratives

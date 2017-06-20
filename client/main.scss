@@ -980,6 +980,27 @@ a {
 		margin-top: 4px;
 		box-shadow: $short-shadow;
 	}
+
+	button.disabled {
+		background-color: #e8e8e8;
+		box-shadow: $no-shadow;
+		border: 1px solid gray;
+	}
+
+	button.disabled:hover {
+		background-color: #e8e8e8;
+		box-shadow: $no-shadow;
+		color: black;
+
+		img {
+			filter: invert(0%);
+		}
+	}
+
+	button.disabled:active {
+		margin-top: 0px;
+		box-shadow: $no-shadow;
+	}
 }
 
 .cluster-conversation-wrapper {

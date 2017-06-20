@@ -69,6 +69,13 @@ export class ClusterConversation extends Component {
 
     // some transitions are triggered by input
     stateTransition(text, transitionCallback) {
+      console.log('stateTransition');
+      console.log(this.props);
+      if (!('conversation_id' in this.props.cluster)) {
+        console.log('adding conversation link');
+        Meteor.call('conversation.addConversationLink', this.props.cluster._id._str);
+      }
+
       var split_state = splitParameters(this.props.conversation.state);
 
       StateMachine[split_state.state].stateTransition(transitionCallback, text, this.props, split_state.parameters);
@@ -194,7 +201,7 @@ export class ClusterConversation extends Component {
       return (
           <div className="cluster-conversation-wrapper">
             <div className="cluster-conversation-header">
-              <Controls debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
+              <Controls allowSplit={!('conversation_id' in this.props.cluster)} debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
             </div>
 
             <div className="cluster-conversation-lower">

@@ -50,6 +50,14 @@ export default class Controls extends Component {
         var corrected_time = moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
         var initial_title = corrected_time.format('MMMM Do YYYY');
 
+        var split_button = [];
+
+        if (this.props.allowSplit) {
+            var split_button = <button className="split-button" onClick={this.splitCluster.bind(this)}><img src="/icons/split.png" /><div>Split Cluster</div></button>;
+        } else {
+            var split_button = <button className="split-button disabled"><img src="/icons/split.png" /><div>Split Cluster</div></button>
+        }
+
 		return(
 			<div className="cluster-conversation-controls">
         		<button className="back-button" onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
@@ -58,7 +66,7 @@ export default class Controls extends Component {
                               onChange={this.handleChange.bind(this)}
                               isTitle={true} />
                 <button className="compose-button" onClick={this.toCompose.bind(this)}><img src="/icons/Quill With Ink-100.png" /><div>{compose_verb} Writing</div></button>
-                <button className="split-button" onClick={this.splitCluster.bind(this)}><img src="/icons/split.png" /><div>Split Cluster</div></button>
+                {split_button}
         		{debug}
         	</div>
         );
@@ -69,5 +77,6 @@ Controls.propTypes = {
 	debug: PropTypes.bool.isRequired,
 	cluster: PropTypes.object.isRequired,
 	state: PropTypes.string,
-    storyStarted: PropTypes.bool.isRequired
+    storyStarted: PropTypes.bool.isRequired,
+    allowSplit: PropTypes.bool.isRequired
 };
