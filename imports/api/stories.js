@@ -826,10 +826,8 @@ Meteor.methods({
 			Clusters.remove({'$or': cluster_or_statement});
 			Clusters.insert(newCluster);
 
-			this.unblock();
 			try {
-				var result = HTTP.call("PUT", "http://localhost:3122/update/" + newCluster._id._str);
-				console.log(result);
+				HTTP.call("PUT", "http://localhost:3122/generate/" + newCluster._id._str);
 			} catch (e) {
 				console.log(e);
 			}

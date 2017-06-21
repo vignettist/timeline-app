@@ -9,13 +9,14 @@ import AccountsUIWrapper from './AccountsUIWrapper.jsx';
 
 var DatePicker = require('react-datepicker');
 
-
 export class ClusterCalendar extends Component {
 
   constructor(props) {
     super(props);
 
     this.handleScroll = this.handleScroll.bind(this);
+    this.initial_mouse_pos = 0;
+    this.initial_cluster_style = [];
 
     this.state = {
     };
@@ -94,30 +95,33 @@ export class ClusterCalendar extends Component {
   }
 
   dragTop(cluster, event) {
-    var mousePos = event.clientY;
+    var mousePos = event.clientY + $(window).scrollTop();
+    var mouseDiff = mousePos - this.initial_mouse_pos;
 
     var ght = this.getHeightAndTop(cluster);
-    var parent_height = this.clusters.clientHeight;
-    var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
-    var initial_top = parent_height * ght.top/100 - 10;
+    // console.log(ght);
+    // var parent_height = this.clusters.clientHeight;
+    var parent_height = $(window).height();
+    var initial_top = parent_height * ght.top/100 - 10 + $(window).scrollTop();
 
     if ((mousePos < initial_top) && (mousePos > 0)) {
-      this[cluster._id._str].style.top = mousePos.toString() + "px";
-      this[cluster._id._str].style.height = ((initial_top - mousePos) + initial_height).toString() + "px"; 
+      this[cluster._id._str].style.top = "calc(" + ght.top.toString() + "vh - 10px + " + (mouseDiff).toString() + "px)";
+      this[cluster._id._str].style.height = "calc(" + ght.height.toString() + "vh + 13px + " + (-mouseDiff).toString() + "px)"; 
       this[cluster._id._str].style.zIndex = 100000;
     }
   }
 
   dragTopStart(cluster, event) {
+    this.initial_mouse_pos = event.clientY + $(window).scrollTop();
     var img = document.createElement("img");
     img.src = "/transparent.png";
     event.dataTransfer.setDragImage(img, 0, 0);
   }
 
   dragTopEnd(cluster, event) {
-    var finalMousePos = event.clientY;
+    var finalMousePos = event.clientY + $(window).scrollTop();
     var ght = this.getHeightAndTop(cluster);
-    var parent_height = this.clusters.clientHeight;
+    var parent_height = $(window).height();
     var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_top = parent_height * ght.top/100 - 10;
 
@@ -140,29 +144,29 @@ export class ClusterCalendar extends Component {
       Meteor.call('clusters.mergeClusters', clusters_to_merge);
     }
     
-    var original_style = {height: "calc(" + ght.height.toString() + "% + 13px)", top: "calc(" + ght.top.toString() + "% - 10px)", zIndex: ght.zindex};
-
-    this[cluster._id._str].style.height = original_style.height;
-    this[cluster._id._str].style.top = original_style.top;
-    this[cluster._id._str].style.zIndex = original_style.zIndex;
+    this[cluster._id._str].style.top = "calc(" + ght.top.toString() + "vh - 10px)";
+    this[cluster._id._str].style.height = "calc(" + ght.height.toString() + "vh + 13px)"; 
+    this[cluster._id._str].style.zIndex = ght.zindex;
   }
 
   dragBottom(cluster, event) {
-    var mousePos = event.clientY;
+    var mousePos = event.clientY + $(window).scrollTop();
+    var mouseDiff = mousePos - this.initial_mouse_pos;
 
     var ght = this.getHeightAndTop(cluster);
-    var parent_height = this.clusters.clientHeight;
+    var parent_height = $(window).height();
     var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
 
-    if ((mousePos > initial_bottom) && (mousePos < parent_height)) {
-      // this[cluster._id._str].style.top = mousePos.toString() + "px";
-      this[cluster._id._str].style.height = ((mousePos - initial_bottom) + initial_height).toString() + "px"; 
+    // if ((mousePos > initial_bottom) && (mousePos < (parent_height + $(window).scrollTop))) {
+    if (mouseDiff > 0) {
+      this[cluster._id._str].style.height = "calc(" + ght.height.toString() + "vh + 13px + " + (mouseDiff).toString() + "px)"; 
       this[cluster._id._str].style.zIndex = 100000;
     }
   }
 
   dragBottomStart(cluster, event) {
+    this.initial_mouse_pos = event.clientY + $(window).scrollTop();
     var img = document.createElement("img");
     img.src = "/transparent.png";
     event.dataTransfer.setDragImage(img, 0, 0);
@@ -171,9 +175,9 @@ export class ClusterCalendar extends Component {
   dragBottomEnd(cluster, event) {
     console.log("dragBottomEnd");
 
-    var finalMousePos = event.clientY;
+    var finalMousePos = event.clientY + $(window).scrollTop();
     var ght = this.getHeightAndTop(cluster);
-    var parent_height = this.clusters.clientHeight;
+    var parent_height = $(window).height();
     var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
 
@@ -196,11 +200,9 @@ export class ClusterCalendar extends Component {
       Meteor.call('clusters.mergeClusters', clusters_to_merge);
     }
     
-    var original_style = {height: "calc(" + ght.height.toString() + "% + 13px)", top: "calc(" + ght.top.toString() + "% - 10px)", zIndex: ght.zindex};
-
-    this[cluster._id._str].style.height = original_style.height;
-    this[cluster._id._str].style.top = original_style.top;
-    this[cluster._id._str].style.zIndex = original_style.zIndex;
+    this[cluster._id._str].style.top = "calc(" + ght.top.toString() + "vh - 10px)";
+    this[cluster._id._str].style.height = "calc(" + ght.height.toString() + "vh + 13px)"; 
+    this[cluster._id._str].style.zIndex = ght.zindex;
   }
 
   render() {

@@ -6,10 +6,11 @@ import ClusterMap from './ClusterMap.jsx';
 export default class Cluster extends Component {
 
   render() {
+          console.log(this.props.cluster['_id']);
+
     if (this.props.photos.length > 1) {
 
       var cluster = this.props.cluster;
-      console.log(cluster['_id']);
 
       var render_images = this.props.photos.map(function(img,i) {
         return(<img key={cluster._id._str + "_photo_" + i} src={'http://localhost:3022/' + Meteor.user().username + '/' + img.resized_uris["320"]} />
