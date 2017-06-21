@@ -222,11 +222,17 @@ if (Meteor.isServer) {
 		let id_or_statement = [];
 		let places_ids = cluster[0].places;
 
-		for (var j = 0; j < places_ids.length; j++) {
-			id_or_statement.push({'_id': places_ids[j].place_id});
-		}
+		if ('places' in cluster[0]) {
+			if (places_ids.length > 0) {
+				for (var j = 0; j < places_ids.length; j++) {
+					id_or_statement.push({'_id': places_ids[j].place_id});
+				}
 
-		return Places.find({$or: id_or_statement, 'user_id': this.userId});
+				return Places.find({$or: id_or_statement, 'user_id': this.userId});
+			}
+		}
+		
+		return Places.find({'_id': 'RETURN NO RESULTS'});
 	});
 
 	Meteor.publish('single_cluster_story', function singleClusterStory(clusterId) {

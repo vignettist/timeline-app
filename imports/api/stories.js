@@ -816,21 +816,72 @@ Meteor.methods({
 				}
 			}
 
+			newCluster.narrative = [];
+			for (var i = 0; i < sortedClusters.length; i++) {
+				if ('narrative' in sortedClusters[i]) {
+					newCluster.narrative = newCluster.narrative.concat(sortedClusters[i].narrative);
+				}
+			}
+
 			newCluster.location = locations;
 			newCluster._id = new Meteor.Collection.ObjectID();
 			newCluster.username = sortedClusters[0].username;
 			newCluster.user_id = sortedClusters[0].user_id;
 
-			console.log("generated new cluster");
+			// merge the conversations
 
+			console.log("merging conversations");
+
+			var conversations = [];
+			var lead_conversation = {};
+			var lead_conversation_score = 0;
+			var lead_conversation_cluster_id = 0;
+
+			for (var i = 0; i < clusters_to_merge.length; i++) {
+				var cluster_id = new Meteor.Collection.ObjectID(clusters_to_merge[i]);
+				var conversation = Conversations.find({'cluster_id': cluster_id}).fetch();
+				console.log(conversation);
+
+				if (conversation.length > 0) {
+					if (conversation[0].history.length > 4) {
+						if (conversation[0].history.length > lead_conversation_score) {
+							lead_conversation = conversation[0];
+							lead_conversation_score = conversation[0].history.length;
+							lead_conversation_cluster_id = conversation[0].cluster_id;
+						}
+						conversations.push(conversation[0]);
+					}
+				}
+			}
+
+			if ('_id' in lead_conversation) {
+				for (var i = 0; i < conversations.length; i++) {
+					console.log(conversations[i]._id);
+					console.log(lead_conversation._id);
+					if (conversations[i]._id != lead_conversation._id) {
+						console.log('concatenating conversation');
+						lead_conversation.history = conversations[i].history.concat(lead_conversation.history);
+						Conversations.remove({'_id': conversations[i]._id});
+					}
+				}
+			}
+
+			newCluster._id = lead_conversation_cluster_id;
+			newCluster.conversation_id = lead_conversation._id;
+
+			console.log(lead_conversation);
 			Clusters.remove({'$or': cluster_or_statement});
 			Clusters.insert(newCluster);
+			Conversations.update({'_id': lead_conversation._id}, {'$set': lead_conversation});
 
-			try {
-				HTTP.call("PUT", "http://localhost:3122/generate/" + newCluster._id._str);
-			} catch (e) {
-				console.log(e);
-			}
+			console.log("generated new cluster");
+
+
+			HTTP.call("PUT", "http://localhost:3122/generate/" + newCluster._id._str, function(err, result) {
+				if (err) {
+					console.log(err);
+				}
+			});
 
 		} catch(e) {
 			console.log(e);

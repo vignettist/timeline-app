@@ -99,7 +99,7 @@ export class Compose extends Component {
 					
 				} else if (story[i].type === 'image') {
 					composeContent.push(<StoryImage ref={"story_" + this.props.story[0]._id + "_image_" + i} 
-													uri={"http://localhost:3022/" + story[i].data.resized_uris[1280]}
+													uri={"http://localhost:3022/" + Meteor.user().username + '/' + story[i].data.resized_uris[1280]}
 													callback={this.deleteImage.bind(this, i)} />);
 				} else if (story[i].type === 'map') {
 					if ('bounds' in story[i]) {
