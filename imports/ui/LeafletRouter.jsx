@@ -8,6 +8,16 @@ export default class LeafletRouter extends MapLayer {
     const {map, from, to, profile, color, opacity} = this.props;
     console.log(Meteor.settings.public.mapbox);
 
+    var router = L.Routing.mapbox(Meteor.settings.public.mapbox, 
+        {profile: profile,
+         routingOptions: {
+          alternatives: false,
+          steps: true }
+      });
+
+      console.log(router.options);
+      console.log(router);
+
     this.leafletElement = L.Routing.control({
       position: 'topleft',
 
@@ -19,7 +29,8 @@ export default class LeafletRouter extends MapLayer {
       plan: new L.Routing.Plan([L.latLng(from[0], from[1]),L.latLng(to[0], to[1])],
          {addWaypoints: false, 
           draggableWaypoints: false,
-          createMarker: function(i, wp) {}}),
+          createMarker: function(i, wp) {}
+        }),
 
       lineOptions: {
         addWaypoints: false, 
@@ -30,12 +41,7 @@ export default class LeafletRouter extends MapLayer {
         missingRouteStyles: [{color: 'black', opacity: opacity, weight: 7}, {color: color, opacity: opacity, weight: 6}, {color: 'white', opacity: opacity, weight: 1}]
       },
 
-      router: (L.Routing.mapbox(Meteor.settings.public.mapbox, 
-        {profile: profile,
-         requestParameters: {
-          alternatives: false,
-          steps: true }
-      })),
+      router: router,
 
       fitSelectedRoutes: false
     }).addTo(map);
