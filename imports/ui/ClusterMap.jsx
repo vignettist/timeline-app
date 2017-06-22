@@ -58,7 +58,7 @@ export default class ClusterMap extends Component {
 
       var distance = Math.sqrt(Math.pow(reversed_coords[i][0] - start_coords[0], 2) + Math.pow(reversed_coords[i][1] - start_coords[1], 2));
 
-      var opacity = Math.min(1.0, Math.pow(0.01/distance, 0.5));
+      var opacity = Math.min(1.0, Math.max(0.4, Math.pow(0.01/distance, 0.5)));
 
       if (distance > 0.005) {
         if (distance > 0.02) {

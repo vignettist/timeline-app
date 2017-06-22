@@ -6,6 +6,7 @@ export default class LeafletRouter extends MapLayer {
   componentWillMount() {
     super.componentWillMount();
     const {map, from, to, profile, color, opacity} = this.props;
+    console.log(Meteor.settings.public.mapbox);
 
     this.leafletElement = L.Routing.control({
       position: 'topleft',
@@ -31,10 +32,10 @@ export default class LeafletRouter extends MapLayer {
 
       router: (L.Routing.mapbox(Meteor.settings.public.mapbox, 
         {profile: profile,
-         routingOptions: {
+         requestParameters: {
           alternatives: false,
-          steps: true
-        }})),
+          steps: true }
+      })),
 
       fitSelectedRoutes: false
     }).addTo(map);
