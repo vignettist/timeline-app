@@ -48,7 +48,6 @@ export class ClusterCalendar extends Component {
 
   handleScroll(event, template) {
     var scrollTop = $(window).scrollTop();
-    console.log(scrollTop);
 
     if (scrollTop < window.innerHeight * 0.25) {
       window.scrollTo(0, scrollTop + 0.2 * window.innerHeight);
@@ -207,6 +206,7 @@ export class ClusterCalendar extends Component {
 
   render() {
     console.log("re-rendering");
+    console.log(this.props.clusters);
 
     var timespans = this.props.clusters.map(function(e) {
       var ght = this.getHeightAndTop(e);
@@ -280,7 +280,7 @@ export class ClusterCalendar extends Component {
         <div className="cluster-root">
           <div className="nav">
             <div className="top">
-              <AccountsUIWrapper />
+              {/*<AccountsUIWrapper />*/}
               <button className="up" onClick={this.previousMonth.bind(this)}>
                 <img src="/icons/doubleup.png" />
                 <span className="hide">Previous month</span>

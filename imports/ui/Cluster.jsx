@@ -6,8 +6,6 @@ import ClusterMap from './ClusterMap.jsx';
 export default class Cluster extends Component {
 
   render() {
-          console.log(this.props.cluster['_id']);
-
     if (this.props.photos.length > 1) {
 
       var cluster = this.props.cluster;
