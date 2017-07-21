@@ -1415,6 +1415,7 @@ a {
 	margin-left: auto;
 	margin-right: auto;
 	border: 1px solid black;
+	cursor: pointer;
 }
 
 .back-button {
@@ -1473,7 +1474,7 @@ a {
 	width: 100%;
 	position: fixed;
 	top: -34px;
-	z-index: 10000;
+	z-index: 1000000;
 	transition: $short-transition;
 }
 
