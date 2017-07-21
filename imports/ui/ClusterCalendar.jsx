@@ -280,7 +280,7 @@ export class ClusterCalendar extends Component {
         <div className="cluster-root">
           <div className="nav">
             <div className="top">
-              {/*<AccountsUIWrapper />*/}
+              <AccountsUIWrapper />
               <button className="up" onClick={this.previousMonth.bind(this)}>
                 <img src="/icons/doubleup.png" />
                 <span className="hide">Previous month</span>

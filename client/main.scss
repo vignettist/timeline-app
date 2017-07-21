@@ -1360,3 +1360,109 @@ a {
 .loading {
 	padding-bottom: 1em;
 }
+
+// login page
+
+.login-page {
+	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: white;
+	padding: 1em;
+	margin-top: 1em;
+	border-radius: 1em;
+	box-shadow: $short-shadow;
+
+	h2 {
+		text-align: center;
+		font-size: 36px;
+		margin-top: 0em;
+	}
+
+	h3 {
+		font-size: 24px;
+		font-weight: 100;
+		font-size: 24px;
+		text-align: center;
+		margin-top: -1em;
+	}
+
+	form {
+		input {
+			display: block;
+			width: 100%;
+			margin-top: 0.5em;
+			margin-bottom: 0.5em;
+			font-size: 18px;
+		}
+
+		#login-button {
+			font-size: 24px;
+			box-shadow: $short-shadow;
+		}
+	}
+}
+
+.user-box, .back-button {
+	margin: 1em;
+	padding: 1em;
+	background-color: white;
+	width: 200px;
+	font-size: 24px;
+	border-radius: 0.5em;
+	box-shadow: $short-shadow;
+	transition: $short-transition;
+	margin-left: auto;
+	margin-right: auto;
+	border: 1px solid black;
+}
+
+.back-button {
+	padding: 1em;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+}
+
+.user-box:hover, .back-button:hover {
+	box-shadow: $medium-shadow;
+	background-color: $selected-blue;
+	color: white;
+}
+
+.new {
+	display: flex;
+	align-items: center;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+
+	img {
+		max-height: 50px;
+		margin-right: 0.5em;
+	}
+}
+
+.back-button:hover img, .user-box:hover img {
+	filter: invert(100%);
+}
+
+.selected {
+	background-color: $selected-blue;
+	color: white;
+	text-align: center;
+}
+
+.selected:hover {
+	box-shadow: $short-shadow;
+}
+
+.failed {
+	background-color: red;
+	transition: $short-transition;
+}
+
+.failed:hover {
+	background-color: red;
+}
