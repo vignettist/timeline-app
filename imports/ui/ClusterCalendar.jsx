@@ -5,7 +5,7 @@ import Cluster from './Cluster.jsx';
 import ReactDOM from 'react-dom';
 import DateBlock from './DateBlock.jsx';
 import AccountsUIWrapper from './AccountsUIWrapper.jsx';
-
+import UserBar from './UserBar.jsx';
 
 var DatePicker = require('react-datepicker');
 
@@ -278,9 +278,9 @@ export class ClusterCalendar extends Component {
 
     return (
         <div className="cluster-root">
+          <UserBar />
           <div className="nav">
             <div className="top">
-              <AccountsUIWrapper />
               <button className="up" onClick={this.previousMonth.bind(this)}>
                 <img src="/icons/doubleup.png" />
                 <span className="hide">Previous month</span>
