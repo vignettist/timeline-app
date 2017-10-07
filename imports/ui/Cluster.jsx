@@ -50,7 +50,7 @@ export default class Cluster extends Component {
       var cluster_icons = [];
 
       if ('conversation_id' in this.props.cluster) {
-        cluster_icons.push(<img src="/icons/chat.png" />);
+        cluster_icons.push(<img key={"chat_icon_" + this.props.cluster.conversation_id} src="/icons/chat.png" />);
       }
 
       return (<div className="cluster">

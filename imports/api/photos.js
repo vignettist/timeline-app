@@ -171,6 +171,19 @@ if (Meteor.isServer) {
 		return Stories.find({'user_id': this.userId});
 	});
 
+	Meteor.publish('clusters_with_stories', function clustersWithStories() {
+		var stories = Stories.find({'user_id': this.userId}).fetch();
+		var or_query = [];
+
+		for (var i = 0; i < stories.length; i++) {
+			or_query.push({'_id': stories[i].cluster_id});
+		}
+
+		console.log(or_query);
+
+		return Clusters.find({$or: or_query}, {fields: {'start_time': 1, 'end_time': 1, 'location': 1, 'title': 1, 'people': 1, 'places': 1, 'top_images': 1}});
+	});
+
 	Meteor.publish('clusters', function clustersByDate(startDate, endDate) {
 		console.log(this.userId);
 		return Clusters.find({$and: [{'start_time.utc_timestamp': { $lt: endDate}}, {'end_time.utc_timestamp': {$gte: startDate}}], 'user_id': this.userId});

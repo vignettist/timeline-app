@@ -9,6 +9,7 @@ import StoryParagraph from './StoryParagraph.jsx';
 import StoryHeading from './StoryHeading.jsx';
 import StoryImage from './StoryImage.jsx';
 import StoryMap from './StoryMap.jsx';
+import UserBar from './UserBar.jsx';
 
 export class Compose extends Component {
 	constructor(props) {
@@ -69,14 +70,13 @@ export class Compose extends Component {
 	render() {
 		var composeContent = [];
 
-		console.log(this.state.newInsertion);
-
-		if (this.props.story.length > 0) {
+		if (FlowRouter.subsReady()) {
 			var story = this.props.story[0].content;
 
 			var corrected_time = moment(this.props.cluster[0].start_time.utc_timestamp).utcOffset(this.props.cluster[0].start_time.tz_offset/60);
 			var initial_title = corrected_time.format('MMMM Do YYYY');
 			composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_title"}
+											  key={"story_" + this.props.story[0]._id + "_title"}
 										      html={('title' in this.props.cluster[0]) ? this.props.cluster[0].title : initial_title }
 											  onChange={this.updateTitle.bind(this)}
 											  isTitle={true} />);
@@ -86,6 +86,7 @@ export class Compose extends Component {
 
 				if (story[i].type === 'heading') {
 					composeContent.push(<StoryHeading ref={"story_" + this.props.story[0]._id + "_heading_" + i}
+													  key={"story_" + this.props.story[0]._id + "_heading_" + i}
 													  html={story[i].data}
 													  onChange={this.updateText.bind(this, i)}
 													  isTitle={false}
@@ -93,17 +94,20 @@ export class Compose extends Component {
 
 				} else if (story[i].type === 'paragraph') {
 					composeContent.push(<StoryParagraph ref={"story_" + this.props.story[0]._id + "_paragraph_" + i}
+														key={"story_" + this.props.story[0]._id + "_paragraph_" + i}
 														html={story[i].data} 
 														onChange={this.updateText.bind(this, i)} 
 														selected={i == this.state.newInsertion}/>);
 					
 				} else if (story[i].type === 'image') {
 					composeContent.push(<StoryImage ref={"story_" + this.props.story[0]._id + "_image_" + i} 
+													key={"story_" + this.props.story[0]._id + "_image_" + i} 
 													uri={"http://localhost:3022/" + Meteor.user().username + '/' + story[i].data.resized_uris[1280]}
 													callback={this.deleteImage.bind(this, i)} />);
 				} else if (story[i].type === 'map') {
 					if ('bounds' in story[i]) {
 						composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
+												  key={"story_" + this.props.story[0]._id + "_map_" + i}
 												  cluster={this.props.cluster[0]}
 												  photos={this.props.photos}
 												  deleteCallback={this.deleteImage.bind(this, i)} 
@@ -111,6 +115,7 @@ export class Compose extends Component {
 												  bounds={story[i].bounds} />);
 					} else {
 						composeContent.push(<StoryMap ref={"story_" + this.props.story[0]._id + "_map_" + i}
+												  key={"story_" + this.props.story[0]._id + "_map_" + i}
 												  cluster={this.props.cluster[0]}
 												  photos={this.props.photos}
 												  deleteCallback={this.deleteImage.bind(this, i)} 
@@ -128,6 +133,7 @@ export class Compose extends Component {
 			}
 
 			return  <div className="compose-wrapper">
+						<UserBar />
 						<button className={"back-button" + (this.state.selectingImage ? " picker-active" : "")} onClick={this.back.bind(this)}><img src="/icons/back.png" /><div>Back</div></button>
 						{strip}
 						<div className={"compose-story" + (this.state.selectingImage ? " picker-active" : "")}>
@@ -136,6 +142,7 @@ export class Compose extends Component {
 					</div>
 		} else {
 			return <div className="compose-wrapper">
+					<UserBar />
 					<div className="compose-story">
 					<div className="heading loading"><h1>Generating story...</h1></div>
 					</div>
@@ -145,11 +152,11 @@ export class Compose extends Component {
 }
 
 Compose.propTypes = {
-  conversation: PropTypes.object.isRequired,
-  cluster: PropTypes.object.isRequired,
-  photos: PropTypes.object.isRequired,
+  conversation: PropTypes.array.isRequired,
+  cluster: PropTypes.array.isRequired,
+  photos: PropTypes.array.isRequired,
   places: PropTypes.array.isRequired,
-  story: PropTypes.object.isRequired
+  story: PropTypes.array.isRequired
 };
 
 export default createContainer(() => {

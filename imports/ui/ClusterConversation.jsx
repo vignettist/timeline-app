@@ -10,6 +10,7 @@ import PlaceMessage from './Conversation/PlaceMessage.jsx';
 import TimelineStrip from './TimelineStrip.jsx';
 import Controls from './Controls.jsx';
 import {StateMachine, splitParameters, combineParameters} from './Conversation/StateMachine.js';
+import UserBar from './UserBar.jsx';
 
 const DELAY_TIME = 100;
 
@@ -42,14 +43,15 @@ export class ClusterConversation extends Component {
         var old_length = this.props.conversation.history.length;
       }
 
-      if (newProps.conversation.history.length != old_length) {
-        if (newProps.conversation.history.length > 0) {
-          if (newProps.conversation.history[newProps.conversation.history.length-1].from.slice(0,3) == 'app') {
-            this.setState({pending: false});
+      if (newProps.conversation) {
+        if (newProps.conversation.history.length != old_length) {
+          if (newProps.conversation.history.length > 0) {
+            if (newProps.conversation.history[newProps.conversation.history.length-1].from.slice(0,3) == 'app') {
+              this.setState({pending: false});
+            }
           }
         }
-      }
-      
+      }      
     }
 
     componentDidUpdate() {
@@ -127,15 +129,15 @@ export class ClusterConversation extends Component {
       for (var i = this.props.conversation.history.length; i >= 0; i--) {
         if (i == this.props.conversation.history.length) {
           if (this.state.pending) {
-            conversation = [<TextMessage idTag="computer-side" content="..." />, <div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>];
+            conversation = [<TextMessage key={"conversation_" + i} idTag="computer-side" content="..." />, <div key="computer-avatar" className="computer-avatar"><img src="/icons/Computer-100.png" /></div>];
             app_side = false;
           } else {
             if (split_state.parameters.input == 'photo') {
-              conversation = [<TextMessage idTag="human-side" content="Select a photo &#8594;" />];
+              conversation = [<TextMessage key={"conversation_" + i} idTag="human-side" content="Select a photo &#8594;" />];
             } else if (split_state.parameters.input == 'none') { 
               conversation = [];
             } else {
-              conversation = [<TextInputMessage ref="textInput" onSubmit={this.handleSubmit.bind(this)} />, <div className="user-avatar"><img src="/icons/user.png" /></div>];
+              conversation = [<TextInputMessage key={"conversation_" + i} ref="textInput" onSubmit={this.handleSubmit.bind(this)} />, <div key="user-avator" className="user-avatar"><img src="/icons/user.png" /></div>];
               user_side = false;
             }
           }
@@ -143,9 +145,9 @@ export class ClusterConversation extends Component {
           var m = this.props.conversation.history[i];
 
           if (m.from == 'app') {
-            var new_items = [<TextMessage idTag="computer-side" content={m.content} />];
+            var new_items = [<TextMessage key={"conversation_" + i} idTag="computer-side" content={m.content} />];
             if (app_side) {
-              new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
+              new_items.push(<div key="avatar_computer" className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
             }
             app_side = false;
             conversation = new_items.concat(conversation);
@@ -155,17 +157,17 @@ export class ClusterConversation extends Component {
               return p._id._str == m.content;
             })[0];
 
-            var new_items = [<PhotoMessage idTag="computer-side" content={selectedPhoto} />];
+            var new_items = [<PhotoMessage key={"conversation_" + i} idTag="computer-side" content={selectedPhoto} />];
             if (app_side) {
-              new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
+              new_items.push(<div key="avator_computer" className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
             }
             app_side = false;
             conversation = new_items.concat(conversation);
 
           } else if (m.from == 'app_place') {
-            var new_items = [<PlaceMessage idTag="computer-side" content={m.content} cluster={this.props.cluster} photos={this.props.photos}/>];
+            var new_items = [<PlaceMessage key={"conversation_" + i} idTag="computer-side" content={m.content} cluster={this.props.cluster} photos={this.props.photos}/>];
             if (app_side) {
-              new_items.push(<div className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
+              new_items.push(<div key="avatar_computer" className="computer-avatar"><img src="/icons/Computer-100.png" /></div>);
             }
             app_side = false;
             conversation = new_items.concat(conversation);
@@ -175,19 +177,19 @@ export class ClusterConversation extends Component {
               return p._id._str == m.content;
             })[0];
 
-            var new_items = [<PhotoMessage idTag="human-side" content={selectedPhoto} />];
+            var new_items = [<PhotoMessage key={"conversation_" + i} idTag="human-side" content={selectedPhoto} />];
 
             if (user_side) {
-              new_items.push(<div className="user-avatar"><img src="/icons/user.png" /></div>);
+              new_items.push(<div key="avatar-user" className="user-avatar"><img src="/icons/user.png" /></div>);
             }
             user_side = false;
             conversation = new_items.concat(conversation);
 
           } else {
-            var new_items = [<TextMessage idTag="human-side" content={m.content} />];
+            var new_items = [<TextMessage key={"conversation_" + i} idTag="human-side" content={m.content} />];
 
             if (user_side) {
-              new_items.push(<div className="user-avatar"><img src="/icons/user.png" /></div>);
+              new_items.push(<div key="avatar-user" className="user-avatar"><img src="/icons/user.png" /></div>);
             }
             user_side = false;
             conversation = new_items.concat(conversation);
@@ -200,6 +202,7 @@ export class ClusterConversation extends Component {
 
       return (
           <div className="cluster-conversation-wrapper">
+            {/*<UserBar />*/}
             <div className="cluster-conversation-header">
               <Controls allowSplit={!('conversation_id' in this.props.cluster)} debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
             </div>
@@ -222,6 +225,7 @@ export class ClusterConversation extends Component {
       );
     } else {
       return <div className="cluster-conversation-wrapper">
+        {/*<UserBar />*/}
         <div className="cluster-conversation-header">
           <h1>Loading...</h1>
         </div>
@@ -231,9 +235,9 @@ export class ClusterConversation extends Component {
 }
  
 ClusterConversation.propTypes = {
-  conversation: PropTypes.object.isRequired,
-  cluster: PropTypes.object.isRequired,
-  photos: PropTypes.object.isRequired,
+  conversation: PropTypes.object,
+  cluster: PropTypes.object,
+  photos: PropTypes.array.isRequired,
   places: PropTypes.array.isRequired,
   story: PropTypes.array.isRequired
 };

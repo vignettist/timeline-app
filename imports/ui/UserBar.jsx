@@ -7,13 +7,27 @@ export class UserBar extends Component {
 		Meteor.logout();
 	}
 
+	goHome() {
+		if ('onClickPrepend' in this.props) {
+			this.props.onClickPrepend();
+		}
+
+		FlowRouter.go('/');
+	}
+
 	render() {
+		var wrapperClass = "user-bar-wrapper";
+
+		if (this.props.nohiding) {
+			wrapperClass += " nohiding";
+		}
+
 		if (this.props.user) {
-			return <div className="user-bar-wrapper">
+			return <div className={wrapperClass}>
 				<div className="user-bar">
 					<div className="user-name">{this.props.user.username}</div>
 					<div className="navigation">
-						<div className="nav-button"><img src="/icons/home.png" /></div>
+						<div className="nav-button" onClick={this.goHome.bind(this)}><img src="/icons/home.png" /></div>
 						<div className="nav-button"><img src="/icons/calendar.png" /></div>
 						<div className="nav-button"><img src="/icons/map-dark.png" /></div>
 						<div className="nav-button"><img src="/icons/people.png" /></div>
@@ -30,7 +44,9 @@ export class UserBar extends Component {
 }
 
 UserBar.propTypes = {
-	user: PropTypes.object.isRequired
+	user: PropTypes.object,
+	nohiding: PropTypes.bool,
+	onClickPrepend: PropTypes.func
 };
 
 export default createContainer(({ params }) => {

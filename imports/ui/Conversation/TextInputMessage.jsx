@@ -18,5 +18,5 @@ export default class TextInputMessage extends Component {
 }
 
 TextInputMessage.propTypes = {
-	onSubmit: PropTypes.object.isRequired
+	onSubmit: PropTypes.func.isRequired
 };

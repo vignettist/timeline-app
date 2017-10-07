@@ -854,7 +854,13 @@ Meteor.methods({
 				}
 			}
 
+			console.log('conversations');
+			console.log(conversations);
+
 			if ('_id' in lead_conversation) {
+				console.log('has lead conversation');
+				console.log(lead_conversation);
+
 				for (var i = 0; i < conversations.length; i++) {
 					console.log(conversations[i]._id);
 					console.log(lead_conversation._id);
@@ -864,18 +870,17 @@ Meteor.methods({
 						Conversations.remove({'_id': conversations[i]._id});
 					}
 				}
+
+				newCluster._id = lead_conversation_cluster_id;
+				newCluster.conversation_id = lead_conversation._id;
+				Conversations.update({'_id': lead_conversation._id}, {'$set': lead_conversation});
+
 			}
 
-			newCluster._id = lead_conversation_cluster_id;
-			newCluster.conversation_id = lead_conversation._id;
-
-			console.log(lead_conversation);
 			Clusters.remove({'$or': cluster_or_statement});
 			Clusters.insert(newCluster);
-			Conversations.update({'_id': lead_conversation._id}, {'$set': lead_conversation});
 
 			console.log("generated new cluster");
-
 
 			HTTP.call("PUT", "http://localhost:3122/generate/" + newCluster._id._str, function(err, result) {
 				if (err) {

@@ -23,10 +23,14 @@ export class ClusterCalendar extends Component {
   }
 
   previous() {
+    var scrollTop = $(window).scrollTop();
+    window.scrollTo(0, scrollTop - 0.2 * window.innerHeight);
     FlowRouter.go('/clusters/' + this.props.date.add(-1, "d").format('YYYY-MM-DD'));
   }
 
   next() {
+    var scrollTop = $(window).scrollTop();
+    window.scrollTo(0, scrollTop + 0.2 * window.innerHeight);
     FlowRouter.go('/clusters/' + this.props.date.add(+1, "d").format('YYYY-MM-DD'));
   }
 
@@ -50,12 +54,12 @@ export class ClusterCalendar extends Component {
     var scrollTop = $(window).scrollTop();
 
     if (scrollTop < window.innerHeight * 0.25) {
-      window.scrollTo(0, scrollTop + 0.2 * window.innerHeight);
+      setTimeout(()=>window.scrollTo(0, scrollTop + 0.2 * window.innerHeight), 1);
       this.previous();
     }
 
     if (scrollTop > window.innerHeight * .55) {
-      window.scrollTo(0, scrollTop - 0.2 * window.innerHeight);
+      setTimeout(()=>window.scrollTo(0, scrollTop - 0.2 * window.innerHeight), 1);
       this.next();
     }
   }
@@ -98,8 +102,6 @@ export class ClusterCalendar extends Component {
     var mouseDiff = mousePos - this.initial_mouse_pos;
 
     var ght = this.getHeightAndTop(cluster);
-    // console.log(ght);
-    // var parent_height = this.clusters.clientHeight;
     var parent_height = $(window).height();
     var initial_top = parent_height * ght.top/100 - 10 + $(window).scrollTop();
 
@@ -123,6 +125,7 @@ export class ClusterCalendar extends Component {
     var parent_height = $(window).height();
     var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
     var initial_top = parent_height * ght.top/100 - 10;
+    var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
 
     var clusters_to_merge = [];
 
@@ -131,9 +134,9 @@ export class ClusterCalendar extends Component {
 
       var comparison_height = parent_height * comparison_ght.height/100 + 13;
       var comparison_top = parent_height * comparison_ght.top/100 - 10;
-      var comparison_value = comparison_height/2 + comparison_top;
+      var comparison_value = Math.max(50,comparison_height/2) + comparison_top;
 
-      if ((comparison_value < initial_top) && (comparison_value > finalMousePos)) {
+      if ((comparison_value <= initial_bottom) && (comparison_value >= finalMousePos)) {
         clusters_to_merge.push(this.props.clusters[i]._id._str);
       }
     }
@@ -172,13 +175,11 @@ export class ClusterCalendar extends Component {
   }
 
   dragBottomEnd(cluster, event) {
-    console.log("dragBottomEnd");
-
     var finalMousePos = event.clientY + $(window).scrollTop();
     var ght = this.getHeightAndTop(cluster);
     var parent_height = $(window).height();
     var initial_height = Math.max(100, parent_height * ght.height/100 + 13);
-    var initial_bottom = parent_height * ght.top/100 - 10 + initial_height;
+    var initial_top = parent_height * ght.top/100 - 10;
 
     var clusters_to_merge = [];
 
@@ -187,9 +188,9 @@ export class ClusterCalendar extends Component {
 
       var comparison_height = parent_height * comparison_ght.height/100 + 13;
       var comparison_top = parent_height * comparison_ght.top/100 - 10;
-      var comparison_value = comparison_height/2 + comparison_top;
+      var comparison_value = Math.max(50,comparison_height/2) + comparison_top;
 
-      if ((comparison_value > initial_bottom) && (comparison_value < finalMousePos)) {
+      if ((comparison_value >= initial_top) && (comparison_value <= finalMousePos)) {
         clusters_to_merge.push(this.props.clusters[i]._id._str);
       }
     }
@@ -205,9 +206,6 @@ export class ClusterCalendar extends Component {
   }
 
   render() {
-    console.log("re-rendering");
-    console.log(this.props.clusters);
-
     var timespans = this.props.clusters.map(function(e) {
       var ght = this.getHeightAndTop(e);
       var cluster_height = ght.height;
@@ -217,26 +215,29 @@ export class ClusterCalendar extends Component {
       if (cluster_height > 0) {
         var event_styles = {height: "calc(" + cluster_height.toString() + "vh + 13px)", top: "calc(" + top.toString() + "vh - 10px)", zIndex: zindex};
       } else {
-        var event_styles = {top: "calc(" + top.toString() + "% - 50px)", zIndex: zindex};
+        var event_styles = {top: "calc(" + top.toString() + "vh - 10px)", zIndex: zindex};
       }
 
-      console.log(event_styles)
-      if (e.photos.length > 1) {
-        // This should be its own react component
-        return (
-          <div key={e._id._str}>
-          <div className="event" style={event_styles} onClick={() => this.goToCluster.bind(this)(e)} ref={(input) => { this[e._id._str] = input; }}>
-            <Cluster cluster={e} photos={e.top_images} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
-            <div className="cluster-top-dragger" draggable="true" onDrag={this.dragTop.bind(this, e)} onDragStart={this.dragTopStart.bind(this, e)} onDragEnd={this.dragTopEnd.bind(this, e)} ></div>
-            <div className="cluster-bottom-dragger" draggable="true" onDrag={this.dragBottom.bind(this, e)} onDragStart={this.dragBottomStart.bind(this, e)} onDragEnd={this.dragBottomEnd.bind(this, e)}></div>
-          </div>
-          </div>);
+      if ('photos' in e) {
+        if (e.photos.length > 1) {
+          // This should be its own react component
+          return (
+            <div key={e._id._str}>
+            <div className="event" style={event_styles} onClick={() => this.goToCluster.bind(this)(e)} ref={(input) => { this[e._id._str] = input; }}>
+              <Cluster cluster={e} photos={e.top_images} width={window.innerWidth * 0.8} height={window.innerHeight * cluster_height / 100}/>
+              <div className="cluster-top-dragger" draggable="true" onDrag={this.dragTop.bind(this, e)} onDragStart={this.dragTopStart.bind(this, e)} onDragEnd={this.dragTopEnd.bind(this, e)} ></div>
+              <div className="cluster-bottom-dragger" draggable="true" onDrag={this.dragBottom.bind(this, e)} onDragStart={this.dragBottomStart.bind(this, e)} onDragEnd={this.dragBottomEnd.bind(this, e)}></div>
+            </div>
+            </div>);
+        } else {
+          return (<div key={e._id._str} >
+            <div className="event-singleton" style={event_styles}>
+              <Cluster cluster={e} photos={e.top_images}/>
+            </div>
+            </div>)
+        }
       } else {
-        return (<div key={e._id._str} >
-          <div className="event-singleton" style={event_styles}>
-            <Cluster cluster={e} photos={e.top_images}/>
-          </div>
-          </div>)
+        return [];
       }
     }, this);
 
@@ -256,7 +257,7 @@ export class ClusterCalendar extends Component {
         var addClass = "";
       // }
 
-      date_grid.push(<DateBlock addClass={addClass} date={modified_date} />);
+      date_grid.push(<DateBlock key={"date_block_" + modified_date} addClass={addClass} date={modified_date} />);
     }
 
     var CalendarButton = React.createClass({
@@ -278,7 +279,7 @@ export class ClusterCalendar extends Component {
 
     return (
         <div className="cluster-root">
-          <UserBar />
+          <UserBar onClickPrepend={() => window.removeEventListener('scroll', this.handleScroll) }/>
           <div className="nav">
             <div className="top">
               <button className="up" onClick={this.previousMonth.bind(this)}>
@@ -310,20 +311,18 @@ export class ClusterCalendar extends Component {
           </div>
         </div>
     );
-  }
 
+  }
 }
  
 ClusterCalendar.propTypes = {
   clusters: PropTypes.array.isRequired,
   date: PropTypes.object.isRequired
-  // photos: PropTypes.array.isRequired
 };
 
 export default createContainer(() => {
   return {
     clusters: Clusters.find({}).fetch()
-    // photos: LogicalImages.find({}).fetch()
   };
 
 }, ClusterCalendar);

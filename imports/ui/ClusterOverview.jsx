@@ -3,6 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import {Clusters} from '../api/photos.js';
 import ReactDOM from 'react-dom';
 import { Map, Marker, Polyline, TileLayer, Polygon } from 'react-leaflet';
+import {UserBar} from './UserBar.jsx';
 
 var Slider = require('rc-slider');
 
@@ -104,7 +105,7 @@ export class ClusterOverview extends Component {
   render() {
     var cluster_map_elements = [];
 
-    if (this.props.clusters.length > 0) {
+    if (FlowRouter.subsReady()) {
       var start_date = new moment(this.props.clusters[0].start_time.utc_timestamp);
       var end_date = new moment(this.props.clusters[this.props.clusters.length-1].start_time.utc_timestamp);
       var slider_length = Math.round(moment.duration(end_date.diff(start_date)).asDays());
@@ -152,6 +153,7 @@ export class ClusterOverview extends Component {
       }
 
       return <div className="overview">
+            <UserBar />
             <div className="overview-map">
               <Map key="cluster-overview-map" bounds={this.state.mapBounds}>
                 <TileLayer
@@ -183,7 +185,10 @@ export class ClusterOverview extends Component {
             </div>
 
     } else {
-      return <div className="loading">Loading</div>
+      return <div className="overview">
+        <UserBar />
+        <div className="loading">Loading</div>
+        </div>
     }
   }
 }

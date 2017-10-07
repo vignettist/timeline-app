@@ -13,6 +13,6 @@ export default class PhotoMessage extends Component {
 }
 
 PhotoMessage.propTypes = {
-	content: PropTypes.object.isRequired,
+	content: PropTypes.object,
 	idTag: PropTypes.string.isRequired
 };

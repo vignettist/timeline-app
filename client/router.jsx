@@ -7,12 +7,13 @@ import ClusterOverview from '../imports/ui/ClusterOverview.jsx';
 import ClusterConversation from '../imports/ui/ClusterConversation.jsx';
 import Compose from '../imports/ui/Compose.jsx';
 import Login from '../imports/ui/Login.jsx';
+import Home from '../imports/ui/Home.jsx';
 
 const login = FlowRouter.group({
 	triggersEnter: [
 		(context, redirect) => {
 			if (Meteor.userId() || Meteor.loggingIn()) {
-				redirect('/clusters/2017-05-10');
+				redirect('/');
 			}
 		}
 	]
@@ -32,8 +33,17 @@ const loggedIn = FlowRouter.group({
 });
 
 loggedIn.route('/', {
-  action() {
-    FlowRouter.go('/clusters/2015-08-01');
+  name: 'home',
+
+  subscriptions: function(params) {
+  	// all people
+  	// all places
+  	this.register('clusters_with_stories', Meteor.subscribe('clusters_with_stories'));
+  	this.register('stories', Meteor.subscribe('stories'));
+  },
+
+  action: function(params) {
+  	mount(Home);
   }
 });
 
@@ -87,7 +97,7 @@ loggedIn.route('/clusters/:date', {
 		let endDate = date.clone().add(4, "d");
 
 		this.register('clusters', Meteor.subscribe('clusters', new Date(startDate), new Date(endDate)));
-		// this.register('cluster_photos', Meteor.subscribe('cluster_photos', new Date(startDate), new Date(endDate)));
+		this.register('cluster_photos', Meteor.subscribe('cluster_photos', new Date(startDate), new Date(endDate)));
 	},
 
 	action: function(params) {
@@ -128,7 +138,6 @@ loggedIn.route('/compose/:clusterid', {
 	name: 'clusterComposeView',
 
 	subscriptions: function(params) {
-		console.log('subscribing compose view');
 		this.register('cluster', Meteor.subscribe('cluster', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('conversation_from_cluster', Meteor.subscribe('conversation_from_cluster', new Meteor.Collection.ObjectID(params.clusterid)));
 		this.register('single_cluster_photos', Meteor.subscribe('single_cluster_photos', new Meteor.Collection.ObjectID(params.clusterid)));
@@ -157,7 +166,6 @@ login.route('/login', {
 	name: 'login',
 
 	subscriptions: function(params) {
-		console.log('subscribing login view');
 		this.register('all_users', Meteor.subscribe('all_users'));
 	},
 

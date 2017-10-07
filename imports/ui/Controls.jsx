@@ -12,8 +12,7 @@ if(typeof(String.prototype.trim) === "undefined")
 
 export default class Controls extends Component {
 	back() {
-        console.log(this.props.cluster);
-        var date = new moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60);
+        var date = new moment(this.props.cluster.start_time.utc_timestamp).utcOffset(this.props.cluster.start_time.tz_offset/60).subtract(1, 'days');
 		FlowRouter.go("/clusters/" + date.format("YYYY-MM-DD"));
 	}
 
@@ -36,7 +35,7 @@ export default class Controls extends Component {
 
 	render() {
 		if (this.props.debug) {
-			var debug = [<div>{this.props.state}</div>, <button className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>];
+			var debug = [<div key="control_state">{this.props.state}</div>, <button key="reset-button" className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>];
 		} else {
 			var debug = [];
 		}
