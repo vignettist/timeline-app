@@ -56,6 +56,9 @@ function byDate(a,b) {
 }
 
 function getDateOfPlace(place, photos) {
+	console.log(photos);
+	console.log('getDateOfPlace');
+
 	var images_in_place = photos.filter(function(p) {
 		if ('place' in p) {
 	        return p.place.place_id._str === place._id._str;
@@ -66,7 +69,11 @@ function getDateOfPlace(place, photos) {
 
 	images_in_place = images_in_place.sort(byDate);
 
-	return images_in_place[0].datetime;
+	if (images_in_place.length > 0) {
+		return images_in_place[0].datetime;
+	} else {
+		return photos[0].datetime;
+	}
 }
 
 function sortPlaces(a, b) {
@@ -93,10 +100,26 @@ StateMachine['uninitialized'] = {
 		}
 
         var content = "Hi! Let's talk about " + intro + " in " + props.cluster.location + " on " + start_time.format('MMMM Do') + ".";
-        transitionCallback({output: {from: 'app', content: content}, newState: 'grand_central?person_count=0,place_count=0'});
+       	var intro = "I'm going to ask you some questions about your photos, and together we'll start building a story. This will take around a half hour, but you can stop whenever you want!";
+
+        transitionCallback({output: {from: 'app', content: content + ' ' + intro}, newState: 'audience'});
 	}
 };
 
+StateMachine['audience'] = {
+	autoTransition: function audienceAutoTransition(transitionCallback, props, parameters) {
+		var content = "Before we get too far, it's good to think about who you want to write the story for -- a group of friends, a family member, or maybe just a journal for yourself. Who do you want to share these photos with?";
+
+		transitionCallback({output: {from: 'app', content: content}, newState: 'waiting_for_audience'});
+	}
+}
+
+StateMachine['waiting_for_audience'] = {
+	stateTransition: function audienceTransition(transitionCallback, text, props, parameters) {
+		var content = "Ok, great.";
+		transitionCallback({output: {from: 'app', content: content}, newState: 'grand_central?person_count=0,place_count=0'})
+	}
+}
 
 // This state is kind o the master state -- returning here will provide a new task of some kind
 StateMachine['grand_central'] = {
@@ -605,7 +628,19 @@ StateMachine['what_next_photo'] = {
 		console.log(parameters);
 
 		// long term todo -- use image understanding to ask better questions
-		var response = chooseRandomResponse(["What do you like about this photo?", "What were you doing?"]);
+		// TODO: actually incorporate tweetbot question generator questions
+
+		var response = chooseRandomResponse(["What do you like about this photo?", 
+											"What were you doing?",
+											"Perfect. What inspired you to take this shot?",
+											"Huh. I'm not sure what to say. Do you like this picture?",
+											"Terriffic... but was there something else that you didn't get to take a picture of?",
+											"How did you feel after you took this picture?",
+											"What was behind you?",
+											"Did you take this picture for anyone in particular?",
+											"If you were to find this picture in a year, what would you want to remember from it?",
+											"Did you feel comfortable here?"]);
+
 		transitionCallback({output: {from: 'app', content: response}, newState: 'follow_up_image?' + combineParameters(parameters)});
 	}
 }
@@ -654,16 +689,27 @@ StateMachine['forward'] = {
 		console.log(props.photos.length);
 		console.log(images_to_end);
 
-		if (images_to_end < 4) {
+		if (!('num_forward' in parameters)) {
+			parameters.num_forward = 0;
+		}
+
+		console.log('num_forward');
+		console.log(parameters.num_forward);
+
+		if ((images_to_end < 4) || (parameters.num_forward > 7)) {
 			var output = 'What photo best shows the conclusion to this experience?';
 			var nextState = 'conclusion_photo?input=photo,' + combineParameters(parameters);
 		} else {
+			parameters.num_forward += 1;
 			var choice = Math.random()*3;
 
 			if (choice < 1) {
 				// rand 1
 
-				var output = "Show me another photo you think is interesting."
+				var possible_words = ["is interesting", "tells a story", "is beautiful", "is dissapointing"];
+				var word = possible_words[Math.floor(Math.random()*possible_words.length)];
+
+				var output = "Show me another photo, one you think " + word + ".";
 				var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
 			} else if (choice < 2) {
 				// rand 2
@@ -674,6 +720,9 @@ StateMachine['forward'] = {
 					var named_places = props.places.filter(function(p) {
 						return ('name' in p);
 					});
+
+					// TODO
+					// Okay, move onto a place here and if it has no name that's okay! 
 
 					console.log('forward NAMED PLACES');
 					console.log(named_places);
