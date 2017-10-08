@@ -210,7 +210,7 @@ Meteor.methods({
 			for (var i = 0; i < photos.length; i++) {
 				if (photos[i].openfaces.length > 0) {
 					for (var j = 0; j < photos[i].openfaces.length; j++) {
-						if (photos[i].openfaces[j].size > 10000) {
+						if (photos[i].openfaces[j].size > 5000) {
 						
 								if ('name' in photos[i].openfaces[j]) {
 									recognized_people.push({image: photos[i]._id._str, face: j, name: photos[i].openfaces[j].name});
@@ -798,6 +798,18 @@ Meteor.methods({
 		this.unblock();
 		try{
 			return getNouns(responseText);
+		} catch(e) {
+			console.log(e);
+			return false;
+		}
+	},
+
+	'clusters.getMostRecent'() {
+
+		try {
+			var most_recent = Clusters.find({}, {sort: {'start_time.utc_timestamp': -1}, limit: 1}).fetch()[0].start_time;
+			console.log(most_recent);
+			return(most_recent);
 		} catch(e) {
 			console.log(e);
 			return false;

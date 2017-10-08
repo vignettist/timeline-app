@@ -70,9 +70,12 @@ export class ClusterConversation extends Component {
     } 
 
     // some transitions are triggered by input
-    stateTransition(text, transitionCallback) {
+    stateTransition(text, transitionCallback, options) {
       console.log('stateTransition');
       console.log(this.props);
+
+      options = options || {};
+
       if (!('conversation_id' in this.props.cluster)) {
         console.log('adding conversation link');
         Meteor.call('conversation.addConversationLink', this.props.cluster._id._str);
@@ -80,7 +83,13 @@ export class ClusterConversation extends Component {
 
       var split_state = splitParameters(this.props.conversation.state);
 
-      StateMachine[split_state.state].stateTransition(transitionCallback, text, this.props, split_state.parameters);
+      console.log(options);
+
+      if ('force_state' in options) {
+        StateMachine[options['force_state']].stateTransition(transitionCallback, text, this.props, split_state.parameters);
+      } else {
+        StateMachine[split_state.state].stateTransition(transitionCallback, text, this.props, split_state.parameters);
+      }
     }
 
     handleSubmit(event) {
@@ -100,17 +109,17 @@ export class ClusterConversation extends Component {
     }
 
     selectPhoto(photo) {
-      var split_state = splitParameters(this.props.conversation.state);
-      if (split_state.parameters.input == 'photo') {
+      // EXPERIMENT: allow clicking on a photo whenever you want to change subject.
+      // var split_state = splitParameters(this.props.conversation.state);
+      // if (split_state.parameters.input == 'photo') {
         Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user_image', content: photo}, this.props.conversation.state);
         this.setState({pending: true});
-        this.stateTransition(photo, this.finishTransition.bind(this));
-      }
+        this.stateTransition(photo, this.finishTransition.bind(this), {'force_state': 'what_next_photo'});
+      // }
     }
 
   render() {
     if (typeof this.props.conversation !== 'undefined') {
-
 
       // build up the conversation DOM elements
       // this should be moved to a seperate component at some point

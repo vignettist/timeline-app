@@ -608,6 +608,10 @@ StateMachine['what_next_photo'] = {
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		parameters['image'] = text;
 
+		var image = props.photos.filter(function(p) {
+        	return p._id._str == parameters.image
+        }, parameters)[0];
+
 		if ('lastAnswer' in parameters) {
 			var decodedQuestion = parameters.lastQuestion.replace('CoMmA', ',').replace('QuEsTiOn', '?');
 			var decodedAnswer = parameters.lastAnswer.replace('CoMmA', ',').replace('QuEsTiOn', '?');
@@ -627,10 +631,16 @@ StateMachine['what_next_photo'] = {
 		console.log('what_next_photo');
 		console.log(parameters);
 
-		// long term todo -- use image understanding to ask better questions
-		// TODO: actually incorporate tweetbot question generator questions
+		console.log(parameters.image);
 
-		var response = chooseRandomResponse(["What do you like about this photo?", 
+		Meteor.call('conversation.getUnrecognizedPeople', [image], function(err, people) {
+			console.log(people);
+
+			if (people.unrecognized.length > 0) {
+				// there are people I don't recognize
+			}
+
+			var response = chooseRandomResponse(["What do you like about this photo?", 
 											"What were you doing?",
 											"Perfect. What inspired you to take this shot?",
 											"Huh. I'm not sure what to say. Do you like this picture?",
@@ -641,7 +651,11 @@ StateMachine['what_next_photo'] = {
 											"If you were to find this picture in a year, what would you want to remember from it?",
 											"Did you feel comfortable here?"]);
 
-		transitionCallback({output: {from: 'app', content: response}, newState: 'follow_up_image?' + combineParameters(parameters)});
+			transitionCallback({output: {from: 'app', content: response}, newState: 'follow_up_image?' + combineParameters(parameters)});
+		});
+
+		// long term todo -- use image understanding to ask better questions
+		// TODO: actually incorporate tweetbot question generator questions
 	}
 }
 
@@ -659,6 +673,7 @@ StateMachine['follow_up_image'] = {
 				alert(err);
 			} else {
 				var newState = 'forward?' + combineParameters(parameters);
+
 				if (response === false) {
 					var output = "Tell me more about that.";
 				} else {
