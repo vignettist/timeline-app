@@ -86,6 +86,7 @@ export class ClusterConversation extends Component {
       console.log(options);
 
       if ('force_state' in options) {
+        delete split_state.parameters.image;
         StateMachine[options['force_state']].stateTransition(transitionCallback, text, this.props, split_state.parameters);
       } else {
         StateMachine[split_state.state].stateTransition(transitionCallback, text, this.props, split_state.parameters);

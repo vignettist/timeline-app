@@ -1,4 +1,4 @@
-import { chooseRandomResponse, makeList, makeAndList, reversePronouns, definiteArticles } from '../../api/nlp_helper.js';
+import { chooseRandomResponse, makeList, makeAndList, reversePronouns, definiteArticles, listOfItems } from '../../api/nlp_helper.js';
 
 export var StateMachine = {};
 
@@ -192,29 +192,29 @@ StateMachine['grand_central'] = {
 				}
 			});
 
-			if ((unrecognized_people.length > 0) && (parameters.person_count < 3)) {
-				// unidentified person (MAX 3)
+			// if ((unrecognized_people.length > 0) && (parameters.person_count < 3)) {
+			// 	// unidentified person (MAX 3)
 				
-				parameters.image = unrecognized_people[0].image;
-				parameters.face = unrecognized_people[0].face;
+			// 	parameters.image = unrecognized_people[0].image;
+			// 	parameters.face = unrecognized_people[0].face;
 
-				if ('name' in unrecognized_people[0]) {
-					parameters.firstName = unrecognized_people[0].name.firstName;
-					parameters.lastName = unrecognized_people[0].name.lastName;
-					parameters.gender = unrecognized_people[0].name.gender;
-				}
+			// 	if ('name' in unrecognized_people[0]) {
+			// 		parameters.firstName = unrecognized_people[0].name.firstName;
+			// 		parameters.lastName = unrecognized_people[0].name.lastName;
+			// 		parameters.gender = unrecognized_people[0].name.gender;
+			// 	}
 
-				if (parameters.person_count === 0) {
-					var content = "Let's start by helping me identify some people you were with.";
-				} else {
-					var content = "There's " + ((unrecognized_people.length === 1) ? 'another person' : 'a few more people') + " I need some help with.";
-				}
+			// 	if (parameters.person_count === 0) {
+			// 		var content = "Let's start by helping me identify some people you were with.";
+			// 	} else {
+			// 		var content = "There's " + ((unrecognized_people.length === 1) ? 'another person' : 'a few more people') + " I need some help with.";
+			// 	}
 
-				parameters.person_count++;
+			// 	parameters.person_count++;
 
-				var newState = 'person_in_photo?' + combineParameters(parameters);
+			// 	var newState = 'person_in_photo?' + combineParameters(parameters);
 
-			} else if ((unnamed_places.length > 0) && (parameters.place_count < 3)) {
+			if ((unnamed_places.length > 0) && (parameters.place_count < 3)) {
 				// unidentified place (MAX 3)
 
 				parameters.place = unnamed_places[0]._id._str;
@@ -363,10 +363,10 @@ StateMachine['confirming_person'] = {
 				delete parameters.firstName;
 				delete parameters.lastName;
 				delete parameters.gender;
-				delete parameters.image;
+				// delete parameters.image;
 				delete parameters.face;
 				delete parameters.highlighted;
-				newState = 'grand_central?' + combineParameters(parameters);
+				newState = 'what_next_photo?' + combineParameters(parameters);
 			} else {
 
 				// could not confirm name
@@ -399,10 +399,10 @@ StateMachine['are_there_people'] = {
 					delete parameters.firstName;
 					delete parameters.lastName;
 					delete parameters.gender;
-					delete parameters.image;
+					// delete parameters.image;
 					delete parameters.face;
 					delete parameters.highlighted;
-					newState = 'grand_central?' + combineParameters(parameters);
+					newState = 'what_next_photo?' + combineParameters(parameters);
 
 				}
 
@@ -622,6 +622,13 @@ StateMachine['what_next'] = {
 };
 
 StateMachine['what_next_photo'] = {
+	// if we already have an image provided to us, there's no need to wait for the user -- we can generate a question straightaway
+	autoTransition: function(transitionCallback, props, parameters) {
+		if ('image' in parameters) {
+			StateMachine['what_next_photo']['stateTransition'](transitionCallback, parameters.image, props, parameters);
+		}
+	},
+
 	stateTransition: function(transitionCallback, text, props, parameters) {
 		parameters['image'] = text;
 
@@ -646,33 +653,63 @@ StateMachine['what_next_photo'] = {
 		Meteor.call('conversation.rateImage', parameters.image, 3);
 
 		console.log('what_next_photo');
-		console.log(parameters);
-
-		console.log(parameters.image);
 
 		Meteor.call('conversation.getUnrecognizedPeople', [image], function(err, people) {
 			console.log(people);
 
 			if (people.unrecognized.length > 0) {
 				// there are people I don't recognize
+				if (people.recognized.length > 0) {
+					var people_string = listOfItems(people.recognized.map(function(p) {
+						return p.name.firstName;
+					}));
+
+					var response = "There's someone that I don't recognize with " + people_string + ".";
+				} else {
+					var response = "Hmm, I see some new faces here.";
+				}
+
+				parameters['face'] = people.unrecognized[0].face;
+				var newState = 'presenting_image?' + combineParameters(parameters);
+
+			} else if (people.recognized.length > 0) {
+				var newState = 'follow_up_image?' + combineParameters(parameters);
+
+				var people_string = listOfItems(people.recognized.map(function(p) {
+						return p.name.firstName;
+					}));
+
+				var response = chooseRandomResponse(
+					["What do you like about this photo of " + people_string + "?",
+					"Why did you decide to take a picture of " + people_string + " here?",
+					"How long have you known " + people_string + "?",
+					"How well do you know " + people_string + "?",
+					"If you were to find this photo in a couple years, what would you want to " + chooseRandomResponse(["remember", "tell yourself", "explain", "forget", "feel"]) + "?"],
+					"In a year, do you think this photo will matter more to you than it does now?",
+					"What were you feeling just before you took this photo?",
+					"What were you all doing?!");
+			} else {
+				var newState = 'follow_up_image?' + combineParameters(parameters);
+
+				var response = chooseRandomResponse(
+					["What do you like about this photo?", 
+					"What were you doing?",
+					"Perfect. What inspired you to take this shot?",
+					"Huh. I'm not sure what to say. Do you like this picture?",
+					"Terriffic... but was there something else that you didn't get to take a picture of?",
+					"How did you feel after you took this picture?",
+					"What was behind you?",
+					"Did you take this picture for anyone in particular?",
+					"If you were to find this picture in a year, what would you want to remember from it?",
+					"Did you feel comfortable here?"]);
 			}
 
-			var response = chooseRandomResponse(["What do you like about this photo?", 
-											"What were you doing?",
-											"Perfect. What inspired you to take this shot?",
-											"Huh. I'm not sure what to say. Do you like this picture?",
-											"Terriffic... but was there something else that you didn't get to take a picture of?",
-											"How did you feel after you took this picture?",
-											"What was behind you?",
-											"Did you take this picture for anyone in particular?",
-											"If you were to find this picture in a year, what would you want to remember from it?",
-											"Did you feel comfortable here?"]);
-
-			transitionCallback({output: {from: 'app', content: response}, newState: 'follow_up_image?' + combineParameters(parameters)});
+			transitionCallback({output: {from: 'app', content: response}, newState: newState});
+			
 		});
 
 		// long term todo -- use image understanding to ask better questions
-		// TODO: actually incorporate tweetbot question generator questions
+		// TODO: actually incorporate tweetbot question generator questions (w/ Tracery)
 	}
 }
 
@@ -727,6 +764,9 @@ StateMachine['forward'] = {
 
 		console.log('num_forward');
 		console.log(parameters.num_forward);
+
+		// time for a new photo, erase anything that's still hanging on here
+		delete parameters.image;
 
 		if ((images_to_end < 4) || (parameters.num_forward > 7)) {
 			var output = 'What photo best shows the conclusion to this experience?';

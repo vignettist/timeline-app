@@ -25,6 +25,25 @@ function makeAndList(list, n, i, a) {
 
 export {makeAndList};
 
+function listOfItems(names) {
+	var people_string = '';
+	if (names.length == 1) {
+		people_string = names[0];
+	} else {
+		for (var i = 0; i < names.length - 1; i++) {
+			if (i != 0) {
+				people_string += ", "
+			}
+			people_string += names[0]
+		}
+		people_string += " and " + names[names.length-1];
+	}
+
+	return people_string;
+}
+
+export {listOfItems};
+
 // changes pronouns from first person to second person
 function reversePronouns(text) {
 	text = text.replace(/\bour\b/g, "your");
