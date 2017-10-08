@@ -15,6 +15,16 @@ export class UserBar extends Component {
 		FlowRouter.go('/');
 	}
 
+	goToTimeline() {
+    	if ('onClickPrepend' in this.props) {
+			this.props.onClickPrepend();
+		}
+    	
+    	Meteor.call('clusters.getMostRecent', function(err, date) {
+    		FlowRouter.go('/clusters/' + new moment(date.utc_timestamp).utcOffset(date.tz_offset/60).add(1, 'days').format('YYYY-MM-DD'));
+    	});
+    }
+
 	render() {
 		var wrapperClass = "user-bar-wrapper";
 
@@ -28,7 +38,7 @@ export class UserBar extends Component {
 					<div className="user-name">{this.props.user.username}</div>
 					<div className="navigation">
 						<div className="nav-button" onClick={this.goHome.bind(this)}><img src="/icons/home.png" /></div>
-						<div className="nav-button"><img src="/icons/calendar.png" /></div>
+						<div className="nav-button" onClick={this.goToTimeline.bind(this)}><img src="/icons/calendar.png" /></div>
 						<div className="nav-button"><img src="/icons/map-dark.png" /></div>
 						<div className="nav-button"><img src="/icons/people.png" /></div>
 						<div className="nav-button"><img src="/icons/stories.png" /></div>

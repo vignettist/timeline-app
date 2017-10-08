@@ -14,9 +14,11 @@ export class Home extends Component {
     }
 
     goToTimeline() {
-    	console.log('gototimeline');
     	this.setState({nohiding: false});
-    	FlowRouter.go('/clusters/2017-05-20');
+    	
+    	Meteor.call('clusters.getMostRecent', function(err, date) {
+    		FlowRouter.go('/clusters/' + new moment(date.utc_timestamp).utcOffset(date.tz_offset/60).add(1, 'days').format('YYYY-MM-DD'));
+    	});
     }
 
     goToMap() {
