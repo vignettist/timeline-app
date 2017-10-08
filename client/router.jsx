@@ -97,7 +97,6 @@ loggedIn.route('/clusters/:date', {
 		let endDate = date.clone().add(4, "d");
 
 		this.register('clusters', Meteor.subscribe('clusters', new Date(startDate), new Date(endDate)));
-		// this.register('cluster_photos', Meteor.subscribe('cluster_photos', new Date(startDate), new Date(endDate)));
 	},
 
 	action: function(params) {

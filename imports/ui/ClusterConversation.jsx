@@ -12,7 +12,7 @@ import Controls from './Controls.jsx';
 import {StateMachine, splitParameters, combineParameters} from './Conversation/StateMachine.js';
 import UserBar from './UserBar.jsx';
 
-const DELAY_TIME = 100;
+const DELAY_TIME = 1000;
 
 export class ClusterConversation extends Component {
     constructor(props) {

@@ -94,17 +94,32 @@ StateMachine['uninitialized'] = {
 
 		if ((end_time.date() != start_time.date()) && (end_time.hour() >= 4)) {
 			// this event spans multiple days
-			var intro = 'your time';
+			if ((start_time.weekday() == 5 || start_time.weekday() == 6) && duration.asDays() < 3) {
+				var intro = 'your weekend';
+			} else if (duration.asDays() > 5) {
+				var intro = 'your week';
+			} else {
+				var intro = 'your experience';
+			}
+
 		} else {
 			var intro = 'the day you spent';
 		}
 
-        var content = "Hi! Let's talk about " + intro + " in " + props.cluster.location + " on " + start_time.format('MMMM Do') + ".";
-       	var intro = "I'm going to ask you some questions about your photos, and together we'll start building a story. This will take around a half hour, but you can stop whenever you want!";
+        var content = "Hi! Let's talk about " + intro + " in " + props.cluster.location + ".";
+       	var intro = "By asking questions about your photos, we'll start building a story together.";
 
-        transitionCallback({output: {from: 'app', content: content + ' ' + intro}, newState: 'audience'});
+        transitionCallback({output: {from: 'app', content: content + ' ' + intro}, newState: 'timebox'});
 	}
 };
+
+StateMachine['timebox'] = {
+	autoTransition: function timeboxAutoTransition(transitionCallback, props, parameters) {
+		var content = "This could take about a half hour, so make yourself comfortable! Everything is saved if you want to stop or take a break. If you ever want to skip a question, just click on a photo in the timeline on the right to redirect the conversation.";
+
+		transitionCallback({output: {from: 'app', content: content}, newState: 'audience'});
+	}
+}
 
 StateMachine['audience'] = {
 	autoTransition: function audienceAutoTransition(transitionCallback, props, parameters) {
@@ -116,7 +131,9 @@ StateMachine['audience'] = {
 
 StateMachine['waiting_for_audience'] = {
 	stateTransition: function audienceTransition(transitionCallback, text, props, parameters) {
-		var content = "Ok, great.";
+		// future: maybe store the intended audience here to suggest output formats
+
+		var content = chooseRandomResponse(["Ok, great.", "Good idea."]);
 		transitionCallback({output: {from: 'app', content: content}, newState: 'grand_central?person_count=0,place_count=0'})
 	}
 }
