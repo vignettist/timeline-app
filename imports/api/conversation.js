@@ -706,9 +706,7 @@ Meteor.methods({
 
 			// okay, maybe a person was mentioned, but they weren't in the NLP compromise list
 			if (people.length == 0) {
-				var people = nlp.text(responseText).nouns();
-
-				people = people.filter(function(p) { 
+				var people = nlp.text(responseText).nouns().filter(function(p) { 
 					return ((p.normal != 'i') && (p.normal != "you") && !(p.reasoning.includes('lexicon_pass')));
 				});
 
@@ -722,6 +720,17 @@ Meteor.methods({
 					}
 				} else {
 					people = [];
+
+					var people = nlp.text(responseText).nouns().filter(function(p) { 
+						return ((p.normal == 'me') || (p.normal == 'myself') || (p.normal == 'selfie'));
+					});
+
+					if (people.length > 0) {
+						people = [{'firstName': Meteor.username}]
+					}
+
+					var user = Meteor.users.findOne(this.userId);
+					people = [{'firstName': user.username, 'self': true}];
 				}
 
 			} else {

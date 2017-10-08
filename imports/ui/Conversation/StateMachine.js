@@ -315,15 +315,25 @@ StateMachine['determining_name'] = {
             var newState = 'are_there_people?' + combineParameters(parameters);
 
           } else if (names.length == 1) {
-            if (Math.random() > 0.5) {
-              var content = "Just double checking, that's " + names[0].firstName + "?";
-            } else {
-              var content = "Oh, so that's " + names[0].firstName + "?";
-            }
+          	if (names[0].self) {
+          		var content = "Oh, that's you?";
+          	} else {
+	            if (Math.random() > 0.5) {
+	              var content = "Just double checking, that's " + names[0].firstName + "?";
+	            } else {
+	              var content = "Oh, so that's " + names[0].firstName + "?";
+	            }
+	        }
 
             parameters.firstName = names[0].firstName;
             parameters.lastName = names[0].lastName;
             parameters.gender = names[0].gender;
+
+            if ('self' in names[0]) {
+            	parameters.self = names[0].self;
+            } else {
+            	parameters.self = false;
+            }
 
             var newState = 'confirming_person?' + combineParameters(parameters);
           } else if (names.length > 1) {
@@ -355,7 +365,7 @@ StateMachine['confirming_person'] = {
 			if (yn) {
 				// add name to names database
 
-				Meteor.call('conversation.associateFace', {firstName: parameters.firstName, lastName: parameters.lastName, gender: parameters.gender}, parameters.image, parameters.face, props.cluster._id._str);
+				Meteor.call('conversation.associateFace', {firstName: parameters.firstName, lastName: parameters.lastName, gender: parameters.gender, self: parameters.self}, parameters.image, parameters.face, props.cluster._id._str);
 
 				content = 'Ok, great!';
 
@@ -443,7 +453,7 @@ StateMachine['place_in_cluster'] = {
 
 StateMachine['presenting_place'] = {
 	autoTransition: function presentingPlaceAutoTransition(transitionCallback, props, parameters) {
-		var response = chooseRandomResponse(["Where did you take these photos?", "What is the name of this place?", "Where is this?", "What do you call this area?"]);
+		var response = chooseRandomResponse(["Where did you take these photos?", "What is the name of this place?", "Where is this?", "What is the most meaningful name of the place you toko these photos?"]);
     	transitionCallback({output: {from: 'app', content: response}, newState: 'determining_place?' + combineParameters(parameters)});
 	}
 };
@@ -660,9 +670,7 @@ StateMachine['what_next_photo'] = {
 			if (people.unrecognized.length > 0) {
 				// there are people I don't recognize
 				if (people.recognized.length > 0) {
-					var people_string = listOfItems(people.recognized.map(function(p) {
-						return p.name.firstName;
-					}));
+					var people_string = listOfItems(people.recognized);
 
 					var response = "There's someone that I don't recognize with " + people_string + ".";
 				} else {
@@ -675,19 +683,23 @@ StateMachine['what_next_photo'] = {
 			} else if (people.recognized.length > 0) {
 				var newState = 'follow_up_image?' + combineParameters(parameters);
 
-				var people_string = listOfItems(people.recognized.map(function(p) {
-						return p.name.firstName;
-					}));
+				var people_string = listOfItems(people.recognized);
 
-				var response = chooseRandomResponse(
-					["What do you like about this photo of " + people_string + "?",
+				var responses = [
+					"What do you like about this photo of " + people_string + "?",
 					"Why did you decide to take a picture of " + people_string + " here?",
-					"How long have you known " + people_string + "?",
-					"How well do you know " + people_string + "?",
-					"If you were to find this photo in a couple years, what would you want to " + chooseRandomResponse(["remember", "tell yourself", "explain", "forget", "feel"]) + "?"],
+					"If you were to find this photo in a couple years, what would you want to " + chooseRandomResponse(["remember", "tell yourself", "explain", "forget", "feel"]) + "?",
 					"In a year, do you think this photo will matter more to you than it does now?",
 					"What were you feeling just before you took this photo?",
-					"What were you all doing?!");
+					"What were you doing?"];
+
+				if (people_string != "yourself") {
+					responses.push([
+						"How long have you known " + people_string + "?",
+						"How well do you know " + people_string + "?"]);
+				}
+
+				var response = chooseRandomResponse(responses);
 			} else {
 				var newState = 'follow_up_image?' + combineParameters(parameters);
 
@@ -839,7 +851,7 @@ StateMachine['forward'] = {
 				var peopleIndex = ('peopleIndex' in parameters) ? parseInt(parameters.peopleIndex)+1 : 0;
 				parameters.peopleIndex = peopleIndex;
 
-				if (('people' in props.cluster) && (props.cluster.people.length > peopleIndex)) {
+				if (('people' in props.cluster) && (props.cluster.people.length > peopleIndex) && (props.cluster.people[peopleIndex].name.self != true)) {
 					// TODO: highlight images here
 
 					if (Math.random() < 0.5) {

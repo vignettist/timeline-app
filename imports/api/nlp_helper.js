@@ -26,17 +26,30 @@ function makeAndList(list, n, i, a) {
 export {makeAndList};
 
 function listOfItems(names) {
+
 	var people_string = '';
 	if (names.length == 1) {
-		people_string = names[0];
+		if (names[0].name.self) {
+			people_string = 'yourself';
+		} else {
+			people_string = names[0].name.firstName;
+		}
 	} else {
+		names = names.filter(function(n) {
+			if (n.name.self) {
+				return true;
+			} else {
+				return false;
+			}
+		});
+
 		for (var i = 0; i < names.length - 1; i++) {
 			if (i != 0) {
 				people_string += ", "
 			}
-			people_string += names[0]
+			people_string += names[i].name.firstName;
 		}
-		people_string += " and " + names[names.length-1];
+		people_string += " and " + names[names.length-1].name.firstName;
 	}
 
 	return people_string;
