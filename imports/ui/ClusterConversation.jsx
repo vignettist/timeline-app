@@ -111,12 +111,17 @@ export class ClusterConversation extends Component {
 
     selectPhoto(photo) {
       // EXPERIMENT: allow clicking on a photo whenever you want to change subject.
-      // var split_state = splitParameters(this.props.conversation.state);
-      // if (split_state.parameters.input == 'photo') {
+      var split_state = splitParameters(this.props.conversation.state);
+      if (split_state.parameters.input == 'photo') {
+        Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user_image', content: photo}, this.props.conversation.state);
+        this.setState({pending: true});
+        this.stateTransition(photo, this.finishTransition.bind(this));
+      } else {
         Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user_image', content: photo}, this.props.conversation.state);
         this.setState({pending: true});
         this.stateTransition(photo, this.finishTransition.bind(this), {'force_state': 'what_next_photo'});
-      // }
+      }
+      
     }
 
   render() {
@@ -214,7 +219,7 @@ export class ClusterConversation extends Component {
           <div className="cluster-conversation-wrapper">
             {/*<UserBar />*/}
             <div className="cluster-conversation-header">
-              <Controls allowSplit={!('conversation_id' in this.props.cluster)} debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
+              <Controls allowSplit={!('conversation_id' in this.props.cluster)} debug={false} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
             </div>
 
             <div className="cluster-conversation-lower">

@@ -1039,7 +1039,7 @@ StateMachine['conclusion_photo_followup'] = {
 		var question = getLastQuestion(props.conversation.history);
 		Meteor.call('conversation.addNarrativeToImage', parameters.image, {question: question, answer: text});
 
-		var output = 'Did you accomplish your goals?';
+		var output = chooseRandomResponse(['Did you accomplish your goals for the day?', 'Did you feel satisfied with this experience?', 'If you could do this again, would you?']);
 		var nextState = 'conclusion_goals?' + combineParameters(parameters);
 		transitionCallback({output: {from: 'app', content: output}, newState: nextState});
 	}
@@ -1058,7 +1058,7 @@ StateMachine['conclusion_goals'] = {
 				var output = 'What happened?'
 				var nextState = 'conclusion_goal_miss?' + combineParameters(parameters);
 			} else {
-				var output = "Cool! What will you do next time you're in " + props.cluster.location + "?";
+				var output = "Excellent. What will you do next time you're in " + props.cluster.location + "?";
 				var nextState = 'conclusion_conclusion?' + combineParameters(parameters);
 			}
 
