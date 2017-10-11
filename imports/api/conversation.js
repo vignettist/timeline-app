@@ -210,7 +210,7 @@ Meteor.methods({
 			for (var i = 0; i < photos.length; i++) {
 				if (photos[i].openfaces.length > 0) {
 					for (var j = 0; j < photos[i].openfaces.length; j++) {
-						if (photos[i].openfaces[j].size > 5000) {
+						if (photos[i].openfaces[j].size > 10000) {
 						
 								if ('name' in photos[i].openfaces[j]) {
 									recognized_people.push({image: photos[i]._id._str, face: j, name: photos[i].openfaces[j].name});

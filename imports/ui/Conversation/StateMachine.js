@@ -688,10 +688,13 @@ StateMachine['what_next_photo'] = {
 				var responses = [
 					"What do you like about this photo of " + people_string + "?",
 					"Why did you decide to take a picture of " + people_string + " here?",
+					"Had " + people_string + " been here before?",
 					"If you were to find this photo in a couple years, what would you want to " + chooseRandomResponse(["remember", "tell yourself", "explain", "forget", "feel"]) + "?",
 					"In a year, do you think this photo will matter more to you than it does now?",
 					"What were you feeling just before you took this photo?",
-					"What were you doing?"];
+					"What were you doing?",
+					"I think that's a great picture of " + people_string + ". How do you feel about it?",
+					"How does this picture make you feel?"];
 
 				if (people_string != "yourself") {
 					responses.push([
@@ -706,14 +709,16 @@ StateMachine['what_next_photo'] = {
 				var response = chooseRandomResponse(
 					["What do you like about this photo?", 
 					"What were you doing?",
+					"What do you notice in this picture that you don't think other people would?",
 					"Perfect. What inspired you to take this shot?",
 					"Huh. I'm not sure what to say. Do you like this picture?",
 					"Terriffic... but was there something else that you didn't get to take a picture of?",
 					"How did you feel after you took this picture?",
-					"What was behind you?",
 					"Did you take this picture for anyone in particular?",
 					"If you were to find this picture in a year, what would you want to remember from it?",
-					"Did you feel comfortable here?"]);
+					"Did you feel comfortable here?",
+					"What's most important to you abuot this picture?",
+					"How does this picture make you feel?"]);
 			}
 
 			transitionCallback({output: {from: 'app', content: response}, newState: newState});
@@ -780,7 +785,7 @@ StateMachine['forward'] = {
 		// time for a new photo, erase anything that's still hanging on here
 		delete parameters.image;
 
-		if ((images_to_end < 4) || (parameters.num_forward > 7)) {
+		if ((images_to_end < 4)) {//|| (parameters.num_forward > 7)) {
 			var output = 'What photo best shows the conclusion to this experience?';
 			var nextState = 'conclusion_photo?input=photo,' + combineParameters(parameters);
 		} else {
@@ -790,7 +795,7 @@ StateMachine['forward'] = {
 			if (choice < 1) {
 				// rand 1
 
-				var possible_words = ["is interesting", "tells a story", "is beautiful", "is dissapointing"];
+				var possible_words = ["is interesting", "tells a story", "is beautiful", "is dissapointing", "is a good photo of someone", "is atmospheric", "raises questions", "inspired something"];
 				var word = possible_words[Math.floor(Math.random()*possible_words.length)];
 
 				var output = "Show me another photo, one you think " + word + ".";
@@ -863,7 +868,11 @@ StateMachine['forward'] = {
 						var nextState = "ask_about_person?" + combineParameters(parameters);;
 					}
 				} else {
-					var output = "Show me another photo you think is interesting."
+
+					var possible_words = ["is interesting", "tells a story", "is beautiful", "is dissapointing", "is a good photo of someone", "is atmospheric", "raises questions", "inspired something"];
+					var word = possible_words[Math.floor(Math.random()*possible_words.length)];
+
+					var output = "Show me another photo, one you think " + word + ".";
 					var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
 				}
 			}

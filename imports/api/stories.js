@@ -373,14 +373,16 @@ function createStory(clusterId) {
 		//        - Most interesting photo from the first 3 hours without narrative content
 		let start_time = cluster.start_time;
 		let first_photos = images.filter(function(p) {
-			return ((p.datetime.utc_timestamp - start_time.utc_timestamp)/(1000*60*60) <= 3);
+			return ((p.datetime.utc_timestamp - start_time.utc_timestamp)/(1000*60*60) <= 6);
 		});
 
 		if (first_photos.length < 2) {
 			first_photos = images.slice(0,3);
 		}
 
-		best_first_photos = first_photos.sort(compareImage);
+		best_first_photos = first_photos.sort(compareImage).filter(function(im) {
+			return !('narrative' in im);
+		});
 
 		var intro_photo_id = best_first_photos[0]._id._str;
 		story_content.push({type: 'image', data: {image_id: best_first_photos[0]._id, datetime: best_first_photos[0].datetime, resized_uris: best_first_photos[0].resized_uris}});
