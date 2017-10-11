@@ -16,12 +16,14 @@
     "rc-slider": "^5.4.0",
     "react": "^15.1.0",
     "react-addons-css-transition-group": "^15.1.0",
-    "react-addons-pure-render-mixin": "^15.4.2",
+    "react-addons-pure-render-mixin": "^15.6.2",
+    "react-autosize-textarea": "^0.4.9",
     "react-datepicker": "^0.40.0",
     "react-dom": "^15.1.0",
     "react-leaflet": "~1.0.3",
     "react-mounter": "^1.2.0",
     "react-scroll": "^1.4.6",
+    "react-textarea-autosize": "^5.1.0",
     "stanford-simple-nlp": "git+https://github.com/loganwilliams/node-stanford-simple-nlp.git"
   }
 }

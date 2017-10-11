@@ -726,11 +726,11 @@ Meteor.methods({
 					});
 
 					if (people.length > 0) {
-						people = [{'firstName': Meteor.username}]
+						people = [{'firstName': Meteor.username, 'self': true}]
 					}
 
-					var user = Meteor.users.findOne(this.userId);
-					people = [{'firstName': user.username, 'self': true}];
+					// var user = Meteor.users.findOne(this.userId);
+					// people = [{'firstName': user.username, 'self': true}];
 				}
 
 			} else {

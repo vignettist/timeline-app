@@ -27,7 +27,7 @@ export default class LeafletRouter extends MapLayer {
           }
 
           if (err) {
-              alert(err);
+            console.log(err);
           } else { 
               this.leafletElement = new L.Routing.line(routes[0],{
                 addWaypoints: false, 

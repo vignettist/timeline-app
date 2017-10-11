@@ -93,15 +93,12 @@ export class ClusterConversation extends Component {
       }
     }
 
-    handleSubmit(event) {
-      event.preventDefault();
-
-      var inputBox = ReactDOM.findDOMNode(this.refs.textInput.refs.textInput);
-      const text = inputBox.value.trim();
+    handleSubmit(input) {
+      const text = input.trim();
 
       // check to make sure that the user typed anything
       if (typeof text !== 'undefined') {
-        inputBox.value = '';
+        // inputBox.value = '';
         Meteor.call('conversation.addHistory', this.props.cluster._id, {from: 'user', content: text}, this.props.conversation.state);
         this.setState({pending: true});
 

@@ -222,7 +222,7 @@ button {
 }
 
 .weekday {
-	width: 100%;
+	width: calc(100% - 25px);
 	margin-bottom: 0em;
 	background-color: none;
 	text-align: left;
@@ -648,11 +648,12 @@ a {
 	margin-bottom: 10px;
 	display: table;
 
-	input {
+	textarea {
 		border: 0px dotted black;
 		background: none;
 		font: inherit;
 		width: 100%;
+		resize: none;
 	}
 
 	img {
