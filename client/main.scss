@@ -1575,8 +1575,8 @@ a {
 	padding-top: 2em;
 	padding-left: 200px;
 	padding-right: 200px;
-	height: calc(100vh - 2em);
 	box-shadow: $header-shadow;
+	min-height: 100vh;
 
 	h1 {
 		text-align: center;

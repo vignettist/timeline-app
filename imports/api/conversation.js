@@ -816,7 +816,7 @@ Meteor.methods({
 	'clusters.getMostRecent'() {
 
 		try {
-			var most_recent = Clusters.find({}, {sort: {'start_time.utc_timestamp': -1}, limit: 1}).fetch()[0].start_time;
+			var most_recent = Clusters.find({user_id: this.userId}, {sort: {'start_time.utc_timestamp': -1}, limit: 1}).fetch()[0].start_time;
 			console.log(most_recent);
 			return(most_recent);
 		} catch(e) {

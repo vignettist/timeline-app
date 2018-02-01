@@ -48,7 +48,11 @@ export class Home extends Component {
 			}
 		}
 
-		for (var i = 0; i < stories.length; i++) {
+		stories.sort(function(a,b) {
+			return a.cluster.start_time.utc_timestamp < b.cluster.start_time.utc_timestamp;
+		});
+
+		for (var i = 0; i < Math.min(8,stories.length); i++) {
 			if ('title' in stories[i].cluster) {
 				var title = <span className="title">{stories[i].cluster.title}</span>;	
 			} else {
