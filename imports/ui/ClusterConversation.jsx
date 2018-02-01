@@ -216,7 +216,7 @@ export class ClusterConversation extends Component {
           <div className="cluster-conversation-wrapper">
             {/*<UserBar />*/}
             <div className="cluster-conversation-header">
-              <Controls allowSplit={!('conversation_id' in this.props.cluster)} debug={false} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
+              <Controls allowSplit={!('conversation_id' in this.props.cluster)} debug={true} cluster={this.props.cluster} key={this.props.cluster._id._str + "_controls"} state={split_state.state} storyStarted={this.props.story.length > 0}/>
             </div>
 
             <div className="cluster-conversation-lower">

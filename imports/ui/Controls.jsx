@@ -35,7 +35,8 @@ export default class Controls extends Component {
 
 	render() {
 		if (this.props.debug) {
-			var debug = [<div key="control_state">{this.props.state}</div>, <button key="reset-button" className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>];
+            //<div key="control_state">{this.props.state}</div>,
+			var debug = [<button key="reset-button" className="reset-button" onClick={this.reset.bind(this)}>Reset conversation</button>];
 		} else {
 			var debug = [];
 		}

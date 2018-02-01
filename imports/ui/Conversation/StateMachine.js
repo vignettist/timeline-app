@@ -717,7 +717,7 @@ StateMachine['what_next_photo'] = {
 					"Did you take this picture for anyone in particular?",
 					"If you were to find this picture in a year, what would you want to remember from it?",
 					"Did you feel comfortable here?",
-					"What's most important to you abuot this picture?",
+					"What's most important to you about this picture?",
 					"How does this picture make you feel?"]);
 			}
 
@@ -795,8 +795,8 @@ StateMachine['forward'] = {
 			if (choice < 1) {
 				// rand 1
 
-				var possible_words = ["is interesting", "tells a story", "is beautiful", "is dissapointing", "is a good photo of someone", "is atmospheric", "raises questions", "inspired something"];
-				var word = possible_words[Math.floor(Math.random()*possible_words.length)];
+				var possible_words = ["is interesting", "tells a story", "is beautiful", "is pretty", "is in the middle of things", "is ambiguous", "is unique", "is awesome", "is dissapointing", "is a good photo of someone", "is atmospheric", "raises questions", "inspired something"];
+				var word = chooseRandomResponse(possible_words);
 
 				var output = "Show me another photo, one you think " + word + ".";
 				var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
@@ -869,8 +869,8 @@ StateMachine['forward'] = {
 					}
 				} else {
 
-					var possible_words = ["is interesting", "tells a story", "is beautiful", "is dissapointing", "is a good photo of someone", "is atmospheric", "raises questions", "inspired something"];
-					var word = possible_words[Math.floor(Math.random()*possible_words.length)];
+					var possible_words = ["is interesting", "tells a story", "is beautiful", "is pretty", "is in the middle of things", "is ambiguous", "is unique", "is awesome", "is dissapointing", "is a good photo of someone", "is atmospheric", "raises questions", "inspired something"];
+					var word = chooseRandomResponse(possible_words);
 
 					var output = "Show me another photo, one you think " + word + ".";
 					var nextState = 'what_next_photo?input=photo,' + combineParameters(parameters);
