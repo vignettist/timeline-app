@@ -69,7 +69,7 @@ export default class Cluster extends Component {
           {render_images}
         </div>
         <div className="cluster-map">
-          <ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={true} height={this.props.height} width={this.props.width}/>
+          <ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={true} height={this.props.height} width={this.props.width} routing={false}/>
         </div>
         <div className="cluster-overlay">
         </div>

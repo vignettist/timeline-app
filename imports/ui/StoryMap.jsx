@@ -11,12 +11,12 @@ export default class StoryMap extends Component {
 	render() {
 		if (!('bounds' in this.props)) {
 			return <div className="compose-map">
-					<ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={false} height={400} width={800} callback={this.updateMapPosition.bind(this)} />
+					<ClusterMap cluster={this.props.cluster} routing={true} photos={this.props.photos} offset={false} height={400} width={800} callback={this.updateMapPosition.bind(this)} />
 					<button className="delete-button" onClick={this.props.deleteCallback}><img src="/icons/X.png" /></button>
 					</div>
 		} else {
 			return <div className="compose-map">
-					<ClusterMap cluster={this.props.cluster} photos={this.props.photos} offset={false} height={400} width={800} callback={this.updateMapPosition.bind(this)} bounds={this.props.bounds}/>
+					<ClusterMap cluster={this.props.cluster} routing={true} photos={this.props.photos} offset={false} height={400} width={800} callback={this.updateMapPosition.bind(this)} bounds={this.props.bounds}/>
 					<button className="delete-button" onClick={this.props.deleteCallback}><img src="/icons/X.png" /></button>
 					</div>
 		}

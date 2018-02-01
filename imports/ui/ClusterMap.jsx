@@ -72,7 +72,7 @@ export default class ClusterMap extends Component {
 
       var opacity = Math.min(1.0, Math.max(0.4, Math.pow(0.01/distance, 0.5)));
 
-      if (distance > 0.005) {
+      if ((distance > 0.005) && (this.props.routing == true)) {
         if (distance > 0.02) {
           var profile = 'mapbox/driving';
         } else {
@@ -207,6 +207,7 @@ ClusterMap.propTypes = {
   height: PropTypes.number,
   bounds: PropTypes.array,
   additionalMarker: PropTypes.object,
-  callback: PropTypes.func
+  callback: PropTypes.func,
+  routing: PropTypes.bool
 };
 

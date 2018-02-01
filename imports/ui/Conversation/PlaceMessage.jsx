@@ -15,7 +15,7 @@ export default class PlaceMessage extends Component {
 		              [center[0] + 2*(size/111111), center[1] + 2*(size/(Math.cos(center[0]*2*Math.PI/360)*111111))]];
 
 		return <div className={"conversation " + this.props.idTag}>
-	        <ClusterMap cluster={this.props.cluster} photos={this.props.photos} bounds={bounds} additionalMarker={<Circle center={center} radius={size} />}/>
+	        <ClusterMap cluster={this.props.cluster} photos={this.props.photos} bounds={bounds} additionalMarker={<Circle center={center} radius={size} routing={true}/>}/>
 		</div>
 	}
 }
